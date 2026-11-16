@@ -37,6 +37,7 @@ No data is created on startup: tables only. New accounts start empty.
 | `GET /duels`, `GET /duels/{id}` | My duels, including pending invites I received (the day is caught up with the clock) |
 | `GET /duels/by-code/{code}` | Look up a pending duel by invite code. Works before signing in |
 | `POST /duels` | `{hobbyId, minutes, goal?, friendId?}` (`goal` = the goal in your own words, trimmed, 1 to 60 characters; omit it for the suggestion built from hobby and minutes; the duel returns it as `goal`, null when not written): always created `pending`. With `friendId` only that person can accept; without it anyone with the code can. Asking again for the same pending challenge (same hobby, minutes and friend) returns the existing duel and code instead of a duplicate |
+| `DELETE /duels/{id}` | Cancel a pending invite I created (204). Only the creator can (403 for the invited friend, 404 for anyone else), and only while it is `pending` (400 once accepted or finished). It is deleted from the database, so it disappears for the friend too and its code stops working |
 | `POST /duels/{id}/accept` | Accept an invite (not your own, and only the invited person if one was named) |
 | `POST /duels/{id}/checkin`, `confirm`, `rest`, `pause`, `resume`, `forfeit` | Playing |
 | `POST /duels/{id}/checkin/details` | `{minutes, note}`: optional minutes (1 to 240) and note (up to 200 characters) on MY check-in for today. The one-tap `checkin` stays the default (goal minutes, no note). Refused once the friend has confirmed it |

@@ -56,6 +56,7 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 1. **Start a duel**: pick a hobby. Optionally tap the **Starter goal** card (or the pencil) to write your own goal (up to 60 characters; the minute chips update the numbers in it), then tap **Next: pick a friend**.
 2. In **Find a friend on Dual** type the teammate's name or the start of their email. The real account appears (the email is masked). Tap it, then **Invite <name>**.
 3. The **Sent** screen confirms it ("Your dual is on its way", with the invite code for a code invite). **Back home** shows the duel under **Your duals** as "Waiting for <name> to accept."
+3b. Changed your mind? On the **Sent** screen (or the duel's page while it is still pending) tap **Cancel invite**, then **Yes, cancel**: the pending row is deleted in Neon and disappears from Today for both people.
 4. Neon: **duels** has a new row (`status = pending`, `creator_id`, `opponent_id`, `invite_code`).
 
 *Already dueled someone?* Tap their avatar under **Your crew** on Today (**Challenge <name>**): you go straight to the hobby step, then **Invite <name>**. **Invite** next to Your crew works the other way round: pick the friend first, then the hobby.

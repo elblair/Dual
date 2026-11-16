@@ -133,6 +133,14 @@ export function createMockSource(): DataSource {
       notify();
       return Promise.resolve(clone(d));
     },
+    cancelInvite(id) {
+      const d = duels.find((x) => x.id === id);
+      if (!d) return fail('Duel not found.');
+      if (d.status !== 'pending' || !d.viewerIsCreator) return fail('Only an invite that has not been accepted can be cancelled.');
+      duels = duels.filter((x) => x.id !== id);
+      notify();
+      return Promise.resolve();
+    },
     acceptDuel: (id) =>
       act(id, (d) => {
         if (d.status !== 'pending') throw new Error('This duel was already accepted.');

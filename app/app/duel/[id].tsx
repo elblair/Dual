@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, Check, Clock, Flame, Hourglass, Pause, Users } from 'lucide-react-native';
-import { Avatar, BackButton, Button, Card, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, Card, CancelInvite, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { shortDate, whenLabel } from '@/lib/dates';
@@ -146,6 +146,15 @@ export default function DuelScreen() {
           </View>
         ))}
       </Card>
+
+      {duel.status === 'pending' && duel.viewerIsCreator ? (
+        <CancelInvite
+          onCancel={async () => {
+            await data.cancelInvite(duel.id);
+            router.replace('/today');
+          }}
+        />
+      ) : null}
 
       {duel.activity.length > 0 ? (
         <>

@@ -3,8 +3,8 @@ import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { Hourglass, Share2 } from 'lucide-react-native';
-import { Avatar, Button, Card, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
-import { useDuel, useMe } from '@/data';
+import { Avatar, Button, Card, CancelInvite, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
+import { useData, useDuel, useMe } from '@/data';
 import { DUEL_DAYS, hobbyById } from '@/data/catalog';
 import { goalText, pendingInviteLabel } from '@/lib/duel';
 import { useTheme } from '@/theme';
@@ -18,6 +18,7 @@ import { useTheme } from '@/theme';
 export default function SentScreen() {
   const t = useTheme();
   const router = useRouter();
+  const data = useData();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: duel, error, loading, refetch } = useDuel(id);
   const { data: me } = useMe();
@@ -117,6 +118,14 @@ export default function SentScreen() {
 
       <Button label="Back home" onPress={() => router.replace('/today')} />
       <Button label="Invite someone else" variant="soft" icon={Share2} onPress={() => router.replace('/hobby')} />
+      {duel.status === 'pending' && duel.viewerIsCreator ? (
+        <CancelInvite
+          onCancel={async () => {
+            await data.cancelInvite(duel.id);
+            router.replace('/today');
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }

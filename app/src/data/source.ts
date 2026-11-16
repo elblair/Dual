@@ -34,6 +34,8 @@ export interface DataSource {
   /** Start a duel. It stays pending until the other person accepts. */
   createDuel(input: CreateDuelInput): Promise<Duel>;
   acceptDuel(id: string): Promise<Duel>;
+  /** Delete a pending invite I created (before anyone accepted it). */
+  cancelInvite(id: string): Promise<void>;
 
   checkIn(id: string): Promise<Duel>;
   /** Optional: set the minutes and a note on MY check-in for today (the one-tap check-in stays the default). */

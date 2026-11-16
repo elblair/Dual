@@ -342,6 +342,18 @@ def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id:
     return duel
 
 
+def cancel_invite(db: Session, duel_id: int, user: User) -> None:
+    """Delete a pending duel I created (a named invite or a code nobody has used). Nothing else can be deleted."""
+    duel = db.get(Duel, duel_id)
+    if duel is None or user.id not in (duel.creator_id, duel.opponent_id):
+        raise DomainError("Duel not found.", status=404)
+    if duel.creator_id != user.id:
+        raise DomainError("Only the person who sent the invite can cancel it.", status=403)
+    if duel.status != "pending":
+        raise DomainError("Only an invite that has not been accepted can be cancelled.")
+    db.delete(duel)
+
+
 def accept_duel(db: Session, duel: Duel, user: User) -> Duel:
     if duel.status != "pending":
         raise DomainError("This duel was already accepted.")
