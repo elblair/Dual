@@ -65,6 +65,14 @@ Screens never call `fetch` or the mock directly. They use hooks from `app/src/da
 - Check-ins carry `confirmed`: yours count on your own screen at once and on your friend's once they tap OK; day rollover confirms everything.
 - Tests run on in-memory SQLite only; `api/check_db.py` smoke-checks Neon from `api/.env`.
 
+## Phase 5 decisions (built)
+- Graded demo: registration (Hobby has "Create account" and "Log in"; the form calls `POST /auth/register`) and data rendering (Today, Duel, Groups ranking, You, and a Database screen backed by `GET /demo/db`). The script is `docs/DEMO.md`.
+- Sessions: no session until someone registers or gives a first name (`POST /auth/guest`), so there is no "Ari". `getMe()` is null when signed out; `listDuels()` is empty. The token lives in SecureStore (localStorage on web).
+- Register with no session creates a new `users` row; with a guest session it upgrades that row.
+- Every list screen has loading, error (with Try again) and pull-to-refresh states; a Live / Offline badge (pings `/health` every 10 s) shows the API host on Today and Database; the mock shows "Mock data".
+- The Groups floor battle stays sample data; its ranking list is real (minutes per person across my duels).
+- The Neon edit demo changes `duels.minutes` (no schema change needed): Today and Duel show it after a refresh.
+
 ## Screen-to-route map
 Hobby `/` (Log in, I have a code) -> Friend `/friend` -> share -> Today. Code -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> Save `/save` (guests only) or back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You (with Demo tools when enabled).
 

@@ -1,13 +1,14 @@
 """Duel rules. Mirrors app/src/data/mockSource.ts so the app behaves the same on the mock and on the API."""
 
 import secrets
+import threading
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import Checkin, Duel, RestDay, User
-from app.schemas import DuelOut, PendingOut, PersonOut, ResultOut
+from app.schemas import DbDuelOut, DbInfoOut, DbSnapshotOut, DbUserOut, DuelOut, LeaderRowOut, PendingOut, PersonOut, ResultOut
 
 LENGTH_DAYS = 7
 REST_LIMIT = 2
@@ -27,9 +28,23 @@ class DomainError(Exception):
         self.status = status
 
 
+_clock_lock = threading.Lock()
+_last_now = datetime.min
+
+
 def utcnow() -> datetime:
-    """Naive UTC, used for every timestamp column."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    """Naive UTC, used for every timestamp column.
+
+    Strictly increasing within the process: some clocks (Windows) tick every ~15 ms, and rows created in the same tick
+    would otherwise tie, which makes "newest first" ordering unreliable.
+    """
+    global _last_now
+    with _clock_lock:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        if now <= _last_now:
+            now = _last_now + timedelta(microseconds=1)
+        _last_now = now
+        return now
 
 
 def make_code() -> str:
@@ -43,7 +58,7 @@ def is_bot(user_id: str | None) -> bool:
     return user_id in SEEDED
 
 
-def person_for(user: User, viewer_id: str) -> PersonOut:
+def person_for(user: User, viewer_id: str | None) -> PersonOut:
     if user.id == viewer_id:
         tone = "you"
     else:
@@ -59,22 +74,24 @@ def invitee_person(duel: Duel) -> PersonOut:
 # ---------------------------------------------------------------- views
 
 
-def build_view(db: Session, duel: Duel, viewer: User) -> DuelOut:
-    is_creator = duel.creator_id == viewer.id
+def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
+    """A duel from one player's point of view. viewer=None is someone looking up an invite code before signing in."""
+    viewer_id = viewer.id if viewer else None
+    is_creator = viewer_id is not None and duel.creator_id == viewer_id
     their_id = duel.opponent_id if is_creator else duel.creator_id
 
     creator = db.get(User, duel.creator_id)
     opponent_user = db.get(User, their_id) if their_id else None
-    opponent = person_for(opponent_user, viewer.id) if opponent_user else invitee_person(duel)
+    opponent = person_for(opponent_user, viewer_id) if opponent_user else invitee_person(duel)
 
-    my_days = sorted(c.day_index for c in duel.checkins if c.user_id == viewer.id)
+    my_days = sorted(c.day_index for c in duel.checkins if c.user_id == viewer_id)
     their_days = sorted(c.day_index for c in duel.checkins if c.user_id == their_id and c.confirmed)
     pending = [c for c in duel.checkins if c.user_id == their_id and not c.confirmed]
     their_pending = None
     if pending:
         latest = max(pending, key=lambda c: c.day_index)
         their_pending = PendingOut(minutes=latest.minutes, note=latest.note)
-    my_rest = sorted(r.day_index for r in duel.rest_days if r.user_id == viewer.id)
+    my_rest = sorted(r.day_index for r in duel.rest_days if r.user_id == viewer_id)
 
     result = None
     if duel.winner:
@@ -98,7 +115,7 @@ def build_view(db: Session, duel: Duel, viewer: User) -> DuelOut:
         length_days=duel.length_days,
         status=duel.status,
         opponent=opponent,
-        creator=person_for(creator, viewer.id),
+        creator=person_for(creator, viewer_id),
         viewer_is_creator=is_creator,
         invite_code=duel.invite_code,
         today=duel.today,
@@ -399,3 +416,72 @@ def demo_reset(db: Session, user: User) -> None:
         db.delete(duel)
     db.flush()
     seed_demo_duels(db, user)
+
+
+# ---------------------------------------------------------------- groups-style list
+
+
+def leaderboard(db: Session, user: User, limit: int = 5) -> list[LeaderRowOut]:
+    """Everyone in my duels (and me), ranked by minutes practiced. A friend's minutes count once I confirm them."""
+    totals: dict[str, int] = {user.id: 0}
+    for duel in duels_of(db, user):
+        for uid in (duel.creator_id, duel.opponent_id):
+            if uid:
+                totals.setdefault(uid, 0)
+        for c in duel.checkins:
+            if c.user_id == user.id or c.confirmed:
+                totals[c.user_id] = totals.get(c.user_id, 0) + c.minutes
+    rows = []
+    for uid, minutes in totals.items():
+        person = db.get(User, uid)
+        rows.append(LeaderRowOut(id=uid, name=person.name, tone=person_for(person, user.id).tone, minutes=minutes, is_you=uid == user.id))
+    rows.sort(key=lambda r: (-r.minutes, r.name))
+    return rows[:limit]
+
+
+# ---------------------------------------------------------------- the Database screen
+
+
+def _iso(dt: datetime | None) -> str:
+    return (dt.isoformat() + "Z") if dt else ""
+
+
+def db_snapshot(db: Session, engine_name: str, host: str, limit: int = 20) -> DbSnapshotOut:
+    """The latest rows straight from the tables, newest first. Never includes password hashes."""
+    users = db.scalars(select(User).order_by(User.created_at.desc(), User.id.desc()).limit(limit)).all()
+    duels = db.scalars(select(Duel).order_by(Duel.id.desc()).limit(limit)).all()
+
+    def name_of(user_id: str | None) -> str | None:
+        user = db.get(User, user_id) if user_id else None
+        return user.name if user else None
+
+    duel_rows = []
+    for d in duels:
+        # The score as the person who started the duel sees it: their own check-ins, and their friend's confirmed ones.
+        a = sum(1 for c in d.checkins if c.user_id == d.creator_id)
+        b = sum(1 for c in d.checkins if c.user_id == d.opponent_id and c.confirmed)
+        opponent = name_of(d.opponent_id) or invitee_person(d).name
+        duel_rows.append(
+            DbDuelOut(
+                id=str(d.id),
+                hobby_id=d.hobby_id,
+                minutes=d.minutes,
+                goal=f"{d.minutes} min a day",
+                status=d.status,
+                creator=name_of(d.creator_id) or "?",
+                opponent=opponent,
+                score=f"{a} – {b}",
+                today=d.today,
+                created_at=_iso(d.created_at),
+            )
+        )
+    return DbSnapshotOut(
+        database=DbInfoOut(engine=engine_name, host=host),
+        user_count=db.scalar(select(func.count()).select_from(User)) or 0,
+        duel_count=db.scalar(select(func.count()).select_from(Duel)) or 0,
+        users=[
+            DbUserOut(id=u.id, name=u.name, email=u.email, is_guest=u.is_guest, is_seeded=u.is_seeded, created_at=_iso(u.created_at))
+            for u in users
+        ],
+        duels=duel_rows,
+    )

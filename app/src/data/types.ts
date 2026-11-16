@@ -68,4 +68,52 @@ export interface AuthInput {
 
 export interface RegisterInput extends AuthInput {
   name: string;
+  /** Demo builds: give a brand-new account the day-5 demo duels. */
+  seedDemo?: boolean;
+}
+
+export interface GuestInput {
+  /** First name only, so nobody is called "Ari" by default. */
+  name: string;
+  seedDemo?: boolean;
+}
+
+/** A row in the Groups-style list: people in my duels ranked by minutes practiced. */
+export interface LeaderRow {
+  id: string;
+  name: string;
+  tone: Person['tone'];
+  minutes: number;
+  isYou: boolean;
+}
+
+/** The Database screen (demo): rows straight from the tables. Never contains password hashes. */
+export interface DbUser {
+  id: string;
+  name: string;
+  email: string | null;
+  isGuest: boolean;
+  isSeeded: boolean;
+  createdAt: string;
+}
+
+export interface DbDuel {
+  id: string;
+  hobbyId: string;
+  minutes: number;
+  goal: string;
+  status: string;
+  creator: string;
+  opponent: string;
+  score: string;
+  today: number;
+  createdAt: string;
+}
+
+export interface DbSnapshot {
+  database: { engine: string; host: string };
+  userCount: number;
+  duelCount: number;
+  users: DbUser[];
+  duels: DbDuel[];
 }

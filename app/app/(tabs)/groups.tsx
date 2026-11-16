@@ -3,25 +3,26 @@ import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { ChevronRight, Copy } from 'lucide-react-native';
-import { Avatar, Button, Card, Pill, Screen, Text } from '@/components';
-import { useMe } from '@/data';
+import { Avatar, Button, Card, ErrorBanner, Pill, Screen, Text } from '@/components';
+import { LoadingView } from '@/components';
+import { useLeaderboard } from '@/data';
+import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
-/** Groups (Figma 217:239). All sample data: the live floor battle and the leaderboard are static. */
+/**
+ * Groups (Figma 217:239). The floor battle and the invite code are sample data; the ranking list is real:
+ * people in my duels ranked by minutes, loaded from the API.
+ */
 export default function GroupsScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { data: me } = useMe();
+  const { data: rows, error, loading, refetch } = useLeaderboard();
+  const { refreshing, onRefresh } = useRefresh(refetch);
   const [copied, setCopied] = useState(false);
 
   const bars = [
     { label: 'Floor 3', value: '412 min', fill: t.colors.orange, share: 0.82 },
     { label: 'Floor 4', value: '388 min', fill: t.colors.white, share: 0.77 },
-  ];
-  const board = [
-    { rank: 1, name: 'Eleanor', tone: 'opponent' as const, minutes: 140, you: false },
-    { rank: 2, name: me?.name ?? 'Ari', tone: 'you' as const, minutes: 95, you: true },
-    { rank: 3, name: 'Tanish', tone: 'you' as const, minutes: 72, you: false },
   ];
 
   async function copyCode() {
@@ -31,7 +32,7 @@ export default function GroupsScreen() {
   }
 
   return (
-    <Screen scroll tabBar gap="loose">
+    <Screen scroll tabBar gap="loose" refresh={{ refreshing, onRefresh }}>
       <Text variant="display">Groups</Text>
 
       <Card variant="slate" style={{ borderRadius: t.radii.hero, padding: t.spacing.s18, gap: t.spacing.lg }}>
@@ -73,12 +74,23 @@ export default function GroupsScreen() {
       </Card>
 
       <Text variant="label" color="muted">
-        Top on Floor 3 this week
+        Top in your duals
       </Text>
+      {loading ? (
+        <View style={{ paddingVertical: t.spacing.gutter }}>
+          <LoadingView label="Loading the ranking…" />
+        </View>
+      ) : null}
+      {error ? <ErrorBanner message={`${error.message} Pull down to try again.`} /> : null}
+      {!loading && rows && rows.length === 0 ? (
+        <Text variant="small" color="muted">
+          Start a dual to see who is ahead.
+        </Text>
+      ) : null}
       <View style={{ gap: t.spacing.hairline }}>
-        {board.map((r) => (
+        {(rows ?? []).map((r, i) => (
           <View
-            key={r.rank}
+            key={r.id}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -86,15 +98,15 @@ export default function GroupsScreen() {
               paddingHorizontal: t.spacing.lg,
               paddingVertical: t.spacing.md,
               borderRadius: t.radii.sm,
-              backgroundColor: r.you ? t.colors.blueTint : 'transparent',
+              backgroundColor: r.isYou ? t.colors.blueTint : 'transparent',
             }}
           >
             <Text variant="small" color="muted" style={{ fontFamily: t.fonts.bold }}>
-              {r.rank}
+              {i + 1}
             </Text>
             <Avatar name={r.name} tone={r.tone} size="sm" />
             <Text variant="label" style={{ flex: 1 }}>
-              {r.you ? 'You' : r.name}
+              {r.isYou ? 'You' : r.name}
             </Text>
             <Text variant="smallStrong">{r.minutes} min</Text>
           </View>

@@ -1,9 +1,16 @@
 import { Redirect } from 'expo-router';
-import { useDuels } from '@/data';
+import { LoadingView, Screen } from '@/components';
+import { useMe } from '@/data';
 
-/** Launcher: people with duels land on Today, everyone else starts at the Hobby picker. */
+/** Launcher: signed-in people land on Today, everyone else starts at the Hobby picker. */
 export default function Index() {
-  const { data, loading } = useDuels();
-  if (loading) return null;
-  return <Redirect href={data && data.length > 0 ? '/today' : '/hobby'} />;
+  const { data: me, loading } = useMe();
+  if (loading) {
+    return (
+      <Screen>
+        <LoadingView />
+      </Screen>
+    );
+  }
+  return <Redirect href={me ? '/today' : '/hobby'} />;
 }

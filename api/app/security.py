@@ -45,3 +45,17 @@ def current_user(
     if user is None:
         raise DomainError("Your session expired. Please sign in again.", status=401)
     return user
+
+
+def optional_user(
+    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """The signed-in user, or None when there is no (valid) token. For endpoints that work before sign-in."""
+    if creds is None:
+        return None
+    try:
+        payload = jwt.decode(creds.credentials, get_settings().jwt_secret, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
+    return db.get(User, payload.get("sub"))

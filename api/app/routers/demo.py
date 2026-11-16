@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 
 from app import logic
 from app.config import get_settings
-from app.db import get_db
+from app.db import engine, get_db
 from app.logic import DomainError
 from app.models import User
+from app.schemas import DbSnapshotOut
 from app.security import current_user
 
 
@@ -34,3 +35,9 @@ def opponent_checkin(user: User = Depends(current_user), db: Session = Depends(g
 def reset(user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
     logic.demo_reset(db, user)
     db.commit()
+
+
+@router.get("/db", response_model=DbSnapshotOut)
+def database(user: User = Depends(current_user), db: Session = Depends(get_db)) -> DbSnapshotOut:
+    """The Database screen: the latest users and duels straight from the tables (no password hashes)."""
+    return logic.db_snapshot(db, engine.url.get_backend_name(), engine.url.host or "local file")

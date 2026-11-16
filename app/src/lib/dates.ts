@@ -13,3 +13,10 @@ export function shortDate(iso: string | Date): string {
 export function inOneWeek(now = new Date()): string {
   return shortDate(new Date(now.getTime() + 7 * 24 * 3600 * 1000));
 }
+
+/** "Nov 16, 4:12 PM" in the viewer's time zone (for database timestamps). */
+export function dateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}

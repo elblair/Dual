@@ -1,3 +1,4 @@
 export type { DataSource } from './source';
 export * from './types';
-export { DataProvider, useData, useDuel, useDuelByCode, useDuels, useMe } from './DataProvider';
+export type { ConnectionStatus, Query } from './DataProvider';
+export { DataProvider, useConnection, useData, useDbSnapshot, useDuel, useDuelByCode, useDuels, useLeaderboard, useMe } from './DataProvider';

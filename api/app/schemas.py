@@ -62,6 +62,8 @@ class RegisterIn(CamelModel):
     name: str = Field(min_length=1, max_length=80)
     email: str = Field(min_length=3, max_length=255, pattern=r"^[^@\s]+@[^@\s]+$")
     password: str = Field(min_length=6, max_length=128)
+    # With no signed-in guest, a brand-new account can also get the demo duels (the app sends its demo flag).
+    seed_demo: bool = False
 
 
 class LoginIn(CamelModel):
@@ -78,3 +80,51 @@ class CreateDuelIn(CamelModel):
 
 class RematchIn(CamelModel):
     kind: Literal["same", "easier"]
+
+
+class GuestIn(CamelModel):
+    name: str = Field(min_length=1, max_length=80)
+    seed_demo: bool = False
+
+
+class LeaderRowOut(CamelModel):
+    id: str
+    name: str
+    tone: Literal["you", "opponent", "neutral"]
+    minutes: int
+    is_you: bool
+
+
+class DbUserOut(CamelModel):
+    id: str
+    name: str
+    email: str | None
+    is_guest: bool
+    is_seeded: bool
+    created_at: str
+
+
+class DbDuelOut(CamelModel):
+    id: str
+    hobby_id: str
+    minutes: int
+    goal: str
+    status: str
+    creator: str
+    opponent: str
+    score: str
+    today: int
+    created_at: str
+
+
+class DbInfoOut(CamelModel):
+    engine: str
+    host: str
+
+
+class DbSnapshotOut(CamelModel):
+    database: DbInfoOut
+    user_count: int
+    duel_count: int
+    users: list[DbUserOut]
+    duels: list[DbDuelOut]

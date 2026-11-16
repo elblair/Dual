@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, Share, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { MessageSquare } from 'lucide-react-native';
 import { BackButton, Button, Card, ContactRow, Logo, Screen, Text } from '@/components';
-import { useData } from '@/data';
+import { useData, useMe } from '@/data';
 import { CONTACTS } from '@/data/sample';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -13,7 +13,8 @@ import { useTheme } from '@/theme';
 export default function FriendScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { hobby, minutes, friendId, setFriendId, code, reset } = useOnboarding();
+  const { hobby, minutes, friendId, setFriendId, code, reset, afterName, setAfterName } = useOnboarding();
+  const { data: me } = useMe();
   const data = useData();
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -22,6 +23,12 @@ export default function FriendScreen() {
 
   async function sendByText() {
     if (sending) return;
+    if (!me) {
+      // First duel as a guest: ask for a first name, then come back here and send.
+      setAfterName('send');
+      router.push('/name');
+      return;
+    }
     setSending(true);
     setError('');
     const full = `${message}\nOpen Dual and enter the code ${code}`;
@@ -49,6 +56,15 @@ export default function FriendScreen() {
       setSending(false);
     }
   }
+
+  // Back from the name screen with a session: carry on with the send.
+  useEffect(() => {
+    if (me && afterName === 'send') {
+      setAfterName(null);
+      sendByText();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, afterName]);
 
   return (
     <Screen scroll>

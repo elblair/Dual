@@ -13,6 +13,9 @@ interface OnboardingState {
   friendId: string;
   setFriendId: (id: string) => void;
   code: string;
+  /** A guest has to give a first name before the first duel can be sent or accepted: what to resume afterwards. */
+  afterName: 'send' | 'accept' | null;
+  setAfterName: (next: 'send' | 'accept' | null) => void;
   reset: () => void;
 }
 
@@ -23,6 +26,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [minutes, setMinutes] = useState(20);
   const [friendId, setFriendId] = useState('eleanor');
   const [code, setCode] = useState(makeInviteCode);
+  const [afterName, setAfterName] = useState<'send' | 'accept' | null>(null);
 
   const cycleMinutes = useCallback(() => {
     setMinutes((m) => MINUTE_OPTIONS[(MINUTE_OPTIONS.indexOf(m) + 1) % MINUTE_OPTIONS.length]);
@@ -44,9 +48,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       friendId,
       setFriendId,
       code,
+      afterName,
+      setAfterName,
       reset,
     }),
-    [hobbyId, minutes, friendId, code, cycleMinutes, reset],
+    [hobbyId, minutes, friendId, code, afterName, cycleMinutes, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
