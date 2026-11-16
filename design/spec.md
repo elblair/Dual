@@ -163,6 +163,15 @@ Static image only: `design/png/Lock.png`. Dark gradient, 8:41 clock, widget "5 â
 ### Tab bar (Today, Groups, You frames)
 White, 1pt top border `border`, padding 10 top / 28 bottom, items centered: Today (home), Groups (users), "+" (52pt orange circle, plus icon 26, in line with the others, links to Hobby), You (user). Icon 22, label 11 (active SemiBold maroon `#6e1023`, inactive Medium muted `#6b6b78`), gap 4.
 
+## Implementation notes (deliberate differences from the frames)
+- Hero card on Today says "vs Eleanor Â· done today" (not "she's done today"): no gendered pronouns in app copy.
+- Stakes dropped everywhere: no stake row on Duel, no stake card on Friend, Forfeit copy without "your stake goes to charity", "$10 to charity" stat replaced by "days checked in". The Accept "Stake: None" row stays.
+- Settings gear on Duel and You is not built. Dual+ row on You is dropped; a "Lock screen widget" row (opens the static Lock image) is added.
+- Running duels show the Strava card instead of a check-in card (sample data), so they never count toward "things to do".
+- Weekday letters under the Duel dots are fixed M to S (a duel always starts Monday in the mock).
+- Icons are Lucide, so a few glyphs differ slightly from Figma's (Gym dumbbell is rotated Lucide, Drawing palette).
+- Not in Figma, built from tokens: code entry (`/code`), email form (`/auth`), pending-duel card on Today, empty state on Today, "Paused" banner and "Resume dual" on Duel, Demo tools card on You, pencil cycling the starter minutes, "I have a code" link.
+
 ## Navigation
 Hobby -> Friend -> (Send by text) -> Accept -> (Accept) -> Today. Today: "I did it" -> Done -> Save (or Back to Today); dual card -> Duel -> Break / Result; Sunday recap -> Result. Tabs: Today, Groups, "+" (Hobby flow), You. Result: Rematch/Easier win -> Today, New rival -> Friend.
 

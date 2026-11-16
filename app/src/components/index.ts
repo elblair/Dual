@@ -14,3 +14,5 @@ export { Radio } from './Radio';
 export { HobbyTile } from './HobbyTile';
 export { ContactRow } from './ContactRow';
 export { TextField } from './TextField';
+export { PlayerRow } from './PlayerRow';
+export { OptionCard } from './OptionCard';

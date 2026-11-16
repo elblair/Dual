@@ -2,23 +2,39 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BackButton, Button, Screen, Text, TextField } from '@/components';
+import { useData } from '@/data';
 import { useTheme } from '@/theme';
 
-/**
- * Email sign-up / log-in. NOT in Figma: a minimal form built from the same tokens.
- * Phase 2: validates the fields and continues. Phase 5 calls the API (/auth/register, /auth/login).
- */
+/** Email sign-up / log-in. NOT in Figma: a minimal form built from the same tokens. */
 export default function AuthScreen() {
   const t = useTheme();
   const router = useRouter();
+  const data = useData();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const signup = mode !== 'login';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const valid = email.includes('@') && password.length >= 6 && (!signup || name.trim().length > 0);
+
+  async function submit() {
+    setBusy(true);
+    setError('');
+    try {
+      const creds = { email: email.trim().toLowerCase(), password };
+      if (signup) await data.register({ ...creds, name: name.trim() });
+      else await data.login(creds);
+      router.replace('/today');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <Screen scroll>
@@ -45,10 +61,18 @@ export default function AuthScreen() {
 
       <View style={{ flex: 1 }} />
 
-      <Button label={signup ? 'Create account' : 'Log in'} disabled={!valid} onPress={() => router.replace('/today')} />
+      {error ? (
+        <Text variant="caption" color="maroonBright" align="center">
+          {error}
+        </Text>
+      ) : null}
+      <Button label={signup ? 'Create account' : 'Log in'} disabled={!valid || busy} onPress={submit} />
       <Pressable
         accessibilityRole="link"
-        onPress={() => router.setParams({ mode: signup ? 'login' : 'signup' })}
+        onPress={() => {
+          setError('');
+          router.setParams({ mode: signup ? 'login' : 'signup' });
+        }}
         style={{ alignSelf: 'center' }}
       >
         <Text variant="labelMedium" color="blue">
