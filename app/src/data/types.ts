@@ -33,7 +33,12 @@ export interface Duel {
   minutes: number;
   lengthDays: number;
   status: DuelStatus;
+  /** The other player, from my point of view (for the invited friend looking at a code: the challenger). */
   opponent: Person;
+  /** Who started the duel. */
+  creator: Person;
+  /** True when I started it; false for the invited friend looking at it by code. */
+  viewerIsCreator: boolean;
   /** Set while the friend has not accepted yet (they enter this code in the app). */
   inviteCode: string | null;
   /** Index of the current day, 0 to 6. 7 once the duel is finished. */
