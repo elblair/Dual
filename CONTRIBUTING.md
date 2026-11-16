@@ -13,7 +13,7 @@ Short version of our Git workflow (a simplified Git Flow). Claude Code sessions 
 
 - Never commit directly to `main` or `develop`. Open a pull request.
 - No staging branch (one free Render service): `main` is what we deploy.
-- Delete the branch after it is merged.
+- Delete the branch after it is merged, on GitHub and locally. This includes release branches (`chore/release-v0.x.0`): delete them once the release PR is merged and tagged. (`git branch -d` can say "not fully merged" for a release branch because it checks against your current branch, not `main`; confirm with `git merge-base --is-ancestor <branch> origin/main`, then use `git branch -D`.)
 
 ## Commits and PR titles (Conventional Commits)
 `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `style:`. Example: `feat: add Today screen with 7-dot progress`.

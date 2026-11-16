@@ -77,7 +77,7 @@ Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 res
 - Commits and PR titles use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `style:`. Small, focused commits. Never commit secrets or `.env` files.
 - Each phase = one feature branch -> PR into `develop` (what changed, how to test on a phone, screenshots for UI). PRs into `develop` need no approval (the user merges them); only `main` needs 1 approval.
 - When `develop` is stable and demo-ready, PR `develop` -> `main` titled `release: v0.x.0` and tag it (`v0.1.0`, `v0.2.0`, ...). **Release PRs into `main` are merged with a merge commit, never squashed or rebased** (a squash makes `main` and `develop` diverge and the next release conflicts in every file; if it conflicts anyway, open the release PR from a `chore/release-v0.x.0` branch made from `main` with `develop` merged in, same tree as `develop`). Feature, fix and chore PRs into `develop` are squashed. See CONTRIBUTING.md.
-- Delete feature branches after merging.
+- Delete every branch after it is merged, on GitHub and locally: feature, fix, chore, hotfix and **release** branches (`chore/release-v0.x.0`) alike. After a release PR is merged and tagged, delete its branch too. (`git branch -d` may say "not fully merged" for a release branch, because it checks against the branch you are on, not `main`: confirm with `git merge-base --is-ancestor <branch> origin/main`, then use `git branch -D`.)
 - Use `gh pr create --base develop` to open PRs; if `gh` is unavailable, give the user the GitHub compare link instead.
 - Before starting a phase: `git switch develop && git pull`, then create the feature branch. Never push or merge without the user's go-ahead.
 
