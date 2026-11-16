@@ -1,21 +1,24 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { BackButton, Button, Screen, Text, TextField } from '@/components';
-import { useData } from '@/data';
+import { useData, useMe } from '@/data';
 import { useTheme } from '@/theme';
 
 /**
- * "I have a code": the invited friend types the 4-character code from the text.
+ * "Enter an invite code" (signed-in people only; reached from Today and the + flow): the invited friend types the 4-character code from the text.
  * NOT in Figma (the Figma Accept frame assumed a web link).
  */
 export default function CodeScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
+  const { data: me, loading } = useMe();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  if (!loading && !me) return <Redirect href="/welcome" />; // sign up or log in first
 
   async function find() {
     setBusy(true);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform, Share, View } from 'react-native';
+import { Platform, Pressable, Share, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { MessageSquare, Send } from 'lucide-react-native';
@@ -49,7 +49,7 @@ export default function FriendScreen() {
     return () => clearTimeout(timer);
   }, [q, data]);
 
-  if (!meLoading && !me) return <Redirect href="/hobby" />; // a session is needed to search
+  if (!meLoading && !me) return <Redirect href="/welcome" />; // a session is needed to search
 
   const message = `I’m ${hobby.phrase} ${minutes} min a day this week. Dual me so I don’t quit? ${hobby.emoji}`;
 
@@ -163,6 +163,12 @@ export default function FriendScreen() {
           </Card>
         </>
       )}
+
+      <Pressable accessibilityRole="link" onPress={() => router.push('/code')} style={{ alignSelf: 'center' }}>
+        <Text variant="labelMedium" color="blue">
+          Got an invite code? Enter it
+        </Text>
+      </Pressable>
 
       <View style={{ flex: 1 }} />
 

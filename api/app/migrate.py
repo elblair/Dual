@@ -4,7 +4,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
 # table -> columns that older versions created and the app no longer uses
-LEGACY_COLUMNS = {"users": ["is_seeded"], "duels": ["invitee_id", "day_offset"]}
+LEGACY_COLUMNS = {"users": ["is_seeded", "is_guest"], "duels": ["invitee_id", "day_offset"]}
 
 
 def drop_legacy_columns(engine: Engine) -> list[str]:

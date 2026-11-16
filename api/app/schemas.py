@@ -13,7 +13,6 @@ class CamelModel(BaseModel):
 class MeOut(CamelModel):
     id: str
     name: str
-    is_guest: bool
     email: str | None = None
 
 
@@ -82,10 +81,6 @@ class CreateDuelIn(CamelModel):
 
 class RematchIn(CamelModel):
     kind: Literal["same", "easier"]
-
-
-class GuestIn(CamelModel):
-    name: str = Field(min_length=1, max_length=80)
 
 
 class UserHitOut(CamelModel):

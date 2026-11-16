@@ -15,10 +15,10 @@ def backdate(db, duel_id: str, days: int) -> None:
 
 
 def test_search_finds_accounts_by_name_and_email(make_player):
-    me = make_player("Me", account=True)
-    make_player("Samantha", account=True)
-    make_player("Sam Lee", account=True)
-    make_player("Kim", account=True)
+    me = make_player("Me")
+    make_player("Samantha")
+    make_player("Sam Lee")
+    make_player("Kim")
 
     names = [h["name"] for h in me.get("/users/search?q=sam").json()]
     assert names == ["Sam Lee", "Samantha"]  # case-insensitive, alphabetical
@@ -28,25 +28,24 @@ def test_search_finds_accounts_by_name_and_email(make_player):
 
 
 def test_search_hides_the_full_email_and_the_person_themselves(make_player):
-    me = make_player("Sam", account=True)
-    other = make_player("Samuel", account=True)
+    me = make_player("Sam")
+    other = make_player("Samuel")
     hits = me.get("/users/search?q=sam").json()
     assert [h["id"] for h in hits] == [other.id]  # not me
     assert hits[0]["email_hint"] if "email_hint" in hits[0] else hits[0]["emailHint"] == "s***@example.com"
     assert "samuel.2@example.com" not in str(hits)
 
 
-def test_search_ignores_guests_and_short_queries(make_player):
-    me = make_player("Me", account=True)
-    make_player("Sammy")  # a guest has no account to find
-    assert me.get("/users/search?q=sam").json() == []
+def test_search_ignores_short_queries(make_player):
+    me = make_player("Me")
+    make_player("Sammy")
     assert me.get("/users/search?q=s").json() == []
     assert me.get("/users/search").json() == []
 
 
 def test_search_treats_wildcards_as_plain_text(make_player):
-    me = make_player("Me", account=True)
-    make_player("Sam", account=True)
+    me = make_player("Me")
+    make_player("Sam")
     assert me.get("/users/search?q=%25%25").json() == []  # "%%" must not match everyone
 
 
@@ -138,7 +137,7 @@ def test_pending_invites_are_not_rivals_yet(duo):
 
 
 def test_the_leaderboard_counts_wins_across_all_real_duels(make_player, db):
-    ari, sam, kim = make_player("Ari", account=True), make_player("Sam", account=True), make_player("Kim", account=True)
+    ari, sam, kim = make_player("Ari"), make_player("Sam"), make_player("Kim")
     d1 = ari.challenge(sam)
     sam.accept(d1["id"])
     d2 = kim.challenge(sam)  # Kim and Sam duel each other too; Ari is not part of it

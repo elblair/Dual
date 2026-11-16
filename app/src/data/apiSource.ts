@@ -120,7 +120,6 @@ export function createApiSource(baseUrl: string): DataSource {
         throw e;
       }
     },
-    startGuest: ({ name }) => signIn('/auth/guest', { name }),
     register: ({ name, email, password }) => signIn('/auth/register', { name, email, password }),
     login: ({ email, password }) => signIn('/auth/login', { email, password }),
     async logout() {

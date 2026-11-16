@@ -22,10 +22,10 @@ On Today, the badge must say **Live · <host>** (green). If it says Offline or t
 ## The script
 
 ### 1. Phone 1: register (graded item 1)
-1. Open the app. The first screen shows **Log in** (top) and **Create account** (bottom).
+1. Open the app. The first screen is **Welcome** with **Create account** and **Log in** (no guests, nothing else).
 2. Tap **Create account**. Enter a name, an email and a password (6+ characters). A bad email or a short password is refused.
 3. Tap **Create account**. The app calls `POST /auth/register`, saves the user in Neon and lands on **Today**: **Hey, <name>**, the **Live** badge, and **No duels yet** with a **Start a duel** button.
-4. **Show the new row in Neon:** console, **Tables → users**, refresh. The new row is on top: name, email, `created_at`, and `password_hash` (a bcrypt hash, never the password), `is_guest = false`.
+4. **Show the new row in Neon:** console, **Tables → users**, refresh. The new row is on top: name, email, `created_at`, and `password_hash` (a bcrypt hash, never the password), and no guest flag: every user is a real account.
 
 ### 2. Phone 2: register
 Do the same with the teammate's name and email. Refresh `users` in Neon: now two rows.
@@ -36,7 +36,7 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 3. Today shows the duel under **This week** as "Waiting for <name> to accept."
 4. Neon: **duels** has a new row (`status = pending`, `creator_id`, `opponent_id`, `invite_code`).
 
-*Not on Dual yet?* Pick **Send by text** instead: the app creates the duel, gives you an invite code and opens the share sheet; the friend enters it under **I have a code**.
+*Not on Dual yet?* Pick **Send by text** instead: the app creates the duel, gives you an invite code and opens the share sheet. The friend creates an account or logs in first, then taps **Enter an invite code** (on Today next to Pending invites, or in the + flow) and types it.
 
 ### 4. Phone 2: accept
 1. Pull down on Today (or reopen the app). **Pending invites** shows "<name> invited you" with the hobby and goal. Tap **Accept**.
@@ -76,7 +76,8 @@ Stop the API: the badge turns **Offline** within ten seconds, the last data stay
 |---|---|
 | "The app is not set up: EXPO_PUBLIC_API_URL is missing" | Set it in `app/.env`, restart with `npx expo start -c`. |
 | "Can't reach the server (host)" | API not running, wrong IP (use the PC's LAN IP on a phone, not `localhost`), or Windows Firewall blocking Python on private networks. Test `http://<host>:8000/health` in the phone's browser. |
-| The friend search finds no one | They must have an account (a guest has no email to find): they register first. Type at least 2 letters. |
+| The friend search finds no one | They must have an account: they register first. Type at least 2 letters. |
+| "Got an invite but I'm signed out" | Sign up or log in first: the code is kept and the app continues to Accept afterwards. |
 | Pending invite doesn't show | Pull down on Today. Invites only go to the person you picked; for anyone else use the code. |
 | "This invite is for someone else" | The invite was sent to a different account; send a new one or use **Send by text**. |
 | Render is slow on the first tap | The free tier sleeps. Open `https://<service>.onrender.com/health` a minute before the demo. |

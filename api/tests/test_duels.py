@@ -81,9 +81,9 @@ def test_the_invited_person_accepts_from_their_pending_invites(duo):
 
 
 def test_a_friend_who_is_not_on_dual_accepts_with_the_code(make_player):
-    ari = make_player("Ari", account=True)
+    ari = make_player("Ari")
     d = ari.challenge()
-    friend = make_player("Kim")  # a guest on another phone
+    friend = make_player("Kim")  # not on the first phone, entering the code
 
     seen = friend.get(f"/duels/by-code/{d['inviteCode'].lower()}").json()
     assert seen["creator"]["name"] == "Ari" and seen["viewerIsCreator"] is False

@@ -89,22 +89,18 @@ export function createMockSource(): DataSource {
     },
 
     getMe: () => Promise.resolve(me ? clone(me) : null),
-    startGuest: ({ name }) => {
-      duels = [];
-      return start({ id: `u${users++}`, name: name.trim(), isGuest: true });
-    },
     register({ name, email, password }) {
       if (accounts.some((a) => a.email === email)) return fail('That email already has an account. Try logging in.');
-      const id = me ? me.id : `u${users++}`;
+      const id = `u${users++}`;
       accounts.push({ id, name, email, password });
-      return start({ id, name, email, isGuest: false });
+      return start({ id, name, email });
     },
     login({ email, password }) {
       const a = accounts.find((x) => x.email === email);
       if (!a) return fail('No account with that email. Try creating one.');
       if (a.password !== password) return fail('Wrong password.');
       duels = [];
-      return start({ id: a.id, name: a.name, email, isGuest: false });
+      return start({ id: a.id, name: a.name, email });
     },
     logout() {
       me = null;

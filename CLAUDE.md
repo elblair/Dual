@@ -18,7 +18,7 @@ Figma is rate-limited. Use `design/spec.md` (tokens + screen specs) and the PNG 
 app/
   app/                 Expo Router routes (screens only, thin)
     (tabs)/            today, groups, you, plus tab bar
-    ...                index (launcher), hobby, name, friend, code, accept, auth, save, duel/[id], done/[id], result/[id], break/[id]
+    ...                index (launcher), welcome, hobby, friend, code, accept, auth, duel/[id], done/[id], result/[id], break/[id]
   src/
     theme/             theme.ts: ALL colors, fonts, spacing, radii (light now, dark "Midnight" later)
     components/        Button, Avatar, Dots, Card, TabBar, ...
@@ -63,8 +63,8 @@ App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` af
 - Screens have 22pt side padding, 60pt top. Respect safe areas.
 
 ## Scope
-Real, from the API and database: sign up / log in / log out (also from the first screen), guests with a first name, pick a hobby, find a real friend by name or email (or invite by text with a code), pending invites and accept (by name or code), one-tap check-in, confirm each other, 7-dot progress, rest day / pause / forfeit, Result (only when a duel really ends), rematch, You stats (duels won, days checked in, current streak), Groups (people you've dueled, wins leaderboard).
-Not in the app: seed data, demo tools, the Database screen, fast-forward buttons, Strava/sync labels, Sunday recap, XP, tiers, Apple/Google sign-in, the lock-screen widget, stakes/money, Dual+, accepting via web link. New accounts start empty ("No duels yet").
+Real, from the API and database: sign up / log in / log out (the first screen for anyone signed out is Welcome: Create account and Log in only, no guests), pick a hobby, find a real friend by name or email (or invite by text with a code), pending invites and accept (by name, or by typing an invite code after logging in: on Today and in the + flow), one-tap check-in, confirm each other, 7-dot progress, rest day / pause / forfeit, Result (only when a duel really ends), rematch, You stats (duels won, days checked in, current streak), Groups (people you've dueled, wins leaderboard).
+Not in the app: guest accounts (every user has an account; an invite opened while signed out goes Welcome -> sign up / log in -> Accept), seed data, demo tools, the Database screen, fast-forward buttons, Strava/sync labels, Sunday recap, XP, tiers, Apple/Google sign-in, the lock-screen widget, stakes/money, Dual+, accepting via web link. New accounts start empty ("No duels yet").
 Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 rest days, and short rule/microcopy.
 
 ## Git workflow (simplified Git Flow; details in CONTRIBUTING.md)
