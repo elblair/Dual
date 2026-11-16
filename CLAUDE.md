@@ -65,7 +65,7 @@ App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` af
 ## Scope
 Real, from the API and database: sign up / log in / log out (the first screen for anyone signed out is Welcome: Create account and Log in only, no guests), pick a hobby, find a real friend by name or email (or invite by text with a code), pending invites and accept (by name, or by typing an invite code after logging in: on Today and in the + flow), one-tap check-in, confirm each other, 7-dot progress, rest day / pause / forfeit, Result (only when a duel really ends), rematch, You stats (duels won, days checked in, current streak) and a small progression system computed on read from existing data (XP, Bronze/Silver/Gold tiers with one working perk, friendship levels; every number in `api/app/progression.py`), Groups (people you've dueled with their friendship level, wins leaderboard).
 Not in the app: guest accounts (every user has an account; an invite opened while signed out goes Welcome -> sign up / log in -> Accept), seed data, demo tools, the Database screen, fast-forward buttons, Strava/sync labels, Sunday recap, Apple/Google sign-in, the lock-screen widget, stakes/money, Dual+, accepting via web link. New accounts start empty ("No duels yet").
-Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 rest days, and short rule/microcopy.
+Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 rest days (3 from Silver), the XP and tier numbers, and short rule/microcopy.
 
 ## Git workflow (simplified Git Flow; details in CONTRIBUTING.md)
 - `main`: production / demo-ready. Render deploys from it. Never commit directly; only merge via pull request.
