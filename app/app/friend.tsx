@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import { MessageSquare, Send } from 'lucide-react-native';
 import { BackButton, Button, Card, ContactRow, Logo, Screen, Text, TextField } from '@/components';
 import { useData, useGroups, useMe, type UserHit } from '@/data';
+import { sentHref } from '@/lib/routes';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
@@ -75,7 +76,7 @@ export default function FriendScreen() {
         }
       }
       reset();
-      router.replace('/today');
+      router.replace(sentHref(duel.id));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
     } finally {

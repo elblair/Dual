@@ -55,7 +55,7 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 ### 3. Phone 1: start a duel and invite phone 2
 1. **Start a duel**: pick a hobby, tap **Next: pick a friend**.
 2. In **Find a friend on Dual** type the teammate's name or the start of their email. The real account appears (the email is masked). Tap it, then **Invite <name>**.
-3. Today shows the duel under **This week** as "Waiting for <name> to accept."
+3. The **Sent** screen confirms it ("Your dual is on its way", with the invite code for a code invite). **Back home** shows the duel under **Your duals** as "Waiting for <name> to accept."
 4. Neon: **duels** has a new row (`status = pending`, `creator_id`, `opponent_id`, `invite_code`).
 
 *Not on Dual yet?* Pick **Send by text** instead: the app creates the duel, gives you an invite code and opens the share sheet. The friend creates an account or logs in first, then taps **Enter an invite code** (on Today next to Pending invites, or in the + flow) and types it.

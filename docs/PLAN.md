@@ -93,7 +93,7 @@ Every user must sign up or log in first.
 - Old guest rows already in a database are harmless leftovers (no email, nobody can log in as them); the friend search only returns accounts with an email.
 
 ## Screen-to-route map
-Welcome `/welcome` (Create account, Log in) -> `/auth` -> Today. Today "+" -> Hobby `/hobby` -> Friend `/friend` -> share -> Today. Today / Friend "Enter an invite code" -> Code `/code` -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You.
+Welcome `/welcome` (Create account, Log in) -> `/auth` -> Today. Today "+" -> Hobby `/hobby` -> Friend `/friend` -> Sent `/sent/[id]` -> Today. Today / Friend "Enter an invite code" -> Code `/code` -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You.
 
 ## Phases (each ends with phone test steps and a commit)
 
