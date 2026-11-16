@@ -44,10 +44,14 @@ class DuelOut(CamelModel):
     minutes: int
     length_days: int
     status: Literal["pending", "active", "paused", "finished"]
-    opponent: PersonOut
+    # None for an open invite nobody has accepted yet.
+    opponent: PersonOut | None
     creator: PersonOut
     viewer_is_creator: bool
+    # Only while the duel is pending.
     invite_code: str | None
+    # When the duel started (None while pending).
+    started_at: str | None
     today: int
     my_days: list[int]
     their_days: list[int]
@@ -62,8 +66,6 @@ class RegisterIn(CamelModel):
     name: str = Field(min_length=1, max_length=80)
     email: str = Field(min_length=3, max_length=255, pattern=r"^[^@\s]+@[^@\s]+$")
     password: str = Field(min_length=6, max_length=128)
-    # With no signed-in guest, a brand-new account can also get the demo duels (the app sends its demo flag).
-    seed_demo: bool = False
 
 
 class LoginIn(CamelModel):
@@ -74,8 +76,8 @@ class LoginIn(CamelModel):
 class CreateDuelIn(CamelModel):
     hobby_id: str = Field(min_length=1, max_length=32)
     minutes: int
-    friend_id: str = Field(min_length=1, max_length=32)
-    invite_code: str | None = Field(default=None, max_length=8)
+    # A person found with /users/search. None = an open invite that a friend accepts with the code.
+    friend_id: str | None = Field(default=None, max_length=32)
 
 
 class RematchIn(CamelModel):
@@ -84,47 +86,37 @@ class RematchIn(CamelModel):
 
 class GuestIn(CamelModel):
     name: str = Field(min_length=1, max_length=80)
-    seed_demo: bool = False
+
+
+class UserHitOut(CamelModel):
+    id: str
+    name: str
+    email_hint: str
+
+
+class StatsOut(CamelModel):
+    duels_won: int
+    days_checked_in: int
+    current_streak: int
+
+
+class RivalOut(CamelModel):
+    person: PersonOut
+    duels: int
+    wins: int
+    losses: int
+    ties: int
+    active: int
 
 
 class LeaderRowOut(CamelModel):
     id: str
     name: str
     tone: Literal["you", "opponent", "neutral"]
-    minutes: int
+    wins: int
     is_you: bool
 
 
-class DbUserOut(CamelModel):
-    id: str
-    name: str
-    email: str | None
-    is_guest: bool
-    is_seeded: bool
-    created_at: str
-
-
-class DbDuelOut(CamelModel):
-    id: str
-    hobby_id: str
-    minutes: int
-    goal: str
-    status: str
-    creator: str
-    opponent: str
-    score: str
-    today: int
-    created_at: str
-
-
-class DbInfoOut(CamelModel):
-    engine: str
-    host: str
-
-
-class DbSnapshotOut(CamelModel):
-    database: DbInfoOut
-    user_count: int
-    duel_count: int
-    users: list[DbUserOut]
-    duels: list[DbDuelOut]
+class GroupsOut(CamelModel):
+    rivals: list[RivalOut]
+    leaderboard: list[LeaderRowOut]

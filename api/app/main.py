@@ -6,18 +6,17 @@ from fastapi.responses import JSONResponse
 
 from app import models  # noqa: F401  (registers the tables)
 from app.config import get_settings
-from app.db import Base, SessionLocal, engine
-from app.logic import DomainError, seed_bot_users
-from app.routers import auth, demo, duels, groups
+from app.db import Base, engine
+from app.logic import DomainError
+from app.migrate import drop_legacy_columns
+from app.routers import auth, duels, groups, users
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # A demo: create the tables on startup instead of using migrations.
+    # A demo: create the tables on startup instead of using migrations. No data is ever created here.
+    drop_legacy_columns(engine)
     Base.metadata.create_all(engine)
-    with SessionLocal() as db:
-        seed_bot_users(db)
-        db.commit()
     yield
 
 
@@ -45,4 +44,4 @@ def health() -> dict[str, str]:
 app.include_router(auth.router)
 app.include_router(duels.router)
 app.include_router(groups.router)
-app.include_router(demo.router)
+app.include_router(users.router)

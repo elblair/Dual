@@ -5,7 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import logic
-from app.config import get_settings
 from app.db import get_db
 from app.logic import DomainError
 from app.models import User
@@ -24,7 +23,7 @@ def _auth(user: User) -> AuthOut:
 
 
 def _new_user(db: Session, name: str, *, guest: bool) -> User:
-    user = User(id=secrets.token_hex(6), name=name, is_guest=guest, is_seeded=False, created_at=logic.utcnow())
+    user = User(id=secrets.token_hex(6), name=name, is_guest=guest, created_at=logic.utcnow())
     db.add(user)
     db.flush()
     return user
@@ -32,16 +31,11 @@ def _new_user(db: Session, name: str, *, guest: bool) -> User:
 
 @router.post("/auth/guest", response_model=AuthOut)
 def create_guest(body: GuestIn, db: Session = Depends(get_db)) -> AuthOut:
-    """A guest account named with a first name, so people can start a dual before signing up.
-
-    With seedDemo=true (and DEMO_MODE=true on the server) the guest also gets the day-5 demo duels.
-    """
+    """A guest account named with a first name, so people can start a dual before signing up."""
     name = body.name.strip()
     if not name:
         raise DomainError("Please enter a first name.", status=422)
     user = _new_user(db, name, guest=True)
-    if body.seed_demo and get_settings().demo_mode:
-        logic.seed_demo_duels(db, user)
     db.commit()
     return _auth(user)
 
@@ -59,15 +53,12 @@ def register(body: RegisterIn, current: User | None = Depends(optional_user), db
         raise DomainError("That email already has an account. Try logging in.", status=409)
 
     user = current
-    is_new = user is None
     if user is None:
         user = _new_user(db, name, guest=False)
     user.name = name
     user.email = email
     user.password_hash = hash_password(body.password)
     user.is_guest = False
-    if is_new and body.seed_demo and get_settings().demo_mode:
-        logic.seed_demo_duels(db, user)
     db.commit()
     return _auth(user)
 

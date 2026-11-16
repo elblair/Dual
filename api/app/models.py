@@ -9,13 +9,11 @@ from app.db import Base
 class User(Base):
     __tablename__ = "users"
 
-    # Seeded friends use fixed ids ('eleanor', 'tanish'); everyone else gets a random hex id.
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
     name: Mapped[str] = mapped_column(String(80))
     email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_guest: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_seeded: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
 
@@ -29,14 +27,13 @@ class Duel(Base):
     # pending | active | paused | finished
     status: Mapped[str] = mapped_column(String(16), index=True)
     creator_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    # Set when a specific person was invited, or when someone accepted a code. None for an open invite.
     opponent_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
-    # For a pending duel: who was invited (a contact id such as 'ben') and the code they enter.
-    invitee_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    # The code a friend enters to accept (kept after acceptance so a duel can be found by it).
     invite_code: Mapped[str | None] = mapped_column(String(8), nullable=True, unique=True)
     started_at: Mapped[datetime] = mapped_column(DateTime)
-    # Current day index 0..6 (7 = finished). Advances with the clock, or with the demo fast-forward.
+    # Current day index 0..6 (7 = finished). Caught up with the clock whenever the duel is read.
     today: Mapped[int] = mapped_column(Integer, default=0)
-    day_offset: Mapped[int] = mapped_column(Integer, default=0)
     paused_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     winner: Mapped[str | None] = mapped_column(String(16), nullable=True)  # creator | opponent | tie
     forfeited_by: Mapped[str | None] = mapped_column(String(16), nullable=True)  # creator | opponent

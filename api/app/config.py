@@ -13,7 +13,6 @@ load_dotenv()
 class Settings:
     database_url: str
     jwt_secret: str
-    demo_mode: bool
     cors_origins: list[str]
 
 
@@ -40,6 +39,5 @@ def get_settings() -> Settings:
     return Settings(
         database_url=url,
         jwt_secret=secret,
-        demo_mode=os.environ.get("DEMO_MODE", "").strip().lower() == "true",
         cors_origins=origins or ["*"],
     )
