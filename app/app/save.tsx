@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Flame, Mail } from 'lucide-react-native';
@@ -6,13 +5,12 @@ import { BackButton, Button, Screen, Text } from '@/components';
 import { useDuels } from '@/data';
 import { useTheme } from '@/theme';
 
-/** Save (Figma 217:407): "Save your streak" account prompt shown after the first check-in. */
+/** Save (Figma 217:407): "Save your streak" account prompt for guests. Email is the only way to sign up. */
 export default function SaveScreen() {
   const t = useTheme();
   const router = useRouter();
-  const [note, setNote] = useState('');
   const { data: duels } = useDuels();
-  const friend = duels?.find((d) => d.status !== 'finished')?.opponent.name ?? 'your friend';
+  const friend = duels?.find((d) => d.status === 'active' || d.status === 'paused')?.opponent?.name;
 
   return (
     <Screen scroll>
@@ -35,22 +33,14 @@ export default function SaveScreen() {
 
       <Text variant="titleLg">Save your streak</Text>
       <Text variant="body" color="muted">
-        You’ve already started. Create an account so your dual with {friend} is safe.
+        {friend ? `You’ve already started. Create an account so your dual with ${friend} is safe.` : 'Create an account so your duals are safe.'}
       </Text>
 
       <View style={{ flex: 1 }} />
 
-      <Button label="Continue with Apple" onPress={() => setNote('Apple sign-in is coming soon. Use email for now.')} />
-      <Button label="Continue with Google" variant="outline" onPress={() => setNote('Google sign-in is coming soon. Use email for now.')} />
-      <Button label="Use email" variant="outline" icon={Mail} onPress={() => router.push('/auth?mode=signup')} />
-
-      {note ? (
-        <Text variant="caption" color="maroonBright" align="center" accessibilityLiveRegion="polite">
-          {note}
-        </Text>
-      ) : null}
+      <Button label="Create account with email" icon={Mail} onPress={() => router.push('/auth?mode=signup')} />
       <Text variant="micro" color="muted" align="center">
-        We ask for an account only after your first check-in.
+        It takes about 20 seconds.
       </Text>
     </Screen>
   );

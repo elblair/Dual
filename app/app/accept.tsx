@@ -1,25 +1,26 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Avatar, BackButton, Button, Card, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, Card, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuelByCode, useMe } from '@/data';
+import { hobbyById } from '@/data/catalog';
 import { useOnboarding } from '@/state/onboarding';
-import { hobbyById } from '@/data/sample';
 import { useTheme } from '@/theme';
 
 /**
- * Accept (Figma 215:152), shown in-app to the invited friend after entering a code.
- * The browser chrome from the Figma frame (URL pill, "what Eleanor sees") is dropped.
+ * Accept (Figma 215:152), shown in-app to the invited friend after entering a code. Everything on it comes from the duel
+ * (challenger, hobby, goal, length). The browser chrome from the Figma frame is dropped, and so is its "Stake" row.
  */
 export default function AcceptScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
   const { code } = useLocalSearchParams<{ code?: string }>();
-  const { data: duel } = useDuelByCode(code);
+  const { data: duel, error: duelError, loading: duelLoading, refetch } = useDuelByCode(code);
   const { data: me, loading: meLoading } = useMe();
   const { afterName, setAfterName } = useOnboarding();
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   // Back from the name screen with a session: carry on with the accept.
   useEffect(() => {
@@ -30,18 +31,28 @@ export default function AcceptScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, afterName, duel]);
 
-  if (!duel || meLoading) return <Screen background="surface">{null}</Screen>;
-
-  // Left: whoever started the duel. Right: the invited friend (me, unless I'm previewing my own invite).
-  const challenger = duel.creator;
-  const invitee = duel.viewerIsCreator ? duel.opponent : { name: me?.name ?? 'You', tone: 'opponent' as const };;
+  if (duelLoading || meLoading) {
+    return (
+      <Screen background="surface">
+        <LoadingView />
+      </Screen>
+    );
+  }
+  if (!duel) {
+    return (
+      <Screen background="surface">
+        <ErrorView message={duelError?.message ?? 'We couldn’t find that invite.'} onRetry={refetch} />
+      </Screen>
+    );
+  }
 
   const hobby = hobbyById(duel.hobbyId);
+  const challenger = duel.creator;
+  const ownInvite = !!me && duel.viewerIsCreator;
   const rows: [string, string][] = [
     ['Hobby', `${hobby.label} · ${duel.minutes} min a day`],
-    ['Length', '7 days, starts tomorrow'],
+    ['Length', `${duel.lengthDays} days, starts when you accept`],
     ['Check-ins', 'One tap · you confirm each other'],
-    ['Stake', 'None'],
   ];
 
   async function accept() {
@@ -52,12 +63,15 @@ export default function AcceptScreen() {
       router.push('/name');
       return;
     }
+    setBusy(true);
     setError('');
     try {
       await data.acceptDuel(duel.id);
       router.replace('/today');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -74,7 +88,7 @@ export default function AcceptScreen() {
         <Text variant="subheading" color="orange" style={{ fontFamily: t.fonts.bold }}>
           VS
         </Text>
-        <Avatar name={invitee.name} tone={invitee.tone} size="xxl" ring="white" />
+        <Avatar name={me?.name ?? '?'} tone="opponent" size="xxl" ring="white" />
       </View>
 
       <Text variant="title" align="center">
@@ -106,15 +120,17 @@ export default function AcceptScreen() {
 
       <View style={{ flex: 1 }} />
 
+      {ownInvite ? (
+        <Text variant="caption" color="maroonBright" align="center">
+          This is your own invite. Send the code to a friend so they can accept it.
+        </Text>
+      ) : null}
       {error ? (
         <Text variant="caption" color="maroonBright" align="center">
           {error}
         </Text>
       ) : null}
-      <Button label="Accept · no download needed" onPress={accept} />
-      <Text variant="caption" color="muted" align="center">
-        Check in from your texts this week. Get the app whenever you want.
-      </Text>
+      <Button label="Accept" onPress={accept} disabled={busy || ownInvite} />
     </Screen>
   );
 }

@@ -2,18 +2,19 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { BackButton, Button, Screen, Text, TextField } from '@/components';
-import { DEMO } from '@/config';
 import { useData } from '@/data';
+import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
 /**
  * First name only, for guests who skip sign-up. NOT in Figma: built from the same tokens.
- * Shown the first time a guest sends or accepts a challenge, so nobody ends up with a placeholder name.
+ * Shown the first time a guest needs a session (searching for a friend, or accepting an invite).
  */
 export default function NameScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
+  const { afterName, setAfterName } = useOnboarding();
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -22,8 +23,15 @@ export default function NameScreen() {
     setBusy(true);
     setError('');
     try {
-      await data.startGuest({ name: name.trim(), seedDemo: DEMO });
-      router.back(); // Friend or Accept picks up where it left off
+      await data.startGuest({ name: name.trim() });
+      if (afterName === 'friend') {
+        setAfterName(null);
+        router.replace('/friend');
+      } else if (afterName === 'accept') {
+        router.back(); // Accept picks up where it left off and accepts
+      } else {
+        router.replace('/today');
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
       setBusy(false);

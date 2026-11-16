@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BackButton, Button, Screen, Text, TextField } from '@/components';
-import { DEMO } from '@/config';
 import { useData } from '@/data';
 import { useTheme } from '@/theme';
 
@@ -27,7 +26,7 @@ export default function AuthScreen() {
     setError('');
     try {
       const creds = { email: email.trim().toLowerCase(), password };
-      if (signup) await data.register({ ...creds, name: name.trim(), seedDemo: DEMO });
+      if (signup) await data.register({ ...creds, name: name.trim() });
       else await data.login(creds);
       router.replace('/today');
     } catch (e) {

@@ -2,7 +2,8 @@ import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { PencilLine, Sparkle } from 'lucide-react-native';
 import { Button, Card, HobbyTile, Logo, Screen, Text } from '@/components';
-import { HOBBIES } from '@/data/sample';
+import { useMe } from '@/data';
+import { DUEL_DAYS, HOBBIES } from '@/data/catalog';
 import { hobbyIconRotation, hobbyIcons } from '@/lib/hobbyIcons';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -11,7 +12,18 @@ import { useTheme } from '@/theme';
 export default function HobbyScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { hobby, setHobbyId, minutes, cycleMinutes } = useOnboarding();
+  const { hobby, setHobbyId, minutes, cycleMinutes, setAfterName } = useOnboarding();
+  const { data: me } = useMe();
+
+  /** Searching for friends needs a session: a guest gives a first name first. */
+  function next() {
+    if (me) {
+      router.push('/friend');
+    } else {
+      setAfterName('friend');
+      router.push('/name');
+    }
+  }
 
   const rows = [HOBBIES.slice(0, 3), HOBBIES.slice(3, 6), HOBBIES.slice(6, 9)];
 
@@ -57,7 +69,9 @@ export default function HobbyScreen() {
           <Text variant="captionStrong" color="orangeDark">
             Starter goal
           </Text>
-          <Text variant="cardTitle">{minutes} minutes a day for 7 days</Text>
+          <Text variant="cardTitle">
+            {minutes} minutes a day for {DUEL_DAYS} days
+          </Text>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Change daily minutes" onPress={cycleMinutes} hitSlop={12}>
           <PencilLine size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />
@@ -66,7 +80,7 @@ export default function HobbyScreen() {
 
       <View style={{ flex: 1 }} />
 
-      <Button label="Next: pick a friend" onPress={() => router.push('/friend')} />
+      <Button label="Next: pick a friend" onPress={next} />
       <Button label="Create account" variant="outline" onPress={() => router.push('/auth?mode=signup')} />
       <Pressable accessibilityRole="link" onPress={() => router.push('/code')} style={{ alignSelf: 'center' }}>
         <Text variant="labelMedium" color="blue">

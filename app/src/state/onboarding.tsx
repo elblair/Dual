@@ -1,42 +1,45 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { HOBBIES, MINUTE_OPTIONS, makeInviteCode, type Hobby } from '@/data/sample';
+import { HOBBIES, MINUTE_OPTIONS, type Hobby } from '@/data/catalog';
+
+/** Who the player picked in the friend search (null = invite someone by text). */
+export interface PickedFriend {
+  id: string;
+  name: string;
+}
 
 /**
- * Temporary local state for the "pick a hobby, pick a friend" flow (Phase 2).
- * Phase 3 replaces this with the DataSource hooks (mock store, later the API).
+ * Local state for the "pick a hobby, pick a friend" flow. Nothing here is user data from the server: it is only what the
+ * player has chosen so far, before the duel is created.
  */
 interface OnboardingState {
   hobby: Hobby;
   setHobbyId: (id: string) => void;
   minutes: number;
   cycleMinutes: () => void;
-  friendId: string;
-  setFriendId: (id: string) => void;
-  code: string;
-  /** A guest has to give a first name before the first duel can be sent or accepted: what to resume afterwards. */
-  afterName: 'send' | 'accept' | null;
-  setAfterName: (next: 'send' | 'accept' | null) => void;
+  friend: PickedFriend | null;
+  setFriend: (next: PickedFriend | null) => void;
+  /** A guest has to give a first name before searching for friends or accepting: where to go afterwards. */
+  afterName: 'friend' | 'accept' | null;
+  setAfterName: (next: 'friend' | 'accept' | null) => void;
   reset: () => void;
 }
 
 const Ctx = createContext<OnboardingState | null>(null);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const [hobbyId, setHobbyId] = useState('guitar');
-  const [minutes, setMinutes] = useState(20);
-  const [friendId, setFriendId] = useState('eleanor');
-  const [code, setCode] = useState(makeInviteCode);
-  const [afterName, setAfterName] = useState<'send' | 'accept' | null>(null);
+  const [hobbyId, setHobbyId] = useState(HOBBIES[0].id);
+  const [minutes, setMinutes] = useState(MINUTE_OPTIONS[2]);
+  const [friend, setFriend] = useState<PickedFriend | null>(null);
+  const [afterName, setAfterName] = useState<'friend' | 'accept' | null>(null);
 
   const cycleMinutes = useCallback(() => {
     setMinutes((m) => MINUTE_OPTIONS[(MINUTE_OPTIONS.indexOf(m) + 1) % MINUTE_OPTIONS.length]);
   }, []);
 
   const reset = useCallback(() => {
-    setHobbyId('guitar');
-    setMinutes(20);
-    setFriendId('eleanor');
-    setCode(makeInviteCode());
+    setHobbyId(HOBBIES[0].id);
+    setMinutes(MINUTE_OPTIONS[2]);
+    setFriend(null);
   }, []);
 
   const value = useMemo<OnboardingState>(
@@ -45,14 +48,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       setHobbyId,
       minutes,
       cycleMinutes,
-      friendId,
-      setFriendId,
-      code,
+      friend,
+      setFriend,
       afterName,
       setAfterName,
       reset,
     }),
-    [hobbyId, minutes, friendId, code, afterName, cycleMinutes, reset],
+    [hobbyId, minutes, friend, afterName, cycleMinutes, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
