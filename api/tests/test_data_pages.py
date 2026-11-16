@@ -48,8 +48,8 @@ def test_demo_db_lists_duels_newest_first_with_players_status_and_score(client):
     assert duels[0]["status"] == "active" and duels[0]["score"] == "0 – 0"
     assert duels[0]["goal"] == "30 min a day"
     guitar = duels[1]
-    # Eleanor's confirmed days plus the check-in that is still waiting for OK are all rows in the table.
-    assert guitar["opponent"] == "Eleanor" and guitar["score"] == "4 – 5"
+    # Eleanor's check-in that is still waiting for OK is a row in the table but does not count yet (same as Today).
+    assert guitar["opponent"] == "Eleanor" and guitar["score"] == "4 – 4"
     assert duels[2]["score"] == "5 – 6"
 
 

@@ -1,6 +1,7 @@
 """Duel rules. Mirrors app/src/data/mockSource.ts so the app behaves the same on the mock and on the API."""
 
 import secrets
+import threading
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, or_, select
@@ -27,9 +28,23 @@ class DomainError(Exception):
         self.status = status
 
 
+_clock_lock = threading.Lock()
+_last_now = datetime.min
+
+
 def utcnow() -> datetime:
-    """Naive UTC, used for every timestamp column."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    """Naive UTC, used for every timestamp column.
+
+    Strictly increasing within the process: some clocks (Windows) tick every ~15 ms, and rows created in the same tick
+    would otherwise tie, which makes "newest first" ordering unreliable.
+    """
+    global _last_now
+    with _clock_lock:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        if now <= _last_now:
+            now = _last_now + timedelta(microseconds=1)
+        _last_now = now
+        return now
 
 
 def make_code() -> str:
@@ -442,8 +457,9 @@ def db_snapshot(db: Session, engine_name: str, host: str, limit: int = 20) -> Db
 
     duel_rows = []
     for d in duels:
+        # The score as the person who started the duel sees it: their own check-ins, and their friend's confirmed ones.
         a = sum(1 for c in d.checkins if c.user_id == d.creator_id)
-        b = sum(1 for c in d.checkins if c.user_id == d.opponent_id)
+        b = sum(1 for c in d.checkins if c.user_id == d.opponent_id and c.confirmed)
         opponent = name_of(d.opponent_id) or invitee_person(d).name
         duel_rows.append(
             DbDuelOut(

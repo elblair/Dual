@@ -29,17 +29,19 @@ Open http://localhost:8000/docs for the interactive docs. With an empty `DATABAS
 | Method and path | What it does |
 |---|---|
 | `GET /health` | Liveness check |
-| `POST /auth/guest?seed_demo=true` | Guest account + token (optionally with the day-5 demo duels) |
-| `POST /auth/register` | "Save your streak": name, email, password for the signed-in guest |
-| `POST /auth/login` | Email + password, returns a token |
+| `POST /auth/guest` | `{name, seedDemo?}`: a guest account named with a first name, plus a token (optionally with the day-5 demo duels) |
+| `POST /auth/register` | `{name, email, password, seedDemo?}`: with a signed-in guest it upgrades that guest ("Save your streak"); with no session it adds a brand-new user row. Returns `{token, me}` |
+| `POST /auth/login` | Email + password, returns `{token, me}` |
 | `GET /me` | The signed-in user |
 | `GET /duels`, `GET /duels/{id}` | My duels (the day is caught up with the clock) |
-| `GET /duels/by-code/{code}` | Look up a pending duel by invite code (for the invited friend) |
+| `GET /duels/by-code/{code}` | Look up a pending duel by invite code. Works before signing in, so the invited friend sees who challenged them |
+| `GET /groups/leaderboard` | People in my duels (and me), ranked by minutes practiced |
 | `POST /duels` | Challenge: `{hobbyId, minutes, friendId, inviteCode?}`. `eleanor`/`tanish` start at once; anyone else is pending with a code |
 | `POST /duels/{id}/accept` | Accept by code (not your own challenge) |
 | `POST /duels/{id}/checkin` · `confirm` · `rest` · `pause` · `resume` · `forfeit` | Playing |
 | `POST /duels/{id}/rematch` | `{kind: "same" \| "easier"}` |
 | `POST /demo/advance-day` · `opponent-checkin` · `reset` | Demo tools (only with `DEMO_MODE=true`) |
+| `GET /demo/db` | The Database screen: latest users (name, email, created_at) and duels (hobby, players, status, score) straight from the tables, newest first. Never includes password hashes. Needs a token and `DEMO_MODE=true` |
 
 Errors are `{"detail": "friendly message"}` with a sensible status (401 sign in, 404 not found, 409 email taken, 400 rule broken).
 
