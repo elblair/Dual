@@ -9,7 +9,7 @@ Figma is rate-limited. Use `design/spec.md` (tokens + screen specs) and the PNG 
 
 ## Stack
 - `/app`: React Native + Expo (TypeScript, Expo Router). Must run in Expo Go on iOS and Android, so only Expo Go compatible packages (no custom native modules, no dev builds). Expo SDK 58 (React Native 0.88, React 19.3): it must match the Expo Go in the stores; the user's iPhone has Expo Go 58.0.0, and each Expo Go build supports only one SDK. Do not change the SDK without checking the phones' Expo Go version. Expo APIs change between SDKs: check https://docs.expo.dev/versions/v58.0.0/ before using one. Expo web is used as the second player in demos (`react-native-web`).
-- `/api`: FastAPI (Python), SQLAlchemy, deployed on Render free tier (Oregon, the same region as the Neon database).
+- `/api`: FastAPI (Python), SQLAlchemy, deployed on Render free tier (Oregon, the same region as the Neon database) at https://dual-api-memp.onrender.com (auto-deploys from `main`).
 - Database: Postgres on Neon free tier. Never Render Postgres (expires after 30 days).
 - Monorepo: `/app`, `/api`, `/design`, `/docs`.
 
@@ -76,7 +76,7 @@ Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 res
 - No staging branch (one free Render service): `main` is what we deploy.
 - Commits and PR titles use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `style:`. Small, focused commits. Never commit secrets or `.env` files.
 - Each phase = one feature branch -> PR into `develop` (what changed, how to test on a phone, screenshots for UI). PRs into `develop` need no approval (the user merges them); only `main` needs 1 approval.
-- When `develop` is stable and demo-ready, PR `develop` -> `main` and tag it (`v0.1.0`, `v0.2.0`, ...).
+- When `develop` is stable and demo-ready, PR `develop` -> `main` titled `release: v0.x.0` and tag it (`v0.1.0`, `v0.2.0`, ...). **Release PRs into `main` are merged with a merge commit, never squashed or rebased** (a squash makes `main` and `develop` diverge and the next release conflicts in every file; if it conflicts anyway, open the release PR from a `chore/release-v0.x.0` branch made from `main` with `develop` merged in, same tree as `develop`). Feature, fix and chore PRs into `develop` are squashed. See CONTRIBUTING.md.
 - Delete feature branches after merging.
 - Use `gh pr create --base develop` to open PRs; if `gh` is unavailable, give the user the GitHub compare link instead.
 - Before starting a phase: `git switch develop && git pull`, then create the feature branch. Never push or merge without the user's go-ahead.

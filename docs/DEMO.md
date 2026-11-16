@@ -12,8 +12,8 @@ The two graded things:
 | What | How |
 |---|---|
 | Database | Neon project; `api/.env` has `DATABASE_URL` and `JWT_SECRET`. `python check_db.py` prints `OK` and `Users: ..., duels: ...`. |
-| API | `cd api`, activate the venv, `uvicorn app.main:app --host 0.0.0.0`. Open `http://<your PC IP>:8000/health` from a phone browser to check. (Phase 6: the Render URL.) |
-| App on both phones | `app/.env`: `EXPO_PUBLIC_API_URL=http://<your PC's LAN IP>:8000`, `EXPO_PUBLIC_USE_MOCK=false`. `cd app && npx expo start -c`. Both phones scan the QR in Expo Go (same Wi-Fi). |
+| API | **Render (default):** https://dual-api-memp.onrender.com . Open `/health` from the phone's browser to check (the free tier sleeps: the first call takes about a minute). **Or your PC:** `cd api`, activate the venv, `uvicorn app.main:app --host 0.0.0.0`, check `http://<your PC IP>:8000/health`. |
+| App on both phones | `app/.env`: `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` (no DATABASE_URL or JWT_SECRET in this file). `cd app && npx expo start -c`. Both phones scan the QR in Expo Go (same Wi-Fi as the PC, or `--tunnel`; the API itself needs no Wi-Fi with Render). With a local API use `http://<your PC's LAN IP>:8000` instead. |
 | Neon console | A second window: your project, **Tables** (left menu). Keep `users`, `duels` and `checkins` handy. |
 | Clean start | Use two new email addresses (an email that already exists is refused). To wipe test data: `python scripts/purge_seed_data.py` removes any old demo accounts; delete other rows in the Neon Tables view. |
 
@@ -28,7 +28,7 @@ On Today, the badge must say **Live · <host>** (green). If it says Offline or t
 - [ ] Do the whole script once with two throwaway accounts, then delete their rows in the Neon console (Tables > `users`, `duels`, `checkins`), so the demo starts with accounts that really are new.
 
 **Two hours before**
-- [ ] Render: open `https://<service>.onrender.com/health` (the free tier sleeps; the first call takes about a minute). Open it again 5 minutes before you start.
+- [ ] Render: open https://dual-api-memp.onrender.com/health (the free tier sleeps; the first call takes about a minute). Open it again 5 minutes before you start.
 - [ ] `app/.env` has the right `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_USE_MOCK=false`. Start Expo with `npx expo start -c` (add `--tunnel` if the Wi-Fi blocks the QR code).
 - [ ] Phone and PC are on the same Wi-Fi (only needed for Expo, not for a deployed API).
 - [ ] Neon console is open in a second window on **Tables**.
@@ -104,7 +104,7 @@ Stop the API: the badge turns **Offline** within ten seconds, the last data stay
 | "Got an invite but I'm signed out" | Sign up or log in first: the code is kept and the app continues to Accept afterwards. |
 | Pending invite doesn't show | Pull down on Today. Invites only go to the person you picked; for anyone else use the code. |
 | "This invite is for someone else" | The invite was sent to a different account; send a new one or use **Send by text**. |
-| Render is slow on the first tap | The free tier sleeps. Open `https://<service>.onrender.com/health` a minute before the demo. |
+| Render is slow on the first tap | The free tier sleeps. Open https://dual-api-memp.onrender.com/health a minute before the demo. |
 
 ## Notes
 - Passwords are stored as bcrypt hashes and no endpoint ever returns them.
