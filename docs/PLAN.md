@@ -24,7 +24,7 @@ Approved (with the changes folded in below). See `CLAUDE.md` and `design/spec.md
 
 ## Expo SDK
 Use the SDK supported by the Expo Go build in the App Store and Play Store, not the newest SDK on npm (npm `latest` is SDK 58, but the store builds lag; the Expo docs say the iOS App Store build has stopped at SDK 54 and that only one SDK is supported per Expo Go build).
-- **Confirmed by the user: SDK 54** (`expo@~54.0.0`); their iPhone and teammates' phones need it. If Expo Go shows a version error when scanning the QR at the end of Phase 1, the user pastes it and we fix it. Never move to a newer SDK that would force a development build.
+- **SDK 58** (`expo@^58.0.0`, RN 0.88). This replaced the earlier SDK 54 choice: at the end of Phase 1 the user's iPhone reported "installed version of Expo Go is 58.0.0, the project uses 54". The App Store build had moved to 58 (our earlier read of the docs said it stopped at 54), and iOS Expo Go cannot be downgraded. Teammates need an up-to-date Expo Go. SDK 58 changes made: removed `newArchEnabled` and `android.edgeToEdgeEnabled` from app.json (now default), `createStyles` no longer uses `StyleSheet.NamedStyles`. Never move to an SDK that forces a development build.
 - Only Expo Go compatible packages (no custom native modules).
 
 ## Environment flags (app, in `app/.env`)
