@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { DataProvider } from '@/data';
@@ -11,6 +12,9 @@ SplashScreen.preventAutoHideAsync();
 
 function RootStack() {
   const t = useTheme();
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(t.colors.bg).catch(() => {});
+  }, [t.colors.bg]);
   return (
     <>
       <StatusBar style={t.name === 'light' ? 'dark' : 'light'} />

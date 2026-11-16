@@ -9,7 +9,19 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import Checkin, Duel, RestDay, User
+from app.progression import (
+    TIERS,
+    XP_PER_CHECKIN,
+    XP_PER_CONFIRMED_FRIEND_CHECKIN,
+    XP_PER_DUEL_WON,
+    level_for,
+    next_level_for,
+    next_tier_for,
+    rest_days_for,
+    tier_for,
+)
 from app.schemas import (
+    ActivityOut,
     DuelOut,
     GroupsOut,
     LeaderRowOut,
@@ -18,11 +30,12 @@ from app.schemas import (
     RivalOut,
     ResultOut,
     StatsOut,
+    TierOut,
     UserHitOut,
 )
 
 LENGTH_DAYS = 7
-REST_LIMIT = 2
+ACTIVITY_LIMIT = 6  # check-ins shown in "Recent check-ins"
 CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"  # no 0/O/1/I/L
 
 
@@ -98,6 +111,18 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         latest = max(pending, key=lambda c: c.day_index)
         their_pending = PendingOut(minutes=latest.minutes, note=latest.note)
     my_rest = sorted(r.day_index for r in duel.rest_days if is_player and r.user_id == viewer_id)
+    newest_first = sorted(duel.checkins, key=lambda c: (c.created_at, c.id or 0), reverse=True)[:ACTIVITY_LIMIT] if is_player else []
+    activity = [
+        ActivityOut(
+            who="me" if c.user_id == viewer_id else "them",
+            minutes=c.minutes,
+            note=c.note,
+            created_at=_iso(c.created_at),
+            confirmed=c.confirmed,
+            day_index=c.day_index,
+        )
+        for c in newest_first
+    ]
 
     result = None
     if duel.winner:
@@ -127,8 +152,9 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         my_days=my_days,
         their_days=their_days,
         my_rest_days=my_rest,
-        rest_left=max(0, REST_LIMIT - len(my_rest)),
+        rest_left=max(0, (rest_days_for(xp_for(db, viewer)) if is_player else rest_days_for(0)) - len(my_rest)),
         their_pending=their_pending,
+        activity=activity,
         paused_until=paused_until,
         result=result,
     )
@@ -229,7 +255,21 @@ def search_users(db: Session, user: User, query: str, limit: int = 10) -> list[U
         .order_by(func.lower(User.name), User.id)
         .limit(limit)
     ).all()
-    return [UserHitOut(id=u.id, name=u.name, email_hint=_email_hint(u.email or "")) for u in rows]
+    together = finished_together(db, user)
+    return [
+        UserHitOut(id=u.id, name=u.name, email_hint=_email_hint(u.email or ""), level=level_for(together[u.id]))
+        for u in rows
+    ]
+
+
+def finished_together(db: Session, user: User) -> Counter[str]:
+    """How many FINISHED duels I have had with each person (friendship levels are computed from this)."""
+    count: Counter[str] = Counter()
+    for d in duels_of(db, user):
+        other = _other_id(d, user.id)
+        if d.status == "finished" and other:
+            count[other] += 1
+    return count
 
 
 # ---------------------------------------------------------------- actions
@@ -295,6 +335,23 @@ def check_in(db: Session, duel: Duel, user: User) -> Duel:
     return duel
 
 
+def add_check_in_details(db: Session, duel: Duel, user: User, minutes: int, note: str) -> Duel:
+    """Set the minutes and the note on MY check-in for today. The one-tap check-in stays the default; this is optional.
+    Not allowed once the friend has confirmed it (the friend confirmed what they saw)."""
+    if duel.status != "active":
+        raise DomainError("This duel is not active.")
+    if not 1 <= minutes <= 240:
+        raise DomainError("Pick between 1 and 240 minutes.")
+    mine = next((c for c in duel.checkins if c.user_id == user.id and c.day_index == duel.today), None)
+    if mine is None:
+        raise DomainError("Check in first, then add details.")
+    if mine.confirmed:
+        raise DomainError("Your friend already confirmed this check-in, so it can't be changed.")
+    mine.minutes = minutes
+    mine.note = " ".join(note.split())[:200]
+    return duel
+
+
 def confirm_friend(db: Session, duel: Duel, user: User) -> Duel:
     other = duel.opponent_id if duel.creator_id == user.id else duel.creator_id
     for c in duel.checkins:
@@ -307,7 +364,7 @@ def rest_day(db: Session, duel: Duel, user: User) -> Duel:
     if duel.status != "active":
         raise DomainError("This duel is not active.")
     mine = [r for r in duel.rest_days if r.user_id == user.id]
-    if len(mine) >= REST_LIMIT:
+    if len(mine) >= rest_days_for(xp_for(db, user)):
         raise DomainError("No rest days left this week.")
     if any(r.day_index == duel.today for r in mine) or any(c.user_id == user.id and c.day_index == duel.today for c in duel.checkins):
         raise DomainError("Today is already logged.")
@@ -366,19 +423,62 @@ def _streak(duel: Duel, user_id: str) -> int:
     return run
 
 
+def _won(duel: Duel, user: User) -> bool:
+    return duel.status == "finished" and bool(duel.winner) and duel.winner != "tie" and ((duel.winner == "creator") == (duel.creator_id == user.id))
+
+
+def xp_from(duels: list[Duel], user: User) -> int:
+    """XP from my duels (pending ones do not count): my check-ins, my friend's confirmed check-ins, duels won.
+    Rates are in progression.py. A friend's check-in counts once it is confirmed (by my tap or at day rollover)."""
+    xp = 0
+    for d in duels:
+        if d.status == "pending":
+            continue
+        other = _other_id(d, user.id)
+        xp += XP_PER_CHECKIN * sum(1 for c in d.checkins if c.user_id == user.id)
+        xp += XP_PER_CONFIRMED_FRIEND_CHECKIN * sum(1 for c in d.checkins if c.user_id == other and c.confirmed)
+        if _won(d, user):
+            xp += XP_PER_DUEL_WON
+    return xp
+
+
+def xp_for(db: Session, user: User) -> int:
+    return xp_from(duels_of(db, user), user)
+
+
 def stats_for(db: Session, user: User) -> StatsOut:
     duels = duels_of(db, user)
     won = 0
     days = 0
     streak = 0
+    since = utcnow() - timedelta(days=14)
+    recent: list[str] = []
     for d in duels:
         if d.status == "pending":
             continue
-        days += sum(1 for c in d.checkins if c.user_id == user.id)
+        mine = [c for c in d.checkins if c.user_id == user.id]
+        days += len(mine)
+        recent += [_iso(c.created_at) for c in mine if c.created_at >= since]
         streak = max(streak, _streak(d, user.id))
-        if d.status == "finished" and d.winner and d.winner != "tie" and ((d.winner == "creator") == (d.creator_id == user.id)):
+        if _won(d, user):
             won += 1
-    return StatsOut(duels_won=won, days_checked_in=days, current_streak=streak)
+    xp = xp_from(duels, user)
+    tier = tier_for(xp)
+    upcoming = next_tier_for(xp)
+    progress = 1.0 if upcoming is None else (xp - tier.min_xp) / (upcoming.min_xp - tier.min_xp)
+    return StatsOut(
+        duels_won=won,
+        days_checked_in=days,
+        current_streak=streak,
+        recent_check_ins=sorted(recent),
+        xp=xp,
+        tier=tier.name,
+        next_tier=upcoming.name if upcoming else None,
+        xp_to_next=(upcoming.min_xp - xp) if upcoming else None,
+        progress=round(progress, 4),
+        rest_days_per_duel=tier.rest_days_per_duel,
+        tiers=[TierOut(name=t.name, min_xp=t.min_xp, perk=t.perk, reached=xp >= t.min_xp) for t in TIERS],
+    )
 
 
 def groups_for(db: Session, user: User) -> GroupsOut:
@@ -390,10 +490,11 @@ def groups_for(db: Session, user: User) -> GroupsOut:
             continue
         other = db.get(User, other_id)
         row = rivals.setdefault(
-            other_id, RivalOut(person=person_for(other, user.id), duels=0, wins=0, losses=0, ties=0, active=0)
+            other_id, RivalOut(person=person_for(other, user.id), duels=0, wins=0, losses=0, ties=0, active=0, finished=0, level=None, next_level=None, duels_to_next_level=None)
         )
         row.duels += 1
         if d.status == "finished":
+            row.finished += 1
             if d.winner == "tie":
                 row.ties += 1
             elif (d.winner == "creator") == (d.creator_id == user.id):
@@ -402,6 +503,11 @@ def groups_for(db: Session, user: User) -> GroupsOut:
                 row.losses += 1
         else:
             row.active += 1
+
+    for row in rivals.values():
+        row.level = level_for(row.finished)
+        upcoming_level = next_level_for(row.finished)
+        row.next_level, row.duels_to_next_level = upcoming_level if upcoming_level else (None, None)
 
     ids = {user.id, *rivals}
     # Duels between other people only move forward when one of them opens the app: catch them up before counting wins.

@@ -36,6 +36,8 @@ export interface DataSource {
   acceptDuel(id: string): Promise<Duel>;
 
   checkIn(id: string): Promise<Duel>;
+  /** Optional: set the minutes and a note on MY check-in for today (the one-tap check-in stays the default). */
+  addCheckInDetails(id: string, input: { minutes: number; note: string }): Promise<Duel>;
   /** Confirm the friend's pending check-in ("OK" on Today). */
   confirmFriend(id: string): Promise<Duel>;
   restDay(id: string): Promise<Duel>;

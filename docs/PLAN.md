@@ -22,7 +22,7 @@ Approved (with the changes folded in below). See `CLAUDE.md` and `design/spec.md
 7. **Mock mode fallback.** `EXPO_PUBLIC_USE_MOCK=true` runs the whole app on an in-memory mock store, no network. Built in Phase 3, kept working after Phase 5 (see "Data layer" below).
 8. **Static sample data:** Groups, XP and friendship level, Silver perks, the Sunday recap, the Strava line, "Confirm Eleanor's 25 min" card, Lock screen image. In You, "$10 to charity" becomes "days checked in" and the Dual+ row is removed. Stake copy is dropped everywhere (Friend, Duel, Break, You).
 9. **Icons:** `lucide-react-native` + `react-native-svg`.
-10. **Sun/theme button** on Duel and You is skipped until Midnight is added.
+10. **Sun/theme button** on Duel and You is skipped; dark mode is a setting on You > Appearance (Automatic / Light / Dark).
 
 ## Expo SDK
 Use the SDK supported by the Expo Go build in the App Store and Play Store, not the newest SDK on npm (npm `latest` is SDK 58, but the store builds lag; the Expo docs say the iOS App Store build has stopped at SDK 54 and that only one SDK is supported per Expo Go build).
@@ -93,7 +93,7 @@ Every user must sign up or log in first.
 - Old guest rows already in a database are harmless leftovers (no email, nobody can log in as them); the friend search only returns accounts with an email.
 
 ## Screen-to-route map
-Welcome `/welcome` (Create account, Log in) -> `/auth` -> Today. Today "+" -> Hobby `/hobby` -> Friend `/friend` -> share -> Today. Today / Friend "Enter an invite code" -> Code `/code` -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You.
+Welcome `/welcome` (Create account, Log in) -> `/auth` -> Today. Today "+" -> Hobby `/hobby` -> Friend `/friend` -> Sent `/sent/[id]` -> Today. Today / Friend "Enter an invite code" -> Code `/code` -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You.
 
 ## Phases (each ends with phone test steps and a commit)
 

@@ -1,10 +1,10 @@
 import { View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Avatar, Button, Card, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
+import { Avatar, Button, Card, ErrorBanner, ErrorView, LoadingView, Pill, RankCard, Screen, Text } from '@/components';
 import { useData, useDuels, useMe, useStats } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { useRefresh } from '@/lib/useRefresh';
-import { useTheme } from '@/theme';
+import { useAppearance, useTheme, type Appearance } from '@/theme';
 
 /** You (Figma 217:314). Real numbers only: duels won, days checked in and the current streak, computed from the database. */
 export default function YouScreen() {
@@ -15,6 +15,7 @@ export default function YouScreen() {
   const { data: duels, error: duelsError, loading: duelsLoading, refetch: refetchDuels } = useDuels();
   const { data: stats, error: statsError, loading: statsLoading, refetch: refetchStats } = useStats();
   const { refreshing, onRefresh } = useRefresh(refetchMe, refetchDuels, refetchStats);
+  const { appearance, setAppearance } = useAppearance();
 
   if (meLoading || duelsLoading || statsLoading) {
     return (
@@ -76,6 +77,23 @@ export default function YouScreen() {
           </Card>
         ))}
       </View>
+
+      {stats.tiers.length > 0 ? <RankCard stats={stats} /> : null}
+
+      <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.lg }}>
+        <Text variant="label">Appearance</Text>
+        <View style={{ flexDirection: 'row', gap: t.spacing.md }}>
+          {(['system', 'light', 'dark'] as Appearance[]).map((a) => (
+            <Pill
+              key={a}
+              label={a === 'system' ? 'Automatic' : a === 'light' ? 'Light' : 'Dark'}
+              tone={appearance === a ? 'maroon' : 'soft'}
+              onPress={() => setAppearance(a)}
+              style={{ flex: 1 }}
+            />
+          ))}
+        </View>
+      </Card>
 
       <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.lg }}>
         <Text variant="label">Signed in</Text>

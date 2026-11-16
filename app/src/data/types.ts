@@ -50,8 +50,20 @@ export interface Duel {
   myRestDays: number[];
   restLeft: number;
   theirPending: PendingCheckin | null;
+  /** Latest check-ins of both players, newest first ("Recent check-ins"). */
+  activity: Activity[];
   pausedUntil: string | null;
   result: DuelResult | null;
+}
+
+export interface Activity {
+  who: 'me' | 'them';
+  minutes: number;
+  note: string;
+  /** ISO time of the check-in. */
+  createdAt: string;
+  confirmed: boolean;
+  dayIndex: number;
 }
 
 export interface CreateDuelInput {
@@ -75,6 +87,7 @@ export interface UserHit {
   id: string;
   name: string;
   emailHint: string;
+  level: string | null;
 }
 
 /** You screen, all computed from the database. */
@@ -82,6 +95,25 @@ export interface Stats {
   duelsWon: number;
   daysCheckedIn: number;
   currentStreak: number;
+  /** My own check-in times (ISO) from the last 14 days, for this week's streak bubbles. */
+  recentCheckIns: string[];
+  /** Progression, computed by the API from check-ins and duels (rules: api/app/progression.py). */
+  xp: number;
+  tier: string;
+  nextTier: string | null;
+  xpToNext: number | null;
+  /** 0 to 1 towards the next tier (1 at the top). */
+  progress: number;
+  restDaysPerDuel: number;
+  tiers: Tier[];
+}
+
+export interface Tier {
+  name: string;
+  minXp: number;
+  /** What reaching the tier unlocks (null for the first tier). */
+  perk: string | null;
+  reached: boolean;
 }
 
 /** Head-to-head record with someone I have dueled. */
@@ -92,6 +124,11 @@ export interface Rival {
   losses: number;
   ties: number;
   active: number;
+  finished: number;
+  /** Friendship level from finished duels together (null until you have finished one). */
+  level: string | null;
+  nextLevel: string | null;
+  duelsToNextLevel: number | null;
 }
 
 export interface LeaderRow {

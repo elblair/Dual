@@ -2,9 +2,10 @@
  * The single source of truth for Dual's look: colors, fonts, type styles,
  * spacing, radii and sizes. Screens and components must never hardcode these.
  *
- * Only the light ("Base") theme exists today. To add Midnight dark mode later:
- * define `midnightColors` below (same keys as `lightColors`), add a `midnightTheme`,
- * and pick it in ThemeProvider with `useColorScheme()`. No component changes needed.
+ * Two themes: light ("Base") and dark ("Midnight"). Both palettes have the same keys; ThemeProvider picks one from the
+ * device setting (`useColorScheme()`) or from the person's choice on You (System / Light / Dark).
+ * Midnight values are the fills used on the Figma "Style 1 · Midnight" Home frame (213:228); `maroonTint`, `blueTint`
+ * and `success` are not on that frame and are derived (see docs/FEATURES.md).
  *
  * Every value is read from the Figma file (fwmURCNVOUlAAJfknpGhDS, page "Dual v2 · Improved",
  * row "Claude's Pick" + Break from the Base row). See design/spec.md.
@@ -16,8 +17,13 @@ const lightColors = {
   muted: '#6b6b78',
   mutedSoft: '#8a8a96',
   white: '#ffffff',
+  onOrange: '#15151c', // text on orange buttons (dark in both themes)
+  link: '#4a6286', // link text (lighter blue in dark)
+  tabActive: '#6e1023', // selected tab
   // surfaces
   bg: '#ffffff',
+  card: '#ffffff', // cards and the tab bar (raised above the page in dark)
+  cardRaised: '#ffffff', // a card sitting on a `surface` background (Accept)
   surface: '#f5f4f7',
   surfaceStrong: '#eae9ee', // pills, icon circles, "See how it ends" button
   border: '#e4e3e9',
@@ -45,6 +51,37 @@ const lightColors = {
 
 export type ColorName = keyof typeof lightColors;
 export type Colors = Record<ColorName, string>;
+
+const midnightColors: Colors = {
+  ink: '#f2f2f5',
+  muted: '#9b9ba8',
+  mutedSoft: '#8a8a96',
+  white: '#ffffff',
+  onOrange: '#15151c',
+  link: '#9db4d6',
+  tabActive: '#f2f2f5',
+  bg: '#0b0b10',
+  card: '#17171f',
+  cardRaised: '#23232e',
+  surface: '#17171f',
+  surfaceStrong: '#23232e',
+  border: '#2a2a35',
+  dotEmpty: '#2a2a35',
+  maroon: '#8e1730',
+  maroonBright: '#a8203a',
+  maroonTint: '#2a1219',
+  orange: '#f28c38',
+  orangeDark: '#f28c38',
+  orangeTint: '#2a1e16',
+  blue: '#4a6286',
+  blueTint: '#1b2433',
+  success: '#3dab6c',
+  successTint: '#14291d',
+  overlayLight: 'rgba(255,255,255,0.16)',
+  overlayTrack: 'rgba(255,255,255,0.2)',
+  onDarkMuted: 'rgba(255,255,255,0.8)',
+  onDarkSubtle: 'rgba(255,255,255,0.85)',
+};
 
 const fonts = {
   regular: 'Inter_400Regular',
@@ -182,12 +219,15 @@ const borders = {
 } as const;
 
 const sizes = {
-  avatar: { xxs: 24, xs: 26, sm: 32, md: 40, header: 42, lg: 56, xl: 64, xxl: 72, hero: 92 },
+  avatar: { xxs: 24, xs: 26, sm: 32, md: 40, header: 42, crew: 50, lg: 56, xl: 64, xxl: 72, hero: 92 },
   dot: { md: 14, lg: 18 },
   dotGap: 6,
   backButton: 40,
   radio: 22,
   icon: { badge: 13, xs: 14, copy: 15, sm: 16, md: 18, back: 19, lg: 20, xl: 22, plus: 26, flame: 30, hero: 52 },
+  weekDay: 34, // streak card day bubble
+  rankBar: 8, // XP progress bar height (radius 4)
+  perkBadge: 28, // check / lock circle on the rank card
   playerName: 62, // name label next to dots
   barLabel: 64, // label next to a progress bar (Groups)
   bar: 10, // progress bar height (radius 5)
@@ -222,4 +262,8 @@ export const lightTheme: Theme = {
   ...shared,
 };
 
-// export const midnightTheme: Theme = { name: 'dark', colors: midnightColors, ...shared };
+export const midnightTheme: Theme = {
+  name: 'dark',
+  colors: midnightColors,
+  ...shared,
+};
