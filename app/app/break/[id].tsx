@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar, BackButton, Button, OptionCard, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
 import { inOneWeek } from '@/lib/dates';
+import { friendName } from '@/lib/duel';
 import { resultHref } from '@/lib/routes';
 import { useTheme } from '@/theme';
 
@@ -26,7 +27,7 @@ export default function BreakScreen() {
 
   if (!duel || !me) return <Screen>{null}</Screen>;
 
-  const opp = duel.opponent.name;
+  const opp = friendName(duel);
   const noRest = duel.restLeft <= 0;
   const labels: Record<Pick, string> = { rest: 'Take a rest day', pause: 'Pause the dual', forfeit: 'Forfeit the dual' };
   const footnotes: Record<Pick, string> = {

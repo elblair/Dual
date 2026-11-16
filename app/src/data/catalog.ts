@@ -1,4 +1,7 @@
-/** Sample data for the onboarding screens (Phase 2). Phase 3 moves this behind the DataSource interface. */
+/** The fixed choices the app offers (not user data): hobbies and daily-minute options. */
+
+/** Every duel lasts this many days (the API enforces the same rule and sends it back as `lengthDays`). */
+export const DUEL_DAYS = 7;
 
 export interface Hobby {
   id: string;
@@ -26,29 +29,10 @@ export function hobbyById(id: string): Hobby {
   return HOBBIES.find((h) => h.id === id) ?? HOBBIES[0];
 }
 
-export interface Contact {
-  id: string;
-  name: string;
-  subtitle: string;
-  tone: 'you' | 'opponent' | 'neutral';
-}
-
-/** Eleanor and Tanish become seeded real accounts in Phase 4; Ben is a plain contact. */
-export const CONTACTS: Contact[] = [
-  { id: 'eleanor', name: 'Eleanor', subtitle: 'In your contacts · not on Dual yet', tone: 'opponent' },
-  { id: 'tanish', name: 'Tanish', subtitle: 'On Dual · runs 3× a week', tone: 'you' },
-  { id: 'ben', name: 'Ben', subtitle: 'In your contacts', tone: 'neutral' },
-];
-
 /** Starter goal choices the pencil on the Hobby screen cycles through. */
 export const MINUTE_OPTIONS = [10, 15, 20, 30, 45];
 
-export const DEMO_USER_NAME = 'Ari';
-
-const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
-
-export function makeInviteCode(): string {
-  let code = '';
-  for (let i = 0; i < 4; i++) code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
-  return code;
+/** The lighter goal offered after a duel: half the minutes, rounded down to 5, never below 5 (same rule as the API). */
+export function easierMinutes(minutes: number): number {
+  return Math.max(5, Math.floor(Math.floor(minutes / 2) / 5) * 5);
 }

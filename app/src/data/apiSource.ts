@@ -1,6 +1,6 @@
 import { storage } from '@/lib/storage';
 import type { DataSource } from './source';
-import type { DbSnapshot, Duel, LeaderRow, Me } from './types';
+import type { Duel, Groups, Me, Stats, UserHit } from './types';
 
 const TOKEN_KEY = 'dual.token';
 /** Generous on purpose: the free Render tier takes about a minute to wake up after being idle. */
@@ -15,7 +15,8 @@ interface AuthResponse {
 /** FastAPI implementation of DataSource. Keeps the login token in secure storage (localStorage on web). */
 export function createApiSource(baseUrl: string): DataSource {
   const root = baseUrl.replace(/\/+$/, '');
-  const host = root.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  const host = root ? root.replace(/^https?:\/\//, '').replace(/\/.*$/, '') : 'no API URL set';
+  const notConfigured = 'The app is not set up: EXPO_PUBLIC_API_URL is missing. Add it to app/.env and restart with `npx expo start -c`.';
   const listeners = new Set<() => void>();
   let token: string | null = null;
   const ready = storage.get(TOKEN_KEY).then((t) => {
@@ -32,6 +33,7 @@ export function createApiSource(baseUrl: string): DataSource {
 
   /** One place for every network call, so errors are friendly and sessions expire cleanly. */
   async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
+    if (!root) throw new Error(notConfigured);
     await ready;
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -89,9 +91,10 @@ export function createApiSource(baseUrl: string): DataSource {
     mode: 'api',
     host,
 
-    async ping() {
+    async ping(timeoutMs = PING_TIMEOUT_MS) {
+      if (!root) return false;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), PING_TIMEOUT_MS);
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const res = await fetch(`${root}/health`, { signal: controller.signal });
         return res.ok;
@@ -117,13 +120,15 @@ export function createApiSource(baseUrl: string): DataSource {
         throw e;
       }
     },
-    startGuest: ({ name, seedDemo }) => signIn('/auth/guest', { name, seedDemo: !!seedDemo }),
-    register: ({ name, email, password, seedDemo }) => signIn('/auth/register', { name, email, password, seedDemo: !!seedDemo }),
+    startGuest: ({ name }) => signIn('/auth/guest', { name }),
+    register: ({ name, email, password }) => signIn('/auth/register', { name, email, password }),
     login: ({ email, password }) => signIn('/auth/login', { email, password }),
     async logout() {
       await setToken(null);
       notify();
     },
+
+    searchUsers: (query) => request<UserHit[]>('GET', `/users/search?q=${encodeURIComponent(query.trim())}`),
 
     async listDuels() {
       await ready;
@@ -143,13 +148,7 @@ export function createApiSource(baseUrl: string): DataSource {
     forfeit: (id) => duelPost(id, 'forfeit'),
     rematch: (id, kind) => duelPost(id, 'rematch', { kind }),
 
-    getLeaderboard: () => request<LeaderRow[]>('GET', '/groups/leaderboard'),
-
-    demo: {
-      advanceDay: () => mutate<void>('POST', '/demo/advance-day'),
-      opponentCheckIn: () => mutate<void>('POST', '/demo/opponent-checkin'),
-      reset: () => mutate<void>('POST', '/demo/reset'),
-      database: () => request<DbSnapshot>('GET', '/demo/db'),
-    },
+    getStats: () => request<Stats>('GET', '/me/stats'),
+    getGroups: () => request<Groups>('GET', '/groups'),
   };
 }

@@ -5,13 +5,12 @@ import os
 
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["JWT_SECRET"] = "test-secret-that-is-long-enough-for-hs256"
-os.environ["DEMO_MODE"] = "true"
 os.environ["CORS_ORIGINS"] = "*"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app.db import Base, engine  # noqa: E402
+from app.db import Base, SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 
 
@@ -20,19 +19,30 @@ def client():
     assert engine.url.get_backend_name() == "sqlite", "tests must never run against a real database"
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    with TestClient(app) as c:  # the lifespan seeds Eleanor and Tanish
+    with TestClient(app) as c:
         yield c
 
 
-class Player:
-    """A signed-in guest with helpers, so tests read like the app."""
+@pytest.fixture
+def db(client):
+    """A direct database session (to read rows or to edit them behind the API's back, like the Neon console)."""
+    with SessionLocal() as session:
+        yield session
 
-    def __init__(self, client: TestClient, seed_demo: bool = False, name: str = "Ari"):
-        r = client.post("/auth/guest", json={"name": name, "seedDemo": seed_demo})
+
+class Player:
+    """A signed-in person with helpers, so tests read like the app."""
+
+    def __init__(self, client: TestClient, name: str = "Ari", email: str | None = None):
+        self.client = client
+        if email:  # a real account, found by search
+            r = client.post("/auth/register", json={"name": name, "email": email, "password": "hunter22"})
+        else:  # a guest with just a first name
+            r = client.post("/auth/guest", json={"name": name})
         assert r.status_code == 200, r.text
         body = r.json()
-        self.client = client
         self.me = body["me"]
+        self.id = body["me"]["id"]
         self.headers = {"Authorization": f"Bearer {body['token']}"}
 
     def get(self, url):
@@ -51,20 +61,46 @@ class Player:
         assert r.status_code == 200, r.text
         return r.json()
 
-    def challenge(self, friend="eleanor", hobby="guitar", minutes=20, code=None):
-        body = {"hobbyId": hobby, "minutes": minutes, "friendId": friend}
-        if code:
-            body["inviteCode"] = code
+    def challenge(self, friend=None, hobby="guitar", minutes=20):
+        """Start a duel. friend is another Player (invited by name) or None (open invite with a code)."""
+        body = {"hobbyId": hobby, "minutes": minutes, "friendId": friend.id if friend else None}
         r = self.post("/duels", body)
+        assert r.status_code == 200, r.text
+        return r.json()
+
+    def accept(self, duel_id):
+        r = self.post(f"/duels/{duel_id}/accept")
         assert r.status_code == 200, r.text
         return r.json()
 
 
 @pytest.fixture
-def player(client):
-    return Player(client)
+def make_player(client):
+    counter = {"n": 0}
+
+    def make(name="Ari", account=False):
+        counter["n"] += 1
+        email = f"{name.lower().replace(' ', '.')}.{counter['n']}@example.com" if account else None
+        return Player(client, name=name, email=email)
+
+    return make
 
 
 @pytest.fixture
-def make_player(client):
-    return lambda seed_demo=False, name="Ari": Player(client, seed_demo=seed_demo, name=name)
+def player(make_player):
+    return make_player()
+
+
+@pytest.fixture
+def duo(make_player):
+    """Two real accounts: ari (starts duels) and sam (is invited)."""
+    return make_player("Ari", account=True), make_player("Sam", account=True)
+
+
+@pytest.fixture
+def active_duel(duo):
+    """An accepted duel between ari and sam. Returns (ari, sam, duel id)."""
+    ari, sam = duo
+    duel = ari.challenge(sam)
+    sam.accept(duel["id"])
+    return ari, sam, duel["id"]

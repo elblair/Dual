@@ -1,19 +1,17 @@
-import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, Pause, Users } from 'lucide-react-native';
 import { Avatar, BackButton, Button, Card, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
-import { DEMO } from '@/config';
 import { useData, useDuel, useMe } from '@/data';
-import { hobbyById } from '@/data/sample';
+import { hobbyById } from '@/data/catalog';
 import { shortDate } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { WEEKDAYS, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
+import { friendName, lastDayName, myDayStates, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
-/** Duel (Figma 217:79): the score, the 7 dots each, the rules, and the way out (break / forfeit). */
+/** Duel (Figma 217:79): the score, the 7 dots each, the rules, and the way out (break / forfeit). All from the duel's data. */
 export default function DuelScreen() {
   const t = useTheme();
   const router = useRouter();
@@ -22,7 +20,6 @@ export default function DuelScreen() {
   const { data: duel, error: duelError, loading: duelLoading, refetch: refetchDuel } = useDuel(id);
   const { data: me, refetch: refetchMe } = useMe();
   const { refreshing, onRefresh } = useRefresh(refetchDuel, refetchMe);
-  const [note, setNote] = useState('');
 
   if (duelLoading) {
     return (
@@ -43,27 +40,11 @@ export default function DuelScreen() {
   const HobbyIcon = hobbyIcons[duel.hobbyId];
   const dayNumber = Math.min(duel.today + 1, duel.lengthDays);
   const openBreak = (pick: 'rest' | 'pause' | 'forfeit') => router.push({ pathname: '/break/[id]', params: { id: duel.id, pick } });
-
-  async function seeHowItEnds() {
-    if (!duel) return;
-    if (duel.status === 'finished') {
-      router.push(resultHref(duel.id));
-    } else if (DEMO) {
-      // Demo: fast-forward this duel to the end, then show the result.
-      let current = duel;
-      for (let i = 0; i < 8 && current.status !== 'finished'; i++) {
-        await data.demo.advanceDay();
-        current = await data.getDuel(duel.id);
-      }
-      router.push(resultHref(duel.id));
-    } else {
-      setNote('Your result arrives on Saturday.');
-    }
-  }
+  const letters = weekdayLetters(duel.startedAt, duel.lengthDays);
 
   const info: { icon: typeof Users; label: string; value: string }[] = [
-    { icon: HobbyIcon, label: 'Goal', value: `${duel.minutes} min a day · ends Saturday` },
-    { icon: Users, label: 'Check-ins', value: 'You confirm each other · crew votes on disputes' },
+    { icon: HobbyIcon, label: 'Goal', value: `${duel.minutes} min a day · ends ${lastDayName(duel.startedAt, duel.lengthDays)}` },
+    { icon: Users, label: 'Check-ins', value: 'You confirm each other' },
   ];
 
   return (
@@ -87,7 +68,7 @@ export default function DuelScreen() {
         }}
       >
         <Text variant="eyebrow" color="muted">
-          Day {dayNumber} of {duel.lengthDays} · Friendly
+          {duel.status === 'finished' ? 'Finished' : `Day ${dayNumber} of ${duel.lengthDays}`} · Friendly
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.gutter }}>
           <View style={{ alignItems: 'center', gap: t.spacing.s6 }}>
@@ -98,15 +79,15 @@ export default function DuelScreen() {
             {myScore(duel)} – {theirScore(duel)}
           </Text>
           <View style={{ alignItems: 'center', gap: t.spacing.s6 }}>
-            <Avatar name={duel.opponent.name} tone={duel.opponent.tone} size="lg" />
-            <Text variant="smallStrong">{duel.opponent.name}</Text>
+            <Avatar name={friendName(duel)} tone="opponent" size="lg" />
+            <Text variant="smallStrong">{friendName(duel)}</Text>
           </View>
         </View>
         <View style={{ alignItems: 'center', gap: t.spacing.sm }}>
           <Dots days={myDayStates(duel)} tone="you" size="lg" />
           <Dots days={theirDayStates(duel)} tone="opponent" size="lg" />
           <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }}>
-            {WEEKDAYS.map((letter, i) => (
+            {letters.map((letter, i) => (
               <View key={i} style={{ width: t.sizes.dot.lg, alignItems: 'center' }}>
                 <Text variant="tiny" color="muted">
                   {letter}
@@ -142,7 +123,7 @@ export default function DuelScreen() {
 
       {duel.status === 'paused' ? (
         <Card variant="orangeTint" style={{ gap: t.spacing.lg }}>
-          <Text variant="label">Paused until {duel.pausedUntil ? shortDate(duel.pausedUntil) : 'next week'}</Text>
+          <Text variant="label">Paused{duel.pausedUntil ? ` until ${shortDate(duel.pausedUntil)}` : ''}</Text>
           <Text variant="small" color="muted">
             The dual is frozen for both of you. Nothing is lost.
           </Text>
@@ -189,12 +170,8 @@ export default function DuelScreen() {
 
       <View style={{ flex: 1 }} />
 
-      {note ? (
-        <Text variant="caption" color="muted" align="center">
-          {note}
-        </Text>
-      ) : null}
-      <Button label="See how it ends (Saturday)" variant="soft" onPress={seeHowItEnds} />
+      {/* The result exists only once the duel has really ended. */}
+      {duel.status === 'finished' ? <Button label="See the result" variant="soft" onPress={() => router.push(resultHref(duel.id))} /> : null}
     </Screen>
   );
 }

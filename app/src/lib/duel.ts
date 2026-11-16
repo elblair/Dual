@@ -27,4 +27,22 @@ export function theirDayStates(d: Duel): DayState[] {
   return buildDays(d.theirDays);
 }
 
-export const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+/** The other player's name for sentences ("Sam gets a tap to confirm it"). */
+export const friendName = (d: Duel) => d.opponent?.name ?? 'Your friend';
+
+/** One letter per duel day, starting from the weekday the duel started on (M T W T F S S for a duel that began on a Monday). */
+export function weekdayLetters(startedAt: string | null, days = 7): string[] {
+  const start = startedAt ? new Date(startedAt) : new Date();
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date(start.getTime());
+    d.setDate(d.getDate() + i);
+    return d.toLocaleDateString('en-US', { weekday: 'narrow' });
+  });
+}
+
+/** The weekday the duel's last day falls on ("Saturday"). */
+export function lastDayName(startedAt: string | null, days = 7): string {
+  const d = startedAt ? new Date(startedAt) : new Date();
+  d.setDate(d.getDate() + days - 1);
+  return d.toLocaleDateString('en-US', { weekday: 'long' });
+}

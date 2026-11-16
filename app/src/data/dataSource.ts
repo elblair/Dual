@@ -4,7 +4,7 @@ import { createMockSource } from './mockSource';
 import type { DataSource } from './source';
 
 /**
- * Picks the data source from the environment: the FastAPI server when EXPO_PUBLIC_API_URL is set and
- * EXPO_PUBLIC_USE_MOCK is not "true"; otherwise the in-memory mock (the demo-day fallback).
+ * The FastAPI server, always, unless EXPO_PUBLIC_USE_MOCK=true is set on purpose. There is no silent fallback: with no
+ * EXPO_PUBLIC_API_URL (or an unreachable server) the app shows an error / Offline state instead of mock data.
  */
 export const dataSource: DataSource = USE_MOCK ? createMockSource() : createApiSource(API_URL);

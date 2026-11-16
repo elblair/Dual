@@ -4,7 +4,7 @@ import { Pressable } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { Button, Card, PlayerRow, Screen, Text } from '@/components';
 import { useDuel, useMe } from '@/data';
-import { myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
+import { friendName, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
 import { useTheme } from '@/theme';
 
 /** Done (Figma 217:2): "Day N logged". Guests also get the "Save your streak" card. */
@@ -40,12 +40,12 @@ export default function DoneScreen() {
 
       <Text variant="titleLg">Day {Math.min(duel.today + 1, duel.lengthDays)} logged</Text>
       <Text variant="body" color="muted" align="center">
-        {duel.opponent.name} gets a tap to confirm it. {lead}
+        {friendName(duel)} gets a tap to confirm it. {lead}
       </Text>
 
       <Card variant="surface" style={{ alignSelf: 'stretch', paddingHorizontal: t.spacing.s18, paddingVertical: t.spacing.xxl, gap: t.spacing.md }}>
         <PlayerRow name={me.name} label="You" avatarTone="you" dotsTone="you" days={myDayStates(duel)} avatarSize="xs" />
-        <PlayerRow name={duel.opponent.name} avatarTone={duel.opponent.tone} dotsTone="opponent" days={theirDayStates(duel)} avatarSize="xs" />
+        <PlayerRow name={friendName(duel)} avatarTone="opponent" dotsTone="opponent" days={theirDayStates(duel)} avatarSize="xs" />
       </Card>
 
       {me.isGuest ? (

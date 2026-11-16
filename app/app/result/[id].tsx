@@ -1,38 +1,49 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Check, ChevronRight, RefreshCw, Trophy, Users, type LucideIcon } from 'lucide-react-native';
-import { Button, Card, PlayerRow, Screen, Text } from '@/components';
+import { ChevronRight, RefreshCw, Trophy, Users, type LucideIcon } from 'lucide-react-native';
+import { Button, Card, ErrorView, LoadingView, PlayerRow, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
-import { hobbyById } from '@/data/sample';
-import { myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
+import { easierMinutes, hobbyById } from '@/data/catalog';
+import { friendName, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
 import { duelHref } from '@/lib/routes';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
-type Next = 'rematch' | 'easier' | 'rival';
+type Next = 'rematch' | 'easier' | 'new';
 
-/** Result (Figma 217:166): who won, and always three ways to start the next dual. */
+/** Result (Figma 217:166): shown only for a duel that has really ended. Who won, and three ways to start the next one. */
 export default function ResultScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
-  const { setHobbyId, setFriendId } = useOnboarding();
+  const { setHobbyId, setFriend } = useOnboarding();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: duel } = useDuel(id);
+  const { data: duel, error: duelError, loading, refetch } = useDuel(id);
   const { data: me } = useMe();
   const [next, setNext] = useState<Next>('rematch');
   const [error, setError] = useState('');
 
-  if (!duel || !me) return <Screen>{null}</Screen>;
+  if (loading) {
+    return (
+      <Screen>
+        <LoadingView />
+      </Screen>
+    );
+  }
+  if (!duel || !me) {
+    return (
+      <Screen>
+        <ErrorView message={duelError?.message ?? 'Duel not found.'} onRetry={refetch} />
+      </Screen>
+    );
+  }
   if (duel.status !== 'finished') return <Redirect href={duelHref(duel.id)} />;
 
   const hobby = hobbyById(duel.hobbyId);
   const a = myScore(duel);
   const b = theirScore(duel);
-  const opp = duel.opponent.name;
-  const rival = duel.opponent.id === 'tanish' ? { id: 'eleanor', name: 'Eleanor' } : { id: 'tanish', name: 'Tanish' };
-  const rivalHobby = duel.hobbyId === 'running' ? 'guitar' : 'running';
+  const opp = friendName(duel);
 
   const forfeited = duel.result?.forfeitedBy === 'me';
   const title = forfeited
@@ -42,21 +53,25 @@ export default function ResultScreen() {
       : duel.result?.winner === 'them'
         ? `${opp} won, ${b} – ${a}`
         : `It’s a tie, ${a} – ${b}`;
-  const subtitle = forfeited ? 'You waved the white flag.' : `You practiced ${a} ${a === 1 ? 'day' : 'days'}${a > 3 ? ', up from 3 last time' : ''}.`;
+  const subtitle = forfeited
+    ? 'You waved the white flag.'
+    : duel.result?.forfeitedBy === 'them'
+      ? `${opp} waved the white flag.`
+      : `You practiced ${a} ${a === 1 ? 'day' : 'days'}, ${opp} practiced ${b}.`;
 
   const options: { key: Next; icon: LucideIcon; title: string; sub: string }[] = [
-    { key: 'rematch', icon: RefreshCw, title: 'Rematch', sub: 'Same goal, 7 days' },
-    { key: 'easier', icon: Trophy, title: 'Easier win', sub: '4 of 7 days, 15 min' },
-    { key: 'rival', icon: Users, title: 'New rival', sub: `Dual ${rival.name} at ${hobbyById(rivalHobby).label.toLowerCase()}` },
+    { key: 'rematch', icon: RefreshCw, title: 'Rematch', sub: `Same goal, ${duel.lengthDays} days` },
+    { key: 'easier', icon: Trophy, title: 'Easier win', sub: `${easierMinutes(duel.minutes)} min a day, same friend` },
+    { key: 'new', icon: Users, title: 'New friend', sub: 'Challenge someone else' },
   ];
-  const buttonLabel = next === 'rematch' ? 'Send rematch' : next === 'easier' ? 'Start the easier dual' : 'Pick a rival';
+  const buttonLabel = next === 'rematch' ? 'Send rematch' : next === 'easier' ? 'Send the easier dual' : 'Pick a friend';
 
   async function go() {
     setError('');
     try {
-      if (next === 'rival') {
-        setHobbyId(rivalHobby);
-        setFriendId(rival.id);
+      if (next === 'new') {
+        setHobbyId(duel!.hobbyId);
+        setFriend(null);
         router.push('/friend');
         return;
       }
@@ -83,24 +98,7 @@ export default function ResultScreen() {
 
       <Card variant="surface" style={{ paddingHorizontal: t.spacing.s18, paddingVertical: t.spacing.xxl, gap: t.spacing.md }}>
         <PlayerRow name={me.name} label="You" avatarTone="you" dotsTone="you" days={myDayStates(duel)} avatarSize="xs" />
-        <PlayerRow name={opp} avatarTone={duel.opponent.tone} dotsTone="opponent" days={theirDayStates(duel)} avatarSize="xs" />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.md }}>
-          <View
-            style={{
-              width: t.sizes.radio,
-              height: t.sizes.radio,
-              borderRadius: t.sizes.radio / 2,
-              backgroundColor: t.colors.successTint,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Check size={t.sizes.icon.badge} color={t.colors.success} strokeWidth={3} />
-          </View>
-          <Text variant="subtitle" style={{ flex: 1 }}>
-            +60 XP · Friendship Lv 3 with {opp}
-          </Text>
-        </View>
+        <PlayerRow name={opp} avatarTone="opponent" dotsTone="opponent" days={theirDayStates(duel)} avatarSize="xs" />
       </Card>
 
       <Text variant="headingSm">What’s next?</Text>
@@ -155,9 +153,6 @@ export default function ResultScreen() {
         </Text>
       ) : null}
       <Button label={buttonLabel} onPress={go} />
-      <Text variant="micro" color="muted" align="center">
-        We track one number: did you start a second dual?
-      </Text>
     </Screen>
   );
 }

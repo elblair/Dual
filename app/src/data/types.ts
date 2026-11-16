@@ -1,4 +1,4 @@
-/** Shared response shapes. The FastAPI schemas mirror these (Phase 4). */
+/** Shared response shapes. The FastAPI schemas (api/app/schemas.py) mirror these. */
 
 export interface Me {
   id: string;
@@ -10,7 +10,7 @@ export interface Me {
 export interface Person {
   id: string;
   name: string;
-  /** Avatar color: Eleanor is maroon-bright, Tanish blue, Ben neutral gray. */
+  /** Avatar color: 'you' is blue, everyone else maroon. */
   tone: 'you' | 'opponent' | 'neutral';
 }
 
@@ -33,17 +33,19 @@ export interface Duel {
   minutes: number;
   lengthDays: number;
   status: DuelStatus;
-  /** The other player, from my point of view (for the invited friend looking at a code: the challenger). */
-  opponent: Person;
+  /** The other player from my point of view (for an invite I received: whoever sent it). Null for an open invite nobody accepted. */
+  opponent: Person | null;
   /** Who started the duel. */
   creator: Person;
-  /** True when I started it; false for the invited friend looking at it by code. */
+  /** True when I started it; false for an invite I received or looked up by code. */
   viewerIsCreator: boolean;
-  /** Set while the friend has not accepted yet (they enter this code in the app). */
+  /** The code a friend enters to accept. Only while the duel is pending. */
   inviteCode: string | null;
+  /** When the duel started (ISO). Null while pending. */
+  startedAt: string | null;
   /** Index of the current day, 0 to 6. 7 once the duel is finished. */
   today: number;
-  /** Confirmed check-in day indexes. Score = how many. */
+  /** Check-in day indexes. My own count at once; theirDays only the ones I confirmed. Score = how many. */
   myDays: number[];
   theirDays: number[];
   myRestDays: number[];
@@ -56,9 +58,8 @@ export interface Duel {
 export interface CreateDuelInput {
   hobbyId: string;
   minutes: number;
-  /** Contact id: 'eleanor' and 'tanish' are seeded accounts that auto-accept; anyone else stays pending. */
-  friendId: string;
-  inviteCode?: string;
+  /** A person found with search. Omit for an open invite that a friend accepts with the code. */
+  friendId?: string | null;
 }
 
 export interface AuthInput {
@@ -68,52 +69,47 @@ export interface AuthInput {
 
 export interface RegisterInput extends AuthInput {
   name: string;
-  /** Demo builds: give a brand-new account the day-5 demo duels. */
-  seedDemo?: boolean;
 }
 
 export interface GuestInput {
-  /** First name only, so nobody is called "Ari" by default. */
+  /** First name only. */
   name: string;
-  seedDemo?: boolean;
 }
 
-/** A row in the Groups-style list: people in my duels ranked by minutes practiced. */
+/** A person found by the friend search. The email is masked ("m***@example.com"). */
+export interface UserHit {
+  id: string;
+  name: string;
+  emailHint: string;
+}
+
+/** You screen, all computed from the database. */
+export interface Stats {
+  duelsWon: number;
+  daysCheckedIn: number;
+  currentStreak: number;
+}
+
+/** Head-to-head record with someone I have dueled. */
+export interface Rival {
+  person: Person;
+  duels: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  active: number;
+}
+
 export interface LeaderRow {
   id: string;
   name: string;
   tone: Person['tone'];
-  minutes: number;
+  wins: number;
   isYou: boolean;
 }
 
-/** The Database screen (demo): rows straight from the tables. Never contains password hashes. */
-export interface DbUser {
-  id: string;
-  name: string;
-  email: string | null;
-  isGuest: boolean;
-  isSeeded: boolean;
-  createdAt: string;
-}
-
-export interface DbDuel {
-  id: string;
-  hobbyId: string;
-  minutes: number;
-  goal: string;
-  status: string;
-  creator: string;
-  opponent: string;
-  score: string;
-  today: number;
-  createdAt: string;
-}
-
-export interface DbSnapshot {
-  database: { engine: string; host: string };
-  userCount: number;
-  duelCount: number;
-  users: DbUser[];
-  duels: DbDuel[];
+/** Groups tab: people I have dueled and a wins leaderboard among us. */
+export interface Groups {
+  rivals: Rival[];
+  leaderboard: LeaderRow[];
 }

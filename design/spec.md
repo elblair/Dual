@@ -164,14 +164,17 @@ Static image only: `design/png/Lock.png`. Dark gradient, 8:41 clock, widget "5 �
 White, 1pt top border `border`, padding 10 top / 28 bottom, items centered: Today (home), Groups (users), "+" (52pt orange circle, plus icon 26, in line with the others, links to Hobby), You (user). Icon 22, label 11 (active SemiBold maroon `#6e1023`, inactive Medium muted `#6b6b78`), gap 4.
 
 ## Implementation notes (deliberate differences from the frames)
-- Hero card on Today says "vs Eleanor · done today" (not "she's done today"): no gendered pronouns in app copy.
-- Stakes dropped everywhere: no stake row on Duel, no stake card on Friend, Forfeit copy without "your stake goes to charity", "$10 to charity" stat replaced by "days checked in". The Accept "Stake: None" row stays.
-- The camera button next to "I did it" on Today is hidden (nothing behind it); "I did it" is full width.
-- Settings gear on Duel and You is not built. Dual+ row on You is dropped; a "Lock screen widget" row (opens the static Lock image) is added.
-- Running duels show the Strava card instead of a check-in card (sample data), so they never count toward "things to do".
-- Weekday letters under the Duel dots are fixed M to S (a duel always starts Monday in the mock).
-- Icons are Lucide, so a few glyphs differ slightly from Figma's (Gym dumbbell is rotated Lucide, Drawing palette).
-- Not in Figma, built from tokens: code entry (`/code`), email form (`/auth`), pending-duel card on Today, empty state on Today, "Paused" banner and "Resume dual" on Duel, Demo tools card on You, pencil cycling the starter minutes, "I have a code" link.
+All sample content in the frames is replaced by real data from the API; the frames show layout and style only.
+- Today: no Strava card, no Sunday recap, no camera button; "Hey, <name> · N things to do"; a "Pending invites" section; "No duels yet" empty state; "vs <name> · done today" (no gendered pronouns).
+- Friend: a search field and real results (masked email) instead of the fixed contacts list; no stake card; the invite text preview says the code is added when you send.
+- Accept: no browser chrome and no "Stake" row; length reads "7 days, starts when you accept".
+- Duel: weekday letters and "ends <weekday>" computed from the real start date; no stake row, no "crew votes on disputes", no settings gear, no "See how it ends" (the Result button appears only for a finished duel).
+- Result: no XP or friendship line, no "up from 3 last time", no fixed rival; options are Rematch, Easier win (half the minutes) and New friend.
+- Groups: rebuilt on real data (wins leaderboard and people you've dueled); the floor battle, invite floor, run club and "Dual a floor-mate" are gone.
+- You: stats are duels won, days checked in and current streak; no tier card, no rivals list, no connected-apps or lock-screen rows, no Dual+.
+- Save: email only (no Apple/Google buttons).
+- Icons are Lucide, so a few glyphs differ slightly from Figma's.
+- Not in Figma, built from tokens: name prompt (`/name`), code entry (`/code`), email form (`/auth`), the friend search, loading/error states, the Live / Offline badge, and the account card on You.
 
 ## Navigation
 Hobby -> Friend -> (Send by text) -> Accept -> (Accept) -> Today. Today: "I did it" -> Done -> Save (or Back to Today); dual card -> Duel -> Break / Result; Sunday recap -> Result. Tabs: Today, Groups, "+" (Hobby flow), You. Result: Rematch/Easier win -> Today, New rival -> Friend.

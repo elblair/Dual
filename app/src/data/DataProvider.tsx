@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { dataSource } from './dataSource';
 import type { DataSource } from './source';
-import type { DbSnapshot, Duel, LeaderRow, Me } from './types';
+import type { Duel, Groups, Me, Stats } from './types';
 
 const VersionContext = createContext(0);
 
@@ -72,12 +72,12 @@ export function useDuelByCode(code: string | undefined): Query<Duel> {
   return useQuery(useCallback(() => (code ? dataSource.getDuelByCode(code) : Promise.reject(new Error('No code'))), [code]));
 }
 
-export function useLeaderboard(): Query<LeaderRow[]> {
-  return useQuery(useCallback(() => dataSource.getLeaderboard(), []));
+export function useStats(): Query<Stats> {
+  return useQuery(useCallback(() => dataSource.getStats(), []));
 }
 
-export function useDbSnapshot(): Query<DbSnapshot> {
-  return useQuery(useCallback(() => dataSource.demo.database(), []));
+export function useGroups(): Query<Groups> {
+  return useQuery(useCallback(() => dataSource.getGroups(), []));
 }
 
 export type ConnectionStatus = 'checking' | 'live' | 'offline' | 'mock';
