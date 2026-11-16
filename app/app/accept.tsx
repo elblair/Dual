@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Avatar, BackButton, Button, Card, Screen, Text } from '@/components';
@@ -16,8 +17,13 @@ export default function AcceptScreen() {
   const { code } = useLocalSearchParams<{ code?: string }>();
   const { data: duel } = useDuelByCode(code);
   const { data: me } = useMe();
+  const [error, setError] = useState('');
 
   if (!duel || !me) return <Screen background="surface">{null}</Screen>;
+
+  // Left: whoever started the duel. Right: the invited friend (me, unless I'm previewing my own invite).
+  const challenger = duel.creator;
+  const invitee = duel.viewerIsCreator ? duel.opponent : { name: me.name, tone: 'opponent' as const };;
 
   const hobby = hobbyById(duel.hobbyId);
   const rows: [string, string][] = [
@@ -29,8 +35,13 @@ export default function AcceptScreen() {
 
   async function accept() {
     if (!duel) return;
-    await data.acceptDuel(duel.id);
-    router.replace('/today');
+    setError('');
+    try {
+      await data.acceptDuel(duel.id);
+      router.replace('/today');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+    }
   }
 
   return (
@@ -42,15 +53,15 @@ export default function AcceptScreen() {
       <View style={{ flex: 1 }} />
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.xl }}>
-        <Avatar name={me.name} tone="you" size="xxl" ring="white" />
+        <Avatar name={challenger.name} tone="you" size="xxl" ring="white" />
         <Text variant="subheading" color="orange" style={{ fontFamily: t.fonts.bold }}>
           VS
         </Text>
-        <Avatar name={duel.opponent.name} tone={duel.opponent.tone} size="xxl" ring="white" />
+        <Avatar name={invitee.name} tone={invitee.tone} size="xxl" ring="white" />
       </View>
 
       <Text variant="title" align="center">
-        {me.name} challenged you
+        {challenger.name} challenged you
       </Text>
 
       <Card variant="white" style={{ alignSelf: 'stretch', paddingHorizontal: 0, paddingVertical: 0, overflow: 'hidden' }}>
@@ -78,6 +89,11 @@ export default function AcceptScreen() {
 
       <View style={{ flex: 1 }} />
 
+      {error ? (
+        <Text variant="caption" color="maroonBright" align="center">
+          {error}
+        </Text>
+      ) : null}
       <Button label="Accept · no download needed" onPress={accept} />
       <Text variant="caption" color="muted" align="center">
         Check in from your texts this week. Get the app whenever you want.

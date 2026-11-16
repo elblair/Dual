@@ -27,6 +27,8 @@ export function createMockSource({ seed }: { seed: boolean }): DataSource {
   const listeners = new Set<() => void>();
 
   const notify = () => listeners.forEach((l) => l());
+  /** Duels remember who started them; keep that name in step with the account name. */
+  const renameCreator = () => duels.forEach((d) => (d.creator.name = me.name));
 
   function find(id: string): Duel {
     const d = duels.find((x) => x.id === id);
@@ -42,6 +44,8 @@ export function createMockSource({ seed }: { seed: boolean }): DataSource {
       lengthDays: 7,
       status,
       opponent: person(i.friendId),
+      creator: { id: me.id, name: me.name, tone: 'you' },
+      viewerIsCreator: true,
       inviteCode: status === 'pending' ? (i.inviteCode ?? makeInviteCode()) : null,
       today: 0,
       myDays: [],
@@ -101,6 +105,7 @@ export function createMockSource({ seed }: { seed: boolean }): DataSource {
       if (accounts.some((a) => a.email === email)) return fail('That email already has an account. Try logging in.');
       accounts.push({ name, email, password });
       me = { ...me, name, email, isGuest: false };
+      renameCreator();
       notify();
       return Promise.resolve(clone(me));
     },
@@ -109,6 +114,7 @@ export function createMockSource({ seed }: { seed: boolean }): DataSource {
       if (!a) return fail('No account with that email. Try creating one.');
       if (a.password !== password) return fail('Wrong password.');
       me = { ...me, name: a.name, email, isGuest: false };
+      renameCreator();
       notify();
       return Promise.resolve(clone(me));
     },
