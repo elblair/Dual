@@ -8,7 +8,7 @@ from app import models  # noqa: F401  (registers the tables)
 from app.config import get_settings
 from app.db import Base, SessionLocal, engine
 from app.logic import DomainError, seed_bot_users
-from app.routers import auth, demo, duels
+from app.routers import auth, demo, duels, groups
 
 
 @asynccontextmanager
@@ -44,4 +44,5 @@ def health() -> dict[str, str]:
 
 app.include_router(auth.router)
 app.include_router(duels.router)
+app.include_router(groups.router)
 app.include_router(demo.router)

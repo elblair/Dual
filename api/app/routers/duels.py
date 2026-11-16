@@ -6,7 +6,7 @@ from app.db import get_db
 from app.logic import DomainError
 from app.models import Duel, User
 from app.schemas import CreateDuelIn, DuelOut, RematchIn
-from app.security import current_user
+from app.security import current_user, optional_user
 
 router = APIRouter(prefix="/duels", tags=["duels"])
 
@@ -20,7 +20,8 @@ def list_duels(user: User = Depends(current_user), db: Session = Depends(get_db)
 
 # Defined before /{duel_id} so "by-code" is not read as an id.
 @router.get("/by-code/{code}", response_model=DuelOut)
-def duel_by_code(code: str, user: User = Depends(current_user), db: Session = Depends(get_db)) -> DuelOut:
+def duel_by_code(code: str, user: User | None = Depends(optional_user), db: Session = Depends(get_db)) -> DuelOut:
+    """Works before signing in, so an invited friend can see who challenged them first."""
     return logic.build_view(db, logic.get_duel_by_code(db, code), user)
 
 

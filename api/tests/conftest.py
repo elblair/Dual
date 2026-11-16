@@ -27,8 +27,8 @@ def client():
 class Player:
     """A signed-in guest with helpers, so tests read like the app."""
 
-    def __init__(self, client: TestClient, seed_demo: bool = False):
-        r = client.post(f"/auth/guest?seed_demo={'true' if seed_demo else 'false'}")
+    def __init__(self, client: TestClient, seed_demo: bool = False, name: str = "Ari"):
+        r = client.post("/auth/guest", json={"name": name, "seedDemo": seed_demo})
         assert r.status_code == 200, r.text
         body = r.json()
         self.client = client
@@ -67,4 +67,4 @@ def player(client):
 
 @pytest.fixture
 def make_player(client):
-    return lambda seed_demo=False: Player(client, seed_demo=seed_demo)
+    return lambda seed_demo=False, name="Ari": Player(client, seed_demo=seed_demo, name=name)
