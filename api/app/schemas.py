@@ -93,6 +93,8 @@ class StatsOut(CamelModel):
     duels_won: int
     days_checked_in: int
     current_streak: int
+    # My own check-in times (ISO, UTC) from the last 14 days: the app draws this week's streak bubbles from them.
+    recent_check_ins: list[str]
 
 
 class RivalOut(CamelModel):

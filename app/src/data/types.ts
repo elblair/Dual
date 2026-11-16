@@ -82,6 +82,8 @@ export interface Stats {
   duelsWon: number;
   daysCheckedIn: number;
   currentStreak: number;
+  /** My own check-in times (ISO) from the last 14 days, for this week's streak bubbles. */
+  recentCheckIns: string[];
 }
 
 /** Head-to-head record with someone I have dueled. */

@@ -64,19 +64,23 @@ def test_search_result_can_be_challenged(duo):
 
 
 def test_stats_start_at_zero(player):
-    assert player.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 0, "currentStreak": 0}
+    assert player.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 0, "currentStreak": 0, "recentCheckIns": []}
 
 
 def test_stats_count_check_ins_and_the_streak(active_duel, db):
     ari, _, duel_id = active_duel
     ari.post(f"/duels/{duel_id}/checkin")
-    assert ari.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 1, "currentStreak": 1}
+    stats = ari.get("/me/stats").json()
+    assert (stats["duelsWon"], stats["daysCheckedIn"], stats["currentStreak"]) == (0, 1, 1)
+    assert len(stats["recentCheckIns"]) == 1 and stats["recentCheckIns"][0].endswith("Z")  # my own check-in time, for the week bubbles
 
     backdate(db, duel_id, 1)
     ari.post(f"/duels/{duel_id}/checkin")
     backdate(db, duel_id, 1)
     ari.post(f"/duels/{duel_id}/checkin")
-    assert ari.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 3, "currentStreak": 3}
+    stats = ari.get("/me/stats").json()
+    assert (stats["duelsWon"], stats["daysCheckedIn"], stats["currentStreak"]) == (0, 3, 3)
+    assert len(stats["recentCheckIns"]) == 3
 
 
 def test_the_streak_survives_a_day_not_yet_checked_in_but_breaks_after_a_miss(active_duel, db):
@@ -89,19 +93,34 @@ def test_the_streak_survives_a_day_not_yet_checked_in_but_breaks_after_a_miss(ac
     assert ari.get("/me/stats").json()["daysCheckedIn"] == 1
 
 
+def test_recent_check_ins_are_only_mine_and_only_the_last_two_weeks(active_duel, db):
+    ari, sam, duel_id = active_duel
+    ari.post(f"/duels/{duel_id}/checkin")
+    sam.post(f"/duels/{duel_id}/checkin")
+    assert len(ari.get("/me/stats").json()["recentCheckIns"]) == 1  # not Sam's
+    from app.models import Checkin
+
+    old = db.query(Checkin).filter(Checkin.user_id == ari.id).one()
+    old.created_at = old.created_at.replace(year=old.created_at.year - 1)  # a year ago
+    db.commit()
+    assert ari.get("/me/stats").json()["recentCheckIns"] == []
+    assert ari.get("/me/stats").json()["daysCheckedIn"] == 1  # still counted in the total
+
+
 def test_stats_count_duels_won_only_when_a_duel_really_ends(active_duel, db):
     ari, sam, duel_id = active_duel
     ari.post(f"/duels/{duel_id}/checkin")
     assert ari.get("/me/stats").json()["duelsWon"] == 0  # still running
     backdate(db, duel_id, 7)
-    assert ari.get("/me/stats").json() == {"duelsWon": 1, "daysCheckedIn": 1, "currentStreak": 0}
+    stats = ari.get("/me/stats").json()
+    assert (stats["duelsWon"], stats["daysCheckedIn"], stats["currentStreak"]) == (1, 1, 0)
     assert sam.get("/me/stats").json()["duelsWon"] == 0
 
 
 def test_pending_invites_do_not_count(duo):
     ari, sam = duo
     ari.challenge(sam)
-    assert ari.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 0, "currentStreak": 0}
+    assert ari.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 0, "currentStreak": 0, "recentCheckIns": []}
 
 
 # ---------------------------------------------------------------- groups
