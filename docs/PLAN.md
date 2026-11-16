@@ -1,5 +1,7 @@
 # Dual build plan
 
+> **Read the section "Direction change after Phase 5" first.** Everything below about seeded friends (Eleanor, Tanish, Ben), demo duels, Demo tools, the Database screen, `DEMO_MODE` and the mock fallback is historical: it was removed. The app now shows only real data from the API (see `docs/DEMO.md` for the two-phone demo).
+
 Approved (with the changes folded in below). See `CLAUDE.md` and `design/spec.md`. Code starts at Phase 0.
 
 ## Decisions (final)
@@ -72,6 +74,15 @@ Screens never call `fetch` or the mock directly. They use hooks from `app/src/da
 - Every list screen has loading, error (with Try again) and pull-to-refresh states; a Live / Offline badge (pings `/health` every 10 s) shows the API host on Today and Database; the mock shows "Mock data".
 - The Groups floor battle stays sample data; its ranking list is real (minutes per person across my duels).
 - The Neon edit demo changes `duels.minutes` (no schema change needed): Today and Duel show it after a refresh.
+
+## Direction change after Phase 5: no demo, seed, sample or hardcoded data (branch `fix/remove-demo-data`)
+The graded demo is two real people on two real phones. This supersedes the demo parts of the decisions above (seeded Eleanor/Tanish/Ben, demo duels, Demo tools, Database screen, DEMO_MODE, silent mock fallback).
+- **Removed:** all seed data and endpoints (`/demo/*`, seeding on guest/register), the Database screen, "See how it ends", Strava/recap/XP/Silver/Groups sample content, Apple/Google buttons, the lock-screen row and image, fixed names/days/numbers in copy. The legacy columns (`users.is_seeded`, `duels.invitee_id`, `duels.day_offset`) are dropped by `app/migrate.py` on startup; `scripts/purge_seed_data.py` deleted the seeded rows from Neon. `DEMO_MODE` no longer exists.
+- **No silent fallback:** without `EXPO_PUBLIC_API_URL`, or when the server is unreachable, the launcher shows a clear error with "Try again". `EXPO_PUBLIC_USE_MOCK=true` is an explicit opt-in to a single-user, nothing-saved mock.
+- **Invites are real:** a duel is always created `pending`. Pick a person with `GET /users/search` (name or email prefix, accounts only, email masked): the duel shows under "Pending invites" on their Today and only they can accept. Or send an open invite: the server makes a 4-character code and anyone except the creator can accept it by code (works before signing in; a guest then gives a first name).
+- **Real data everywhere:** Today ("No duels yet", pending invites, "done today" states), Duel (day X of 7, weekday letters and end day from `startedAt`), Result (only for finished duels; easier goal = half the minutes), You (`GET /me/stats`: duels won, days checked in, current streak), and Groups, which is kept because it is one of the four tabs: `GET /groups` returns the people you've dueled with (head-to-head record) and a wins leaderboard among you and them, computed from finished duels.
+- **Clock:** a duel's day follows real 24-hour days since it was accepted. The presenter script `api/scripts/advance_duel.py <code|id> <days>` moves `started_at` back in the database so the Result can be shown; the app has no such control.
+- **Check-ins** still carry `confirmed` ("you confirm each other"); there is no check-in note input, so the "Confirm X's N min" card has no quote.
 
 ## Screen-to-route map
 Hobby `/` (Log in, I have a code) -> Friend `/friend` -> share -> Today. Code -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> Save `/save` (guests only) or back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You (with Demo tools when enabled).
