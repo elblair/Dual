@@ -26,7 +26,7 @@ export function TabBar({ active, onSelect, onPlus }: TabBarProps) {
 
   const renderTab = ({ key, label, icon: Icon }: (typeof tabs)[number]) => {
     const selected = key === active;
-    const color = selected ? t.colors.maroon : t.colors.muted;
+    const color = selected ? t.colors.tabActive : t.colors.muted;
     return (
       <Pressable
         key={key}
@@ -69,7 +69,7 @@ export function TabBar({ active, onSelect, onPlus }: TabBarProps) {
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: t.colors.bg,
+        backgroundColor: t.colors.card,
         borderTopWidth: t.borders.hairline,
         borderTopColor: t.colors.border,
         paddingTop: t.spacing.md,

@@ -149,7 +149,7 @@ export default function FriendScreen() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: t.spacing.md,
-                backgroundColor: t.colors.white,
+                backgroundColor: t.colors.cardRaised,
                 borderRadius: t.radii.sm,
                 paddingHorizontal: t.spacing.lg,
                 paddingVertical: t.spacing.md,
@@ -165,7 +165,7 @@ export default function FriendScreen() {
       )}
 
       <Pressable accessibilityRole="link" onPress={() => router.push('/code')} style={{ alignSelf: 'center' }}>
-        <Text variant="labelMedium" color="blue">
+        <Text variant="labelMedium" color="link">
           Got an invite code? Enter it
         </Text>
       </Pressable>
