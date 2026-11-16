@@ -19,6 +19,28 @@ The two graded things:
 
 On Today, the badge must say **Live · <host>** (green). If it says Offline or the app shows "Couldn't load this", the API URL is wrong or the server is not running. **There is no mock fallback unless you set `EXPO_PUBLIC_USE_MOCK=true` on purpose** (it is a single-user, nothing-saved mode and the badge says "Mock data").
 
+## Demo-day checklist
+
+**The day before**
+- [ ] `develop` is merged into `main` and the API is deployed (Render URL in `app/.env`), or your PC runs the API on the LAN (`uvicorn app.main:app --host 0.0.0.0`).
+- [ ] `python check_db.py` prints `OK` (database reachable).
+- [ ] Both phones have Expo Go with the SDK this project uses (58) and open the app from the QR code.
+- [ ] Do the whole script once with two throwaway accounts, then delete their rows in the Neon console (Tables > `users`, `duels`, `checkins`), so the demo starts with accounts that really are new.
+
+**Two hours before**
+- [ ] Render: open `https://<service>.onrender.com/health` (the free tier sleeps; the first call takes about a minute). Open it again 5 minutes before you start.
+- [ ] `app/.env` has the right `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_USE_MOCK=false`. Start Expo with `npx expo start -c` (add `--tunnel` if the Wi-Fi blocks the QR code).
+- [ ] Phone and PC are on the same Wi-Fi (only needed for Expo, not for a deployed API).
+- [ ] Neon console is open in a second window on **Tables**.
+- [ ] A terminal is open in `api/` with the venv active, for `scripts/advance_duel.py` (step 7).
+
+**Right before**
+- [ ] Both phones show **Welcome** (Create account / Log in). If one still has a session, **You > Log out**.
+- [ ] After sign-up the badge on Today says **Live** with the host (green).
+- [ ] Two new email addresses are ready, one per phone (an email that already exists is refused).
+
+**If something goes wrong:** see Troubleshooting below. As a last resort use a browser tab as the second phone (`http://localhost:8081`, a private window for the second account).
+
 ## The script
 
 ### 1. Phone 1: register (graded item 1)
@@ -33,8 +55,10 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 ### 3. Phone 1: start a duel and invite phone 2
 1. **Start a duel**: pick a hobby, tap **Next: pick a friend**.
 2. In **Find a friend on Dual** type the teammate's name or the start of their email. The real account appears (the email is masked). Tap it, then **Invite <name>**.
-3. Today shows the duel under **This week** as "Waiting for <name> to accept."
+3. The **Sent** screen confirms it ("Your dual is on its way", with the invite code for a code invite). **Back home** shows the duel under **Your duals** as "Waiting for <name> to accept."
 4. Neon: **duels** has a new row (`status = pending`, `creator_id`, `opponent_id`, `invite_code`).
+
+*Already dueled someone?* Tap their avatar under **Your crew** on Today (**Challenge <name>**): you go straight to the hobby step, then **Invite <name>**. **Invite** next to Your crew works the other way round: pick the friend first, then the hobby.
 
 *Not on Dual yet?* Pick **Send by text** instead: the app creates the duel, gives you an invite code and opens the share sheet. The friend creates an account or logs in first, then taps **Enter an invite code** (on Today next to Pending invites, or in the + flow) and types it.
 
@@ -44,10 +68,10 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 3. Neon: the duel row is now `active`, with `started_at`.
 
 ### 5. Both phones: check in and confirm (graded item 2)
-1. Phone 1: **I did it** → "Day 1 logged".
-2. Phone 2: pull down on Today. It shows **Confirm <name>'s 20 min** with an **OK** button. Tap OK, then **I did it**.
+1. Phone 1: **I did it** → "Day 1 logged". Optional: on that screen set the minutes (− / +) and a note, **Save details**.
+2. Phone 2: pull down on Today. It shows **Confirm <name>'s 20 min** (with the note, if there is one) and an **OK** button. Tap the text to open the **Confirm check-ins** screen and **Looks good**, or just tap OK. Then **I did it**.
 3. Phone 1: pull down; confirm phone 2's check-in the same way. Both phones now show the same score and dots.
-4. Show the **Duel** screen (tap the card), **Groups** (people you've dueled and the wins leaderboard) and **You** (duels won, days checked in, current streak): all computed from the database.
+4. Show the **Duel** screen (tap the card), **Groups** (people you've dueled and the wins leaderboard) **You** (duels won, days checked in, current streak, XP and tier) and the **Weekly recap** (card at the bottom of Today): all computed from the database.
 5. Neon: **checkins** has one row per check-in (`user_id`, `duel_id`, `day_index`, `confirmed`). Refresh and point at them.
 
 ### 6. Edit a row in Neon and watch the app change

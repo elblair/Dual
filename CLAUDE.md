@@ -20,7 +20,7 @@ app/
     (tabs)/            today, groups, you, plus tab bar
     ...                index (launcher), welcome, hobby, friend, code, accept, auth, duel/[id], done/[id], result/[id], break/[id]
   src/
-    theme/             theme.ts: ALL colors, fonts, spacing, radii (light now, dark "Midnight" later)
+    theme/             theme.ts: ALL colors, fonts, spacing, radii (light + dark "Midnight")
     components/        Button, Avatar, Dots, Card, TabBar, ...
     data/              DataSource interface, types.ts, apiSource.ts (the real one), mockSource.ts (explicit opt-in), catalog.ts (hobbies), hooks
     lib/               duel helpers, dates, storage, routes
@@ -55,7 +55,7 @@ App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` af
 
 ## Design rules
 - Match the Figma/PNGs closely, using real React Native components (`View`, `Text`, `Pressable`, `ScrollView`). No web code, no Tailwind, no HTML.
-- Every color, font, font size, spacing value and radius comes from `app/src/theme/theme.ts`. No hardcoded hex or magic numbers in screens/components. Theme is a typed object so a Midnight dark theme can be added later and picked with `useColorScheme`. Use a `useTheme()` hook, not direct imports of the light palette.
+- Every color, font, font size, spacing value and radius comes from `app/src/theme/theme.ts`. No hardcoded hex or magic numbers in screens/components. Theme is a typed object with two palettes (light and Midnight dark, same keys), picked from the phone setting or from You > Appearance (Automatic / Light / Dark). Every new color goes into BOTH palettes. Use a `useTheme()` hook, not direct imports of a palette; use `card`/`cardRaised` for raised surfaces and `link` for link text (not `white`/`blue`).
 - Font: Inter (via `@expo-google-fonts/inter`). Icons: `lucide-react-native` (matches the design's icon style).
 - Brand: maroon `#6e1023`. Orange `#f28c38` means "do this now" (check-in actions). Never use orange for decoration elsewhere.
 - Progress is always 7 dots per person (`Dots` component): you = blue, opponent = maroon-bright, empty = light gray, today = orange ring.
@@ -63,9 +63,9 @@ App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` af
 - Screens have 22pt side padding, 60pt top. Respect safe areas.
 
 ## Scope
-Real, from the API and database: sign up / log in / log out (the first screen for anyone signed out is Welcome: Create account and Log in only, no guests), pick a hobby, find a real friend by name or email (or invite by text with a code), pending invites and accept (by name, or by typing an invite code after logging in: on Today and in the + flow), one-tap check-in, confirm each other, 7-dot progress, rest day / pause / forfeit, Result (only when a duel really ends), rematch, You stats (duels won, days checked in, current streak), Groups (people you've dueled, wins leaderboard).
-Not in the app: guest accounts (every user has an account; an invite opened while signed out goes Welcome -> sign up / log in -> Accept), seed data, demo tools, the Database screen, fast-forward buttons, Strava/sync labels, Sunday recap, XP, tiers, Apple/Google sign-in, the lock-screen widget, stakes/money, Dual+, accepting via web link. New accounts start empty ("No duels yet").
-Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 rest days, and short rule/microcopy.
+Real, from the API and database: sign up / log in / log out (the first screen for anyone signed out is Welcome: Create account and Log in only, no guests), pick a hobby, find a real friend by name or email (or invite by text with a code), pending invites and accept (by name, or by typing an invite code after logging in: on Today and in the + flow), one-tap check-in, confirm each other, 7-dot progress, rest day / pause / forfeit, Result (only when a duel really ends), rematch, You stats (duels won, days checked in, current streak) and a small progression system computed on read from existing data (XP, Bronze/Silver/Gold tiers with one working perk, friendship levels; every number in `api/app/progression.py`), Groups (people you've dueled with their friendship level, wins leaderboard).
+Not in the app: guest accounts (every user has an account; an invite opened while signed out goes Welcome -> sign up / log in -> Accept), seed data, demo tools, the Database screen, fast-forward buttons, Strava/sync labels, Sunday recap, Apple/Google sign-in, the lock-screen widget, stakes/money, Dual+, accepting via web link. New accounts start empty ("No duels yet").
+Fixed by design (not user data): the hobby catalog, the 7-day duel length, 2 rest days (3 from Silver), the XP and tier numbers, and short rule/microcopy.
 
 ## Git workflow (simplified Git Flow; details in CONTRIBUTING.md)
 - `main`: production / demo-ready. Render deploys from it. Never commit directly; only merge via pull request.

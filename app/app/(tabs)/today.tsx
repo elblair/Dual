@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Check } from 'lucide-react-native';
-import { Avatar, Button, Card, ConnectionBadge, ErrorBanner, ErrorView, LoadingView, Pill, PlayerRow, Screen, Text } from '@/components';
-import { useData, useDuels, useMe, type Duel } from '@/data';
+import { ChartColumn, Check, ChevronRight, Clock, Plus, Users } from 'lucide-react-native';
+import { Avatar, Button, Card, Chip, ConnectionBadge, ErrorBanner, ErrorView, LoadingView, Pill, PlayerRow, Screen, StreakCard, Text } from '@/components';
+import { useData, useDuels, useGroups, useMe, useStats, type Duel } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { friendName, myDayStates, needsCheckIn, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
+import { daysLeftLabel, friendName, myDayStates, needsCheckIn, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
 import { todayLabel } from '@/lib/dates';
+import { recapNumbers, signed, thisWeek } from '@/lib/week';
 import { doneHref, duelHref, resultHref } from '@/lib/routes';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
@@ -19,7 +20,10 @@ export default function TodayScreen() {
   const data = useData();
   const { data: me, error: meError, loading: meLoading, refetch: refetchMe } = useMe();
   const { data: duels, error: duelsError, loading: duelsLoading, refetch: refetchDuels } = useDuels();
-  const { refreshing, onRefresh } = useRefresh(refetchMe, refetchDuels);
+  // Stats and crew only add cards: if they fail to load, Today still works without them.
+  const { data: stats, refetch: refetchStats } = useStats();
+  const { data: groups, refetch: refetchGroups } = useGroups();
+  const { refreshing, onRefresh } = useRefresh(refetchMe, refetchDuels, refetchStats, refetchGroups);
   const [actionError, setActionError] = useState('');
 
   if (meLoading || duelsLoading) {
@@ -48,6 +52,18 @@ export default function TodayScreen() {
   const toCheckIn = live.filter(needsCheckIn);
   const toConfirm = live.filter((d) => d.status === 'active' && d.theirPending);
   const todo = invites.length + toCheckIn.length + toConfirm.length;
+  const hasHistory = duels.some((d) => d.status !== 'pending');
+  const streak = stats?.currentStreak ?? 0;
+  const streakSubtitle =
+    toCheckIn.length > 0
+      ? streak > 0
+        ? 'Check in today to keep it going'
+        : 'Check in today to start one'
+      : live.length > 0
+        ? 'You’re all checked in for today'
+        : 'Start or accept a duel to keep it going';
+  const crew = groups?.rivals ?? [];
+  const recap = recapNumbers(stats?.recentCheckIns ?? []);
 
   /** Run a button action and show its error (for example "Can’t reach the server") instead of swallowing it. */
   async function run(fn: () => Promise<unknown>) {
@@ -113,17 +129,24 @@ export default function TodayScreen() {
 
   const confirmCard = (d: Duel) => (
     <Card key={d.id} variant="surface" style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}>
-      <Avatar name={friendName(d)} tone="opponent" size="md" />
-      <View style={{ flex: 1, gap: t.spacing.hairline }}>
-        <Text variant="bodyStrong">
-          Confirm {friendName(d)}’s {d.theirPending?.minutes} min
-        </Text>
-        {d.theirPending?.note ? (
-          <Text variant="caption" color="muted">
-            “{d.theirPending.note}”
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="See this check-in"
+        onPress={() => router.push('/confirm')}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}
+      >
+        <Avatar name={friendName(d)} tone="opponent" size="md" />
+        <View style={{ flex: 1, gap: t.spacing.hairline }}>
+          <Text variant="bodyStrong">
+            Confirm {friendName(d)}’s {d.theirPending?.minutes} min
           </Text>
-        ) : null}
-      </View>
+          {d.theirPending?.note ? (
+            <Text variant="caption" color="muted">
+              “{d.theirPending.note}”
+            </Text>
+          ) : null}
+        </View>
+      </Pressable>
       <Pill label="OK" tone="maroon" onPress={() => run(() => data.confirmFriend(d.id))} />
     </Card>
   );
@@ -145,6 +168,12 @@ export default function TodayScreen() {
         </View>
         <PlayerRow name={me.name} label="You" avatarTone="you" dotsTone="you" days={myDayStates(d)} />
         <PlayerRow name={friendName(d)} avatarTone="opponent" dotsTone="opponent" days={theirDayStates(d)} />
+        {d.status === 'active' ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: t.spacing.sm }}>
+            <Chip icon={Users} label={`${friendName(d)} confirms`} />
+            <Chip icon={Clock} label={daysLeftLabel(d)} />
+          </View>
+        ) : null}
       </Card>
     </Pressable>
   );
@@ -160,7 +189,7 @@ export default function TodayScreen() {
       <Text variant="caption" color="muted">
         {d.opponent
           ? `Waiting for ${d.opponent.name} to accept.`
-          : `Waiting for a friend. Send them the code ${d.inviteCode} and they enter it under “I have a code”.`}
+          : `Waiting for a friend. Send them the code ${d.inviteCode} and they enter it with “Enter an invite code”.`}
       </Text>
     </Card>
   );
@@ -203,6 +232,14 @@ export default function TodayScreen() {
         Hey, {me.name} · {todo === 0 ? 'nothing to do right now' : `${todo} ${todo === 1 ? 'thing' : 'things'} to do`}
       </Text>
 
+      {hasHistory ? (
+        <StreakCard
+          title={streak > 0 ? `${streak}-day streak` : 'No streak yet'}
+          subtitle={streakSubtitle}
+          week={thisWeek(stats?.recentCheckIns ?? [])}
+        />
+      ) : null}
+
       {duels.length === 0 ? (
         <Card variant="surface" style={{ gap: t.spacing.xl }}>
           <Text variant="headingSm">No duels yet</Text>
@@ -218,7 +255,7 @@ export default function TodayScreen() {
           {invites.length > 0 ? 'Pending invites' : ''}
         </Text>
         <Pressable accessibilityRole="link" onPress={() => router.push('/code')} hitSlop={8}>
-          <Text variant="labelMedium" color="blue">
+          <Text variant="labelMedium" color="link">
             Enter an invite code
           </Text>
         </Pressable>
@@ -230,13 +267,80 @@ export default function TodayScreen() {
 
       {live.length + sent.length + finished.length > 0 ? (
         <>
-          <Text variant="bodyStrong" color="muted">
-            This week
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text variant="headingSm">Your duals</Text>
+            <Pressable accessibilityRole="link" onPress={() => router.push('/hobby')} hitSlop={8}>
+              <Text variant="labelMedium" color="link">
+                + New
+              </Text>
+            </Pressable>
+          </View>
           {live.map(dualCard)}
           {sent.map(sentCard)}
           {finished.map(finishedCard)}
         </>
+      ) : null}
+
+      {crew.length > 0 ? (
+        <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text variant="headingSm">Your crew</Text>
+            <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/friend', params: { first: '1' } })} hitSlop={8}>
+              <Text variant="labelMedium" color="link">
+                Invite
+              </Text>
+            </Pressable>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: t.spacing.xl }}>
+            {crew.map((r) => (
+              <Pressable
+                key={r.person.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Challenge ${r.person.name}`}
+                onPress={() => router.push({ pathname: '/hobby', params: { friendId: r.person.id, friendName: r.person.name } })}
+                style={{ alignItems: 'center', gap: t.spacing.s6 }}
+              >
+                <Avatar name={r.person.name} tone="opponent" size="crew" />
+                <Text variant="caption" color="muted" numberOfLines={1}>
+                  {r.person.name}
+                </Text>
+              </Pressable>
+            ))}
+            <Pressable accessibilityRole="button" accessibilityLabel="Invite someone" onPress={() => router.push({ pathname: '/friend', params: { first: '1' } })} style={{ alignItems: 'center', gap: t.spacing.s6 }}>
+              <View
+                style={{
+                  width: t.sizes.avatar.crew,
+                  height: t.sizes.avatar.crew,
+                  borderRadius: t.sizes.avatar.crew / 2,
+                  borderWidth: t.borders.thick,
+                  borderColor: t.colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Plus size={t.sizes.icon.xl} color={t.colors.muted} strokeWidth={2} />
+              </View>
+              <Text variant="caption" color="muted">
+                Invite
+              </Text>
+            </Pressable>
+          </View>
+        </>
+      ) : null}
+
+      {hasHistory && stats ? (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/recap')}>
+          <Card variant="surface" style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg, borderRadius: t.radii.lg }}>
+            <ChartColumn size={t.sizes.icon.xl} color={t.colors.ink} strokeWidth={2} />
+            <View style={{ flex: 1, gap: t.spacing.hairline }}>
+              <Text variant="label">Weekly recap</Text>
+              <Text variant="caption" color="muted">
+                {recap.thisWeek} {recap.thisWeek === 1 ? 'day' : 'days'} practiced · {signed(recap.thisWeek - recap.lastWeek)} vs last week
+              </Text>
+            </View>
+            <ChevronRight size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />
+          </Card>
+        </Pressable>
       ) : null}
     </Screen>
   );
