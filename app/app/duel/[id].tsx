@@ -1,13 +1,13 @@
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Calendar, Check, Clock, Flame, Pause, Users } from 'lucide-react-native';
+import { Calendar, Check, Clock, Flame, Hourglass, Pause, Users } from 'lucide-react-native';
 import { Avatar, BackButton, Button, Card, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { shortDate, whenLabel } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { friendName, lastDayName, leadLabel, myDayStates, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
+import { friendName, lastDayName, leadLabel, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -72,7 +72,7 @@ export default function DuelScreen() {
         }}
       >
         <Text variant="eyebrow" color="muted">
-          {duel.status === 'finished' ? 'Finished' : `Day ${dayNumber} of ${duel.lengthDays}`} · Friendly
+          {duel.status === 'finished' ? 'Finished' : duel.status === 'pending' ? pendingInviteLabel(duel) : `Day ${dayNumber} of ${duel.lengthDays}`} · Friendly
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.gutter }}>
           <View style={{ alignItems: 'center', gap: t.spacing.s6 }}>
@@ -83,8 +83,12 @@ export default function DuelScreen() {
             {myScore(duel)} – {theirScore(duel)}
           </Text>
           <View style={{ alignItems: 'center', gap: t.spacing.s6 }}>
-            <Avatar name={friendName(duel)} tone="opponent" size="lg" />
-            <Text variant="smallStrong">{friendName(duel)}</Text>
+            {duel.opponent ? (
+              <Avatar name={friendName(duel)} tone="opponent" size="lg" />
+            ) : (
+              <Avatar name="Your friend has not joined yet" icon={Hourglass} tone="neutral" size="lg" />
+            )}
+            <Text variant="smallStrong">{duel.opponent ? friendName(duel) : 'Not joined yet'}</Text>
           </View>
         </View>
         <View style={{ alignItems: 'center', gap: t.spacing.sm }}>

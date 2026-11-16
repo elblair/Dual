@@ -277,7 +277,7 @@ def finished_together(db: Session, user: User) -> Counter[str]:
 
 def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id: str | None) -> Duel:
     """Start a duel. It stays pending until the other person accepts: a person picked from search sees it under
-    "Pending invites", anyone else enters the invite code."""
+    "Pending invites", anyone else enters the invite code. Creating the same pending challenge again returns the existing one."""
     if not 5 <= minutes <= 240:
         raise DomainError("Pick between 5 and 240 minutes a day.")
     friend = None
@@ -287,6 +287,17 @@ def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id:
             raise DomainError("We couldn’t find that person.", status=404)
         if friend.id == user.id:
             raise DomainError("You can’t challenge yourself.")
+
+    # Asking again for the same pending challenge (a retry after a cancelled share sheet, a double tap) gives back the
+    # same duel and the same invite code instead of piling up duplicates.
+    same_friend = Duel.opponent_id.is_(None) if friend is None else Duel.opponent_id == friend.id
+    existing = db.scalar(
+        select(Duel)
+        .where(Duel.creator_id == user.id, Duel.status == "pending", Duel.hobby_id == hobby_id, Duel.minutes == minutes, same_friend)
+        .order_by(Duel.id.desc())
+    )
+    if existing is not None:
+        return existing
 
     now = utcnow()
     duel = Duel(

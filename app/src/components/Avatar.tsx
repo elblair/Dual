@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import { useTheme, type ColorName } from '@/theme';
 import { Text } from './Text';
 
@@ -19,9 +20,11 @@ interface AvatarProps {
   size?: AvatarSize;
   /** 'white' = white border (Accept screen), 'orange' = highlighted (Duel, You). */
   ring?: 'white' | 'orange';
+  /** Shown instead of the initial (a friend who has not joined yet). `name` is still used as the accessibility label. */
+  icon?: LucideIcon;
 }
 
-export function Avatar({ name, tone = 'you', size = 'md', ring }: AvatarProps) {
+export function Avatar({ name, tone = 'you', size = 'md', ring, icon: Icon }: AvatarProps) {
   const t = useTheme();
   const px = t.sizes.avatar[size];
   return (
@@ -38,9 +41,13 @@ export function Avatar({ name, tone = 'you', size = 'md', ring }: AvatarProps) {
         borderColor: ring ? t.colors[ring === 'white' ? 'white' : 'orange'] : undefined,
       }}
     >
-      <Text color="white" style={{ fontFamily: t.fonts.semibold, fontSize: Math.round(px * 0.375) }}>
-        {name.charAt(0).toUpperCase()}
-      </Text>
+      {Icon ? (
+        <Icon size={Math.round(px * 0.45)} color={t.colors.white} strokeWidth={2} />
+      ) : (
+        <Text color="white" style={{ fontFamily: t.fonts.semibold, fontSize: Math.round(px * 0.375) }}>
+          {name.charAt(0).toUpperCase()}
+        </Text>
+      )}
     </View>
   );
 }
