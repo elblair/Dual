@@ -1,10 +1,12 @@
 # Dual build plan
 
+> **Read the section "Direction change after Phase 5" first.** Everything below about guests (the "Guest first, account later" decision, `/auth/guest`, the first-name prompt, "Save your streak") was removed too: see "Direction change: no guests" at the end of the decisions. Everything below about seeded friends (Eleanor, Tanish, Ben), demo duels, Demo tools, the Database screen, `DEMO_MODE` and the mock fallback is historical: it was removed. The app now shows only real data from the API (see `docs/DEMO.md` for the two-phone demo).
+
 Approved (with the changes folded in below). See `CLAUDE.md` and `design/spec.md`. Code starts at Phase 0.
 
 ## Decisions (final)
 
-1. **Guest first, account later.** First screen is Hobby ("No account needed"). The API creates a guest user on first open and returns a token. "Save your streak" upgrades the guest to an email + password account. "Log in" on Hobby signs in to an existing account.
+1. **(Superseded: no guests now.)** Guest first, account later. First screen was Hobby ("No account needed"). The API creates a guest user on first open and returns a token. "Save your streak" upgrades the guest to an email + password account. "Log in" on Hobby signs in to an existing account.
 2. **Accepting = invite code, in-app.** "Send by text" opens the native share sheet with the message and a short code (e.g. `K3X9`). The friend taps "I have a code" on Hobby and sees Accept. The browser chrome from the Accept frame is dropped. On Expo web (no share sheet) the code is copied to the clipboard instead.
 3. **Friend picker keeps Eleanor, Tanish and Ben.**
    - **Eleanor** is a real seeded account (email/password in the seed script). Challenging her creates a real duel that she auto-accepts, so a one-phone demo works. The Demo tools can make her check in.
@@ -24,7 +26,7 @@ Approved (with the changes folded in below). See `CLAUDE.md` and `design/spec.md
 
 ## Expo SDK
 Use the SDK supported by the Expo Go build in the App Store and Play Store, not the newest SDK on npm (npm `latest` is SDK 58, but the store builds lag; the Expo docs say the iOS App Store build has stopped at SDK 54 and that only one SDK is supported per Expo Go build).
-- **Confirmed by the user: SDK 54** (`expo@~54.0.0`); their iPhone and teammates' phones need it. If Expo Go shows a version error when scanning the QR at the end of Phase 1, the user pastes it and we fix it. Never move to a newer SDK that would force a development build.
+- **SDK 58** (`expo@^58.0.0`, RN 0.88). This replaced the earlier SDK 54 choice: at the end of Phase 1 the user's iPhone reported "installed version of Expo Go is 58.0.0, the project uses 54". The App Store build had moved to 58 (our earlier read of the docs said it stopped at 54), and iOS Expo Go cannot be downgraded. Teammates need an up-to-date Expo Go. SDK 58 changes made: removed `newArchEnabled` and `android.edgeToEdgeEnabled` from app.json (now default), `createStyles` no longer uses `StyleSheet.NamedStyles`. Never move to an SDK that forces a development build.
 - Only Expo Go compatible packages (no custom native modules).
 
 ## Environment flags (app, in `app/.env`)
@@ -57,8 +59,41 @@ Screens never call `fetch` or the mock directly. They use hooks from `app/src/da
 - `POST /demo/advance-day`, `/demo/eleanor-checkin`, `/demo/reset` (only when `DEMO_MODE=true`)
 - JWT bearer auth, bcrypt, `create_all` on startup, seed function for Eleanor and Tanish, CORS enabled (needed for Expo web).
 
+## Phase 4 decisions (built)
+- Users have string ids (`eleanor`, `tanish` are fixed seeded accounts; everyone else a random hex id). Guests are named "Ari" until they register.
+- `Duel` gained `creator` and `viewerIsCreator` in the shared types: the invited friend looks at a duel by code from their own point of view, so Accept shows the challenger (left) and the invitee (right).
+- Real accounts cannot accept their own challenge (the mock still allows it so a one-phone demo works).
+- The day is stored on the duel and caught up with the clock on every read (`settle`); demo fast-forward adds a day offset.
+- Check-ins carry `confirmed`: yours count on your own screen at once and on your friend's once they tap OK; day rollover confirms everything.
+- Tests run on in-memory SQLite only; `api/check_db.py` smoke-checks Neon from `api/.env`.
+
+## Phase 5 decisions (built)
+- Graded demo: registration (Hobby has "Create account" and "Log in"; the form calls `POST /auth/register`) and data rendering (Today, Duel, Groups ranking, You, and a Database screen backed by `GET /demo/db`). The script is `docs/DEMO.md`.
+- Sessions: no session until someone registers or gives a first name (`POST /auth/guest`), so there is no "Ari". `getMe()` is null when signed out; `listDuels()` is empty. The token lives in SecureStore (localStorage on web).
+- Register with no session creates a new `users` row; with a guest session it upgrades that row.
+- Every list screen has loading, error (with Try again) and pull-to-refresh states; a Live / Offline badge (pings `/health` every 10 s) shows the API host on Today and Database; the mock shows "Mock data".
+- The Groups floor battle stays sample data; its ranking list is real (minutes per person across my duels).
+- The Neon edit demo changes `duels.minutes` (no schema change needed): Today and Duel show it after a refresh.
+
+## Direction change after Phase 5: no demo, seed, sample or hardcoded data (branch `fix/remove-demo-data`)
+The graded demo is two real people on two real phones. This supersedes the demo parts of the decisions above (seeded Eleanor/Tanish/Ben, demo duels, Demo tools, Database screen, DEMO_MODE, silent mock fallback).
+- **Removed:** all seed data and endpoints (`/demo/*`, seeding on guest/register), the Database screen, "See how it ends", Strava/recap/XP/Silver/Groups sample content, Apple/Google buttons, the lock-screen row and image, fixed names/days/numbers in copy. The legacy columns (`users.is_seeded`, `duels.invitee_id`, `duels.day_offset`) are dropped by `app/migrate.py` on startup; `scripts/purge_seed_data.py` deleted the seeded rows from Neon. `DEMO_MODE` no longer exists.
+- **No silent fallback:** without `EXPO_PUBLIC_API_URL`, or when the server is unreachable, the launcher shows a clear error with "Try again". `EXPO_PUBLIC_USE_MOCK=true` is an explicit opt-in to a single-user, nothing-saved mock.
+- **Invites are real:** a duel is always created `pending`. Pick a person with `GET /users/search` (name or email prefix, accounts only, email masked): the duel shows under "Pending invites" on their Today and only they can accept. Or send an open invite: the server makes a 4-character code and anyone except the creator can accept it by code (works before signing in; a guest then gives a first name).
+- **Real data everywhere:** Today ("No duels yet", pending invites, "done today" states), Duel (day X of 7, weekday letters and end day from `startedAt`), Result (only for finished duels; easier goal = half the minutes), You (`GET /me/stats`: duels won, days checked in, current streak), and Groups, which is kept because it is one of the four tabs: `GET /groups` returns the people you've dueled with (head-to-head record) and a wins leaderboard among you and them, computed from finished duels.
+- **Clock:** a duel's day follows real 24-hour days since it was accepted. The presenter script `api/scripts/advance_duel.py <code|id> <days>` moves `started_at` back in the database so the Result can be shown; the app has no such control.
+- **Check-ins** still carry `confirmed` ("you confirm each other"); there is no check-in note input, so the "Confirm X's N min" card has no quote.
+
+## Direction change: no guests (branch `fix/first-screen-login`)
+Every user must sign up or log in first.
+- **Welcome `/welcome`** is the first screen for anyone signed out: Create account and Log in only. Log out returns to it, and so do the signed-out redirects on Today, You, Friend, Hobby and Code.
+- **Removed:** `POST /auth/guest`, the `users.is_guest` column (dropped by `app/migrate.py` on startup), the first-name-only `/name` screen, `/save` ("Save your streak"), guest upgrade in `POST /auth/register` (register always adds a new row), the guest card on Done and You, and the Create account button on Hobby. `isGuest` is gone from the shared types.
+- **Invite codes after login:** "Enter an invite code" is a link on Today (next to Pending invites) and on Friend (the + flow); both open `/code`, which needs a session.
+- **Invite opened while signed out:** `/accept?code=XXXX` keeps the code (`pendingCode` in the onboarding state), shows Welcome (with a note that there is an invite), and after sign up or log in the auth screen continues to Accept with that code.
+- Old guest rows already in a database are harmless leftovers (no email, nobody can log in as them); the friend search only returns accounts with an email.
+
 ## Screen-to-route map
-Hobby `/` (Log in, I have a code) -> Friend `/friend` -> share -> Today. Code -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> Save `/save` (guests only) or back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You (with Demo tools when enabled).
+Welcome `/welcome` (Create account, Log in) -> `/auth` -> Today. Today "+" -> Hobby `/hobby` -> Friend `/friend` -> share -> Today. Today / Friend "Enter an invite code" -> Code `/code` -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You.
 
 ## Phases (each ends with phone test steps and a commit)
 

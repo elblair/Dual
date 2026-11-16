@@ -28,7 +28,7 @@ git switch -c feature/<short-name>
 git push -u origin feature/<short-name>
 gh pr create --base develop      # or open the PR on GitHub
 ```
-Each PR into `develop` needs a short description (the PR template asks): what changed, how to test on a phone, screenshots for UI. A teammate reviews before merge. Check that the app also works with `EXPO_PUBLIC_USE_MOCK=true`.
+Each PR into `develop` needs a short description (the PR template asks): what changed, how to test on a phone, screenshots for UI. `develop` needs the PR but no approval, so you can merge your own PR once it is ready; a teammate review is welcome but optional. Check that the app also works with `EXPO_PUBLIC_USE_MOCK=true`.
 
 ## Releases
 When `develop` is stable and demo-ready: open a PR `develop` -> `main` titled `chore: release v0.x.0`, merge after approval, then tag the merge commit on `main`:
@@ -44,4 +44,5 @@ git switch main && git pull && git switch -c hotfix/<short-name>
 ```
 
 ## Branch protection (repo admin, GitHub settings)
-`main` and `develop`: require a pull request and 1 approval, no direct pushes.
+- `main`: require a pull request and 1 approval, no direct pushes. Release PRs (`develop` -> `main`) and hotfixes need a teammate to approve.
+- `develop`: require a pull request, 0 approvals, no direct pushes.
