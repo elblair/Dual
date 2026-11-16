@@ -67,4 +67,4 @@ python scripts/purge_seed_data.py                     # delete the old demo acco
 ```
 
 ## Deploying (Phase 6)
-Render web service from `/api` (Oregon): build `pip install -r requirements.txt`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, with the three environment variables above.
+Live at https://dual-api-memp.onrender.com (auto-deploys from `main`). Render web service from `/api` (Oregon): build `pip install -r requirements.txt`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, with the three environment variables above.

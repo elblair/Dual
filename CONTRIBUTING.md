@@ -31,11 +31,14 @@ gh pr create --base develop      # or open the PR on GitHub
 Each PR into `develop` needs a short description (the PR template asks): what changed, how to test on a phone, screenshots for UI. `develop` needs the PR but no approval, so you can merge your own PR once it is ready; a teammate review is welcome but optional. Check that the app also works with `EXPO_PUBLIC_USE_MOCK=true`.
 
 ## Releases
-When `develop` is stable and demo-ready: open a PR `develop` -> `main` titled `chore: release v0.x.0`, merge after approval, then tag the merge commit on `main`:
+When `develop` is stable and demo-ready: open a PR into `main` titled `release: v0.x.0` (with a changelog since the last tag and how to test), get a teammate's approval, and **merge it with a merge commit, never squash** (and never rebase). Then tag the merge commit on `main`:
 ```
 git switch main && git pull
-git tag -a v0.1.0 -m "v0.1.0" && git push origin v0.1.0
+git tag -a v0.x.0 -m "v0.x.0" && git push origin v0.x.0
 ```
+**Why a merge commit:** a squash merge writes one new commit on `main` and leaves `develop`'s commits out of `main`'s history, so `main` and `develop` diverge and the next `develop` -> `main` PR shows conflicts in every file touched since (this happened after v0.1.0). A merge commit keeps `develop` an ancestor of `main`. If a release PR ever shows conflicts anyway, branch `chore/release-v0.x.0` from `main`, merge `develop` into it, take `develop`'s content for the conflicts (the trees must be identical: `git diff origin/develop` is empty) and open the release PR from that branch, again merged with a merge commit.
+
+PRs into `develop` (features, fixes, chores) are squash-merged as usual.
 
 ## Hotfix
 ```
@@ -44,5 +47,5 @@ git switch main && git pull && git switch -c hotfix/<short-name>
 ```
 
 ## Branch protection (repo admin, GitHub settings)
-- `main`: require a pull request and 1 approval, no direct pushes. Release PRs (`develop` -> `main`) and hotfixes need a teammate to approve.
+- `main`: require a pull request and 1 approval, no direct pushes. Release PRs (`develop` -> `main`) and hotfixes need a teammate to approve, and release PRs are merged with a merge commit (see Releases).
 - `develop`: require a pull request, 0 approvals, no direct pushes.

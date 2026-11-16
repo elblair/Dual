@@ -1,5 +1,7 @@
 # Render hand-off: deploy the Dual API
 
+> **Live:** the API is deployed at **https://dual-api-memp.onrender.com** (Oregon, free tier, deploys from `main`). Check `https://dual-api-memp.onrender.com/health`. The steps below are how it was set up, kept for redeploying or recreating it.
+
 For the teammate who owns the GitHub repo (`elblair/Dual`, private). About 10 minutes. You only need a free Render account and the Neon connection string.
 
 **Why you:** Render can only see repos that the connected GitHub account owns, so the service has to be created from the owner's account. You enter the secrets yourself; they never go through chat.

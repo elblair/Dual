@@ -31,7 +31,7 @@ pytest                        # tests run on in-memory SQLite, never on Neon
 **App** (from `app/`)
 ```
 npm install
-copy .env.example .env        # set EXPO_PUBLIC_API_URL (your PC's LAN IP on a phone, http://localhost:8000 in the browser)
+copy .env.example .env        # EXPO_PUBLIC_API_URL defaults to the Render API (https://dual-api-memp.onrender.com); use http://localhost:8000 (browser) or your PC's LAN IP (phone) for a local API
 npx expo start -c             # scan the QR code with Expo Go (phone and PC on the same Wi-Fi), or press w for the browser
 npx tsc --noEmit              # type check
 ```
@@ -44,7 +44,9 @@ The Expo Go in the phone's store must match the project's SDK (58). Do not chang
 
 ## Deploy the API
 
-`render.yaml` is a Render Blueprint. Step by step: `docs/RENDER_HANDOFF.md`. After deploying, set `EXPO_PUBLIC_API_URL` in `app/.env` to the Render URL and restart Expo with `-c`.
+The API is live on Render (Oregon, free tier) at **https://dual-api-memp.onrender.com** and redeploys automatically when `main` changes; check it at `/health`. `render.yaml` is the Render Blueprint and `docs/RENDER_HANDOFF.md` has the click-by-click setup. To use it from a phone, set `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` in `app/.env` and restart Expo with `npx expo start -c`.
+
+Releases: `develop` -> `main` PRs titled `release: v0.x.0`, merged with a **merge commit** (never squash), then tagged (see `CONTRIBUTING.md`).
 
 ## Git workflow
 
