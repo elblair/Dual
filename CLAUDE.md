@@ -44,8 +44,8 @@ API (from `/api`):
 
 App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` after changes):
 - `EXPO_PUBLIC_API_URL`: API base URL
-- `EXPO_PUBLIC_USE_MOCK=true`: run entirely on the in-memory mock store (demo fallback if the API is down/slow)
-- `EXPO_PUBLIC_DEMO=true`: show "Demo tools" on the You screen (fast-forward a day, Eleanor checks in, reset demo)
+- `EXPO_PUBLIC_USE_MOCK=true`: run entirely on the in-memory mock store (demo fallback if the API is down/slow). With `false` and `EXPO_PUBLIC_API_URL` set, nothing comes from the mock
+- `EXPO_PUBLIC_DEMO=true`: show "Demo tools" on the You screen (Database, fast-forward a day, Eleanor checks in, reset demo) and give new accounts the day-5 demo duels
 
 ## Design rules
 - Match the Figma/PNGs closely, using real React Native components (`View`, `Text`, `Pressable`, `ScrollView`). No web code, no Tailwind, no HTML.
