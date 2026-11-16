@@ -11,7 +11,7 @@ Everything on screen comes from the API and the database. There is no seeded, sa
 | Database | Neon | Postgres (free tier) |
 | Hosting | Render | Free web service, Oregon (blueprint: `render.yaml`) |
 | Design | `design/` | `spec.md` (tokens and screen specs) and PNG exports of the Figma screens |
-| Docs | `docs/` | `DEMO.md` (demo script and checklist), `PLAN.md`, `RENDER_HANDOFF.md` |
+| Docs | `docs/` | `DEMO.md` (demo script and checklist), `PLAN.md`, `FEATURES.md`, `METRICS.md`, `RENDER_HANDOFF.md` |
 
 ## Run it locally
 
