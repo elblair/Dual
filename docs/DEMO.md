@@ -58,6 +58,8 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 3. The **Sent** screen confirms it ("Your dual is on its way", with the invite code for a code invite). **Back home** shows the duel under **Your duals** as "Waiting for <name> to accept."
 4. Neon: **duels** has a new row (`status = pending`, `creator_id`, `opponent_id`, `invite_code`).
 
+*Already dueled someone?* Tap their avatar under **Your crew** on Today (**Challenge <name>**): you go straight to the hobby step, then **Invite <name>**. **Invite** next to Your crew works the other way round: pick the friend first, then the hobby.
+
 *Not on Dual yet?* Pick **Send by text** instead: the app creates the duel, gives you an invite code and opens the share sheet. The friend creates an account or logs in first, then taps **Enter an invite code** (on Today next to Pending invites, or in the + flow) and types it.
 
 ### 4. Phone 2: accept

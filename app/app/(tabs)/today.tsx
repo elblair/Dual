@@ -285,7 +285,7 @@ export default function TodayScreen() {
         <>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text variant="headingSm">Your crew</Text>
-            <Pressable accessibilityRole="link" onPress={() => router.push('/hobby')} hitSlop={8}>
+            <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/friend', params: { first: '1' } })} hitSlop={8}>
               <Text variant="labelMedium" color="link">
                 Invite
               </Text>
@@ -293,14 +293,20 @@ export default function TodayScreen() {
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: t.spacing.xl }}>
             {crew.map((r) => (
-              <View key={r.person.id} style={{ alignItems: 'center', gap: t.spacing.s6 }}>
+              <Pressable
+                key={r.person.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Challenge ${r.person.name}`}
+                onPress={() => router.push({ pathname: '/hobby', params: { friendId: r.person.id, friendName: r.person.name } })}
+                style={{ alignItems: 'center', gap: t.spacing.s6 }}
+              >
                 <Avatar name={r.person.name} tone="opponent" size="crew" />
                 <Text variant="caption" color="muted" numberOfLines={1}>
                   {r.person.name}
                 </Text>
-              </View>
+              </Pressable>
             ))}
-            <Pressable accessibilityRole="button" accessibilityLabel="Invite someone" onPress={() => router.push('/hobby')} style={{ alignItems: 'center', gap: t.spacing.s6 }}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Invite someone" onPress={() => router.push({ pathname: '/friend', params: { first: '1' } })} style={{ alignItems: 'center', gap: t.spacing.s6 }}>
               <View
                 style={{
                   width: t.sizes.avatar.crew,
