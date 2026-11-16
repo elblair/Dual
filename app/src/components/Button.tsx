@@ -33,6 +33,7 @@ export function Button({ label, onPress, variant = 'primary', icon: Icon, disabl
       onPress={onPress}
       style={({ pressed }) => [
         {
+          alignSelf: 'stretch',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
