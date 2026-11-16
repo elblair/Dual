@@ -69,7 +69,7 @@ Skip entirely: stakes/money (also remove stake text from copy), Dual+, accepting
 - `hotfix/<short-name>`: urgent fixes from `main`, merged into `main` AND `develop`.
 - No staging branch (one free Render service): `main` is what we deploy.
 - Commits and PR titles use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `style:`. Small, focused commits. Never commit secrets or `.env` files.
-- Each phase = one feature branch -> PR into `develop` (what changed, how to test on a phone, screenshots for UI). A teammate reviews before merge.
+- Each phase = one feature branch -> PR into `develop` (what changed, how to test on a phone, screenshots for UI). PRs into `develop` need no approval (the user merges them); only `main` needs 1 approval.
 - When `develop` is stable and demo-ready, PR `develop` -> `main` and tag it (`v0.1.0`, `v0.2.0`, ...).
 - Delete feature branches after merging.
 - Use `gh pr create --base develop` to open PRs; if `gh` is unavailable, give the user the GitHub compare link instead.
