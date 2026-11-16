@@ -87,6 +87,15 @@ class UserHitOut(CamelModel):
     id: str
     name: str
     email_hint: str
+    # Friendship level from finished duels together (None until you have finished one).
+    level: str | None
+
+
+class TierOut(CamelModel):
+    name: str
+    min_xp: int
+    perk: str | None
+    reached: bool
 
 
 class StatsOut(CamelModel):
@@ -95,6 +104,15 @@ class StatsOut(CamelModel):
     current_streak: int
     # My own check-in times (ISO, UTC) from the last 14 days: the app draws this week's streak bubbles from them.
     recent_check_ins: list[str]
+    # Progression, all computed from check-ins and duels (rules: app/progression.py).
+    xp: int
+    tier: str
+    next_tier: str | None
+    xp_to_next: int | None
+    # 0 to 1 towards the next tier (1 at the top tier).
+    progress: float
+    rest_days_per_duel: int
+    tiers: list["TierOut"]
 
 
 class RivalOut(CamelModel):
@@ -104,6 +122,10 @@ class RivalOut(CamelModel):
     losses: int
     ties: int
     active: int
+    finished: int
+    level: str | None
+    next_level: str | None
+    duels_to_next_level: int | None
 
 
 class LeaderRowOut(CamelModel):

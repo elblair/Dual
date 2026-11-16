@@ -226,6 +226,8 @@ const sizes = {
   radio: 22,
   icon: { badge: 13, xs: 14, copy: 15, sm: 16, md: 18, back: 19, lg: 20, xl: 22, plus: 26, flame: 30, hero: 52 },
   weekDay: 34, // streak card day bubble
+  rankBar: 8, // XP progress bar height (radius 4)
+  perkBadge: 28, // check / lock circle on the rank card
   playerName: 62, // name label next to dots
   barLabel: 64, // label next to a progress bar (Groups)
   bar: 10, // progress bar height (radius 5)
