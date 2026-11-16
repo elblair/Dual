@@ -50,8 +50,20 @@ export interface Duel {
   myRestDays: number[];
   restLeft: number;
   theirPending: PendingCheckin | null;
+  /** Latest check-ins of both players, newest first ("Recent check-ins"). */
+  activity: Activity[];
   pausedUntil: string | null;
   result: DuelResult | null;
+}
+
+export interface Activity {
+  who: 'me' | 'them';
+  minutes: number;
+  note: string;
+  /** ISO time of the check-in. */
+  createdAt: string;
+  confirmed: boolean;
+  dayIndex: number;
 }
 
 export interface CreateDuelInput {
