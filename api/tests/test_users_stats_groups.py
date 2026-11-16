@@ -64,7 +64,9 @@ def test_search_result_can_be_challenged(duo):
 
 
 def test_stats_start_at_zero(player):
-    assert player.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 0, "currentStreak": 0, "recentCheckIns": []}
+    stats = player.get("/me/stats").json()
+    assert (stats["duelsWon"], stats["daysCheckedIn"], stats["currentStreak"], stats["recentCheckIns"]) == (0, 0, 0, [])
+    assert (stats["xp"], stats["tier"]) == (0, "Bronze")
 
 
 def test_stats_count_check_ins_and_the_streak(active_duel, db):
@@ -120,7 +122,8 @@ def test_stats_count_duels_won_only_when_a_duel_really_ends(active_duel, db):
 def test_pending_invites_do_not_count(duo):
     ari, sam = duo
     ari.challenge(sam)
-    assert ari.get("/me/stats").json() == {"duelsWon": 0, "daysCheckedIn": 0, "currentStreak": 0, "recentCheckIns": []}
+    stats = ari.get("/me/stats").json()
+    assert (stats["duelsWon"], stats["daysCheckedIn"], stats["currentStreak"], stats["xp"]) == (0, 0, 0, 0)
 
 
 # ---------------------------------------------------------------- groups

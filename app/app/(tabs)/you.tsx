@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Avatar, Button, Card, ErrorBanner, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
+import { Avatar, Button, Card, ErrorBanner, ErrorView, LoadingView, Pill, RankCard, Screen, Text } from '@/components';
 import { useData, useDuels, useMe, useStats } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { useRefresh } from '@/lib/useRefresh';
@@ -77,6 +77,8 @@ export default function YouScreen() {
           </Card>
         ))}
       </View>
+
+      {stats.tiers.length > 0 ? <RankCard stats={stats} /> : null}
 
       <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.lg }}>
         <Text variant="label">Appearance</Text>

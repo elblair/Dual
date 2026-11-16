@@ -84,11 +84,21 @@ export default function GroupsScreen() {
           <Avatar name={r.person.name} tone="opponent" size="md" />
           <View style={{ flex: 1, gap: 1 }}>
             <Text variant="label">{r.person.name}</Text>
+            {r.level ? (
+              <Text variant="captionStrong" color="orangeDark">
+                {r.level}
+              </Text>
+            ) : null}
             <Text variant="caption" color="muted">
               {r.duels} {r.duels === 1 ? 'duel' : 'duels'} · you {r.wins} – {r.losses}
               {r.ties > 0 ? ` (${r.ties} ${r.ties === 1 ? 'tie' : 'ties'})` : ''}
               {r.active > 0 ? ` · ${r.active} live` : ''}
             </Text>
+            {r.nextLevel && r.duelsToNextLevel ? (
+              <Text variant="caption" color="muted">
+                {r.duelsToNextLevel} more finished {r.duelsToNextLevel === 1 ? 'duel' : 'duels'} to {r.nextLevel}
+              </Text>
+            ) : null}
           </View>
         </Card>
       ))}

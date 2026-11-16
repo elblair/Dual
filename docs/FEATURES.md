@@ -17,6 +17,8 @@ Legend: **Status** built / partly / missing. **Expo Go + free** = works in Expo 
 
 ---
 
+> **Update (after the team's answers):** a small real version of XP, Bronze/Silver/Gold tiers (one working perk: 3 rest days from Silver) and friendship levels (New rivals / Regulars / Ride or die) is being built, computed on read from existing data with the numbers in `api/app/progression.py`. Where the tables below say XP, tiers, ranks or levels are skipped or cut, this replaces them. Recap and Squad answers: recap is computed on open; Squad stays later. Starter plans, if built, live in a database table loaded from the API. Photos are out; minutes and a note replace them.
+
 ## 1. Base row, screen by screen
 
 | # | Base frame | What the design shows | Status in the app | Expo Go + free | Effort | Risk | Recommendation |

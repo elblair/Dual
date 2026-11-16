@@ -44,10 +44,17 @@ No data is created on startup: tables only. New accounts start empty.
 
 Errors are `{"detail": "friendly message"}` with a sensible status (401 sign in, 403 not your invite, 404 not found, 409 email taken, 400 rule broken).
 
+## Progression (XP, tiers, friendship levels)
+Computed on every read from check-ins and duels (no extra tables). All numbers are in `app/progression.py`.
+- **XP:** 10 per check-in of mine, 25 per check-in of my friend that is confirmed in my duels (by my tap or at day rollover), 50 per duel won. Pending duels give nothing.
+- **Tiers:** Bronze 0, Silver 300, Gold 800. Silver and above get **3 rest days per duel instead of 2** (enforced by `POST /duels/{id}/rest` and shown as `restLeft`). Gold: "Start group rivalries (coming later)" is only listed.
+- **Friendship levels,** from FINISHED duels with the same friend: New rivals (1), Regulars (3+), Ride or die (6+). Returned as `level` on `/groups` rivals (with `nextLevel`, `duelsToNextLevel`) and on `/users/search` hits.
+- `GET /me/stats` returns `xp`, `tier`, `nextTier`, `xpToNext`, `progress` (0 to 1), `restDaysPerDuel` and `tiers` (name, minXp, perk, reached).
+
 ## How a duel works
 - Always `pending` first. It becomes `active` (day 1 of 7) when the invited person accepts, then follows the clock: 24 hours per day since it was accepted.
 - Your own check-in counts on your screen at once; it counts on your friend's screen once they confirm it ("you confirm each other"). When a day rolls over, everything pending is confirmed.
-- Two rest days per player. Pausing freezes the clock for both. Forfeit ends the duel and the friend wins.
+- Two rest days per player (three from Silver). Pausing freezes the clock for both. Forfeit ends the duel and the friend wins.
 - After day 7 the duel is `finished`; the winner is whoever has more check-ins (a tie is possible). The Result screen only exists for finished duels.
 
 ## Presenter scripts (not part of the app)

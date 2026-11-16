@@ -114,7 +114,7 @@ export function createMockSource(): DataSource {
       if (!me || q.length < 2) return Promise.resolve([]);
       const hits = accounts
         .filter((a) => a.id !== me!.id && (a.name.toLowerCase().includes(q) || a.email.startsWith(q)))
-        .map((a) => ({ id: a.id, name: a.name, emailHint: `${a.email[0]}***@${a.email.split('@')[1]}` }));
+        .map((a) => ({ id: a.id, name: a.name, emailHint: `${a.email[0]}***@${a.email.split('@')[1]}`, level: null }));
       return Promise.resolve(hits);
     },
 
@@ -200,6 +200,13 @@ export function createMockSource(): DataSource {
         daysCheckedIn: mine.reduce((n, d) => n + d.myDays.length, 0),
         currentStreak: 0,
         recentCheckIns: [],
+        xp: 0,
+        tier: 'Bronze',
+        nextTier: null,
+        xpToNext: null,
+        progress: 0,
+        restDaysPerDuel: 2,
+        tiers: [],
       });
     },
     getGroups(): Promise<Groups> {

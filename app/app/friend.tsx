@@ -104,7 +104,7 @@ export default function FriendScreen() {
           <ContactRow
             key={h.id}
             name={h.name}
-            subtitle={h.emailHint}
+            subtitle={h.level ? `${h.level} · ${h.emailHint}` : h.emailHint}
             tone="opponent"
             selected={friend?.id === h.id}
             onPress={() => setFriend(friend?.id === h.id ? null : { id: h.id, name: h.name })}
@@ -134,7 +134,7 @@ export default function FriendScreen() {
               <ContactRow
                 key={r.person.id}
                 name={r.person.name}
-                subtitle={`${r.duels} ${r.duels === 1 ? 'duel' : 'duels'} together`}
+                subtitle={`${r.level ? `${r.level} · ` : ''}${r.duels} ${r.duels === 1 ? 'duel' : 'duels'} together`}
                 tone="opponent"
                 selected={friend?.id === r.person.id}
                 onPress={() => setFriend(friend?.id === r.person.id ? null : { id: r.person.id, name: r.person.name })}
