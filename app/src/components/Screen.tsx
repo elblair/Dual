@@ -29,7 +29,7 @@ export function Screen({ children, scroll, background = 'bg', tabBar, gap = 'tig
 
   if (scroll) {
     return (
-      <ScrollView style={[{ flex: 1 }, bg]} contentContainerStyle={[padding, contentStyle]} showsVerticalScrollIndicator={false}>
+      <ScrollView style={[{ flex: 1 }, bg]} contentContainerStyle={[{ flexGrow: 1 }, padding, contentStyle]} showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
     );
