@@ -37,6 +37,18 @@ class ResultOut(CamelModel):
     forfeited_by: Literal["me", "them"] | None = None
 
 
+class ActivityOut(CamelModel):
+    """One check-in in the "Recent check-ins" feed on the Duel screen."""
+
+    who: Literal["me", "them"]
+    minutes: int
+    note: str
+    created_at: str
+    # Whether it has been confirmed ("you confirm each other"; day rollover confirms everything too).
+    confirmed: bool
+    day_index: int
+
+
 class DuelOut(CamelModel):
     id: str
     hobby_id: str
@@ -57,6 +69,8 @@ class DuelOut(CamelModel):
     my_rest_days: list[int]
     rest_left: int
     their_pending: PendingOut | None
+    # The latest check-ins of both players, newest first (empty for someone who is not a player).
+    activity: list[ActivityOut]
     paused_until: str | None
     result: ResultOut | None
 

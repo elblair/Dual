@@ -21,6 +21,7 @@ from app.progression import (
     tier_for,
 )
 from app.schemas import (
+    ActivityOut,
     DuelOut,
     GroupsOut,
     LeaderRowOut,
@@ -34,6 +35,7 @@ from app.schemas import (
 )
 
 LENGTH_DAYS = 7
+ACTIVITY_LIMIT = 6  # check-ins shown in "Recent check-ins"
 CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"  # no 0/O/1/I/L
 
 
@@ -109,6 +111,18 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         latest = max(pending, key=lambda c: c.day_index)
         their_pending = PendingOut(minutes=latest.minutes, note=latest.note)
     my_rest = sorted(r.day_index for r in duel.rest_days if is_player and r.user_id == viewer_id)
+    newest_first = sorted(duel.checkins, key=lambda c: (c.created_at, c.id or 0), reverse=True)[:ACTIVITY_LIMIT] if is_player else []
+    activity = [
+        ActivityOut(
+            who="me" if c.user_id == viewer_id else "them",
+            minutes=c.minutes,
+            note=c.note,
+            created_at=_iso(c.created_at),
+            confirmed=c.confirmed,
+            day_index=c.day_index,
+        )
+        for c in newest_first
+    ]
 
     result = None
     if duel.winner:
@@ -140,6 +154,7 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         my_rest_days=my_rest,
         rest_left=max(0, (rest_days_for(xp_for(db, viewer)) if is_player else rest_days_for(0)) - len(my_rest)),
         their_pending=their_pending,
+        activity=activity,
         paused_until=paused_until,
         result=result,
     )

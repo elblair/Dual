@@ -67,6 +67,7 @@ export function createMockSource(): DataSource {
       myRestDays: [],
       restLeft: 2,
       theirPending: null,
+      activity: [],
       pausedUntil: null,
       result: null,
     };

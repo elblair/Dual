@@ -55,6 +55,7 @@ Computed on every read from check-ins and duels (no extra tables). All numbers a
 - Always `pending` first. It becomes `active` (day 1 of 7) when the invited person accepts, then follows the clock: 24 hours per day since it was accepted.
 - Your own check-in counts on your screen at once; it counts on your friend's screen once they confirm it ("you confirm each other"). When a day rolls over, everything pending is confirmed.
 - Two rest days per player (three from Silver). Pausing freezes the clock for both. Forfeit ends the duel and the friend wins.
+- Each duel payload has `activity`: the latest 6 check-ins of both players (who, minutes, note, createdAt, confirmed), newest first, for the "Recent check-ins" list.
 - After day 7 the duel is `finished`; the winner is whoever has more check-ins (a tie is possible). The Result screen only exists for finished duels.
 
 ## Presenter scripts (not part of the app)

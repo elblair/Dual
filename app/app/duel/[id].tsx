@@ -1,13 +1,13 @@
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Calendar, Pause, Users } from 'lucide-react-native';
+import { Calendar, Check, Clock, Flame, Pause, Users } from 'lucide-react-native';
 import { Avatar, BackButton, Button, Card, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
 import { hobbyById } from '@/data/catalog';
-import { shortDate } from '@/lib/dates';
+import { shortDate, whenLabel } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { friendName, lastDayName, myDayStates, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
+import { friendName, lastDayName, leadLabel, myDayStates, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -44,7 +44,11 @@ export default function DuelScreen() {
 
   const info: { icon: typeof Users; label: string; value: string }[] = [
     { icon: HobbyIcon, label: 'Goal', value: `${duel.minutes} min a day · ends ${lastDayName(duel.startedAt, duel.lengthDays)}` },
-    { icon: Users, label: 'Check-ins', value: 'You confirm each other' },
+    {
+      icon: Users,
+      label: 'How check-ins work',
+      value: `${friendName(duel)} confirms yours, you confirm theirs. A day counts for you once they confirm it.`,
+    },
   ];
 
   return (
@@ -96,6 +100,24 @@ export default function DuelScreen() {
             ))}
           </View>
         </View>
+        {duel.status !== 'pending' ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: t.spacing.s6,
+              paddingHorizontal: t.spacing.lg,
+              paddingVertical: t.spacing.s6,
+              borderRadius: t.radii.pill,
+              backgroundColor: t.colors.orangeTint,
+            }}
+          >
+            <Flame size={t.sizes.icon.xs} color={t.colors.orangeDark} strokeWidth={2} />
+            <Text variant="captionStrong" color="orangeDark">
+              {leadLabel(duel)}
+            </Text>
+          </View>
+        ) : null}
       </Card>
 
       <Card variant="outline" style={{ padding: 0, overflow: 'hidden' }}>
@@ -120,6 +142,60 @@ export default function DuelScreen() {
           </View>
         ))}
       </Card>
+
+      {duel.activity.length > 0 ? (
+        <>
+          <Text variant="headingSm">Recent check-ins</Text>
+          <View style={{ gap: t.spacing.xl }}>
+            {duel.activity.map((a) => {
+              const mine = a.who === 'me';
+              const name = mine ? 'You' : friendName(duel);
+              const status = a.confirmed
+                ? mine
+                  ? `${friendName(duel)} confirmed`
+                  : 'you confirmed'
+                : mine
+                  ? `waiting for ${friendName(duel)} to confirm`
+                  : 'waiting for you to confirm';
+              return (
+                <View key={`${a.who}-${a.dayIndex}`} style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}>
+                  <Avatar name={mine ? me.name : friendName(duel)} tone={mine ? 'you' : 'opponent'} size="md" />
+                  <View style={{ flex: 1, gap: t.spacing.hairline }}>
+                    <Text variant="bodyStrong">
+                      {name} · {a.minutes} min
+                    </Text>
+                    <Text variant="caption" color="muted">
+                      {whenLabel(a.createdAt)} · {status}
+                    </Text>
+                    {a.note ? (
+                      <Text variant="caption" color="muted">
+                        “{a.note}”
+                      </Text>
+                    ) : null}
+                  </View>
+                  <View
+                    style={{
+                      width: t.sizes.perkBadge,
+                      height: t.sizes.perkBadge,
+                      borderRadius: t.sizes.perkBadge / 2,
+                      backgroundColor: a.confirmed ? t.colors.success : t.colors.surfaceStrong,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    accessibilityLabel={a.confirmed ? 'Confirmed' : 'Waiting for confirmation'}
+                  >
+                    {a.confirmed ? (
+                      <Check size={t.sizes.icon.xs} color={t.colors.white} strokeWidth={3} />
+                    ) : (
+                      <Clock size={t.sizes.icon.xs} color={t.colors.muted} strokeWidth={2} />
+                    )}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </>
+      ) : null}
 
       {duel.status === 'paused' ? (
         <Card variant="orangeTint" style={{ gap: t.spacing.lg }}>
