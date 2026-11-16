@@ -129,17 +129,24 @@ export default function TodayScreen() {
 
   const confirmCard = (d: Duel) => (
     <Card key={d.id} variant="surface" style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}>
-      <Avatar name={friendName(d)} tone="opponent" size="md" />
-      <View style={{ flex: 1, gap: t.spacing.hairline }}>
-        <Text variant="bodyStrong">
-          Confirm {friendName(d)}’s {d.theirPending?.minutes} min
-        </Text>
-        {d.theirPending?.note ? (
-          <Text variant="caption" color="muted">
-            “{d.theirPending.note}”
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="See this check-in"
+        onPress={() => router.push('/confirm')}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}
+      >
+        <Avatar name={friendName(d)} tone="opponent" size="md" />
+        <View style={{ flex: 1, gap: t.spacing.hairline }}>
+          <Text variant="bodyStrong">
+            Confirm {friendName(d)}’s {d.theirPending?.minutes} min
           </Text>
-        ) : null}
-      </View>
+          {d.theirPending?.note ? (
+            <Text variant="caption" color="muted">
+              “{d.theirPending.note}”
+            </Text>
+          ) : null}
+        </View>
+      </Pressable>
       <Pill label="OK" tone="maroon" onPress={() => run(() => data.confirmFriend(d.id))} />
     </Card>
   );

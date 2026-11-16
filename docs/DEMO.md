@@ -66,8 +66,8 @@ Do the same with the teammate's name and email. Refresh `users` in Neon: now two
 3. Neon: the duel row is now `active`, with `started_at`.
 
 ### 5. Both phones: check in and confirm (graded item 2)
-1. Phone 1: **I did it** → "Day 1 logged".
-2. Phone 2: pull down on Today. It shows **Confirm <name>'s 20 min** with an **OK** button. Tap OK, then **I did it**.
+1. Phone 1: **I did it** → "Day 1 logged". Optional: on that screen set the minutes (− / +) and a note, **Save details**.
+2. Phone 2: pull down on Today. It shows **Confirm <name>'s 20 min** (with the note, if there is one) and an **OK** button. Tap the text to open the **Confirm check-ins** screen and **Looks good**, or just tap OK. Then **I did it**.
 3. Phone 1: pull down; confirm phone 2's check-in the same way. Both phones now show the same score and dots.
 4. Show the **Duel** screen (tap the card), **Groups** (people you've dueled and the wins leaderboard) **You** (duels won, days checked in, current streak, XP and tier) and the **Weekly recap** (card at the bottom of Today): all computed from the database.
 5. Neon: **checkins** has one row per check-in (`user_id`, `duel_id`, `day_index`, `confirmed`). Refresh and point at them.

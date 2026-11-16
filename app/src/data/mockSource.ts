@@ -148,6 +148,7 @@ export function createMockSource(): DataSource {
         d.myDays.push(d.today);
         return d;
       }),
+    addCheckInDetails: (id) => act(id, (d) => d),
     confirmFriend: (id) => act(id, (d) => d),
     restDay: (id) =>
       act(id, (d) => {

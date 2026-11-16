@@ -335,6 +335,23 @@ def check_in(db: Session, duel: Duel, user: User) -> Duel:
     return duel
 
 
+def add_check_in_details(db: Session, duel: Duel, user: User, minutes: int, note: str) -> Duel:
+    """Set the minutes and the note on MY check-in for today. The one-tap check-in stays the default; this is optional.
+    Not allowed once the friend has confirmed it (the friend confirmed what they saw)."""
+    if duel.status != "active":
+        raise DomainError("This duel is not active.")
+    if not 1 <= minutes <= 240:
+        raise DomainError("Pick between 1 and 240 minutes.")
+    mine = next((c for c in duel.checkins if c.user_id == user.id and c.day_index == duel.today), None)
+    if mine is None:
+        raise DomainError("Check in first, then add details.")
+    if mine.confirmed:
+        raise DomainError("Your friend already confirmed this check-in, so it can't be changed.")
+    mine.minutes = minutes
+    mine.note = " ".join(note.split())[:200]
+    return duel
+
+
 def confirm_friend(db: Session, duel: Duel, user: User) -> Duel:
     other = duel.opponent_id if duel.creator_id == user.id else duel.creator_id
     for c in duel.checkins:
