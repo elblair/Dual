@@ -6,7 +6,7 @@ Mobile demo app where two friends "dual" to keep up a hobby (guitar, running, ..
 Figma is rate-limited. Use `design/spec.md` (tokens + screen specs) and the PNG exports in `design/png/` (Hobby, Friend, Accept, Today, Done, Duel, Result, Groups, You, Save, Break, Lock). PNGs are 2x (Duel.png is 1x). Original Figma: page "Dual v2 · Improved", row "Claude's Pick" (Break from the "Base" row). If a screen is unclear, ask the user; do not guess.
 
 ## Stack
-- `/app`: React Native + Expo (TypeScript, Expo Router). Must run in Expo Go on iOS and Android, so only Expo Go compatible packages (no custom native modules, no dev builds). Expo SDK = the one the store Expo Go supports, NOT the newest on npm (default SDK 54, confirmed with the user in Phase 1). Expo web is used as the second player in demos (`react-native-web`).
+- `/app`: React Native + Expo (TypeScript, Expo Router). Must run in Expo Go on iOS and Android, so only Expo Go compatible packages (no custom native modules, no dev builds). Expo SDK 58 (React Native 0.88, React 19.3): it must match the Expo Go in the stores; the user's iPhone has Expo Go 58.0.0, and each Expo Go build supports only one SDK. Do not change the SDK without checking the phones' Expo Go version. Expo APIs change between SDKs: check https://docs.expo.dev/versions/v58.0.0/ before using one. Expo web is used as the second player in demos (`react-native-web`).
 - `/api`: FastAPI (Python), SQLAlchemy, deployed on Render free tier.
 - Database: Postgres on Neon free tier. Never Render Postgres (expires after 30 days).
 - Monorepo: `/app`, `/api`, `/design`, `/docs`.
