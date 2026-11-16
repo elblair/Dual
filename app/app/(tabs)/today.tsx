@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, Check, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react-native';
+import { Check, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { Avatar, Button, Card, Pill, PlayerRow, Screen, Text } from '@/components';
 import { useData, useDuels, useMe, type Duel } from '@/data';
 import { hobbyById } from '@/data/sample';
@@ -62,22 +62,8 @@ export default function TodayScreen() {
             </Text>
           </View>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.md }}>
-          <Button label="I did it" variant="orange" icon={Check} onPress={() => checkIn(d)} style={{ flex: 1 }} />
-          <View
-            accessibilityLabel="Add a photo"
-            style={{
-              width: t.sizes.cameraButton,
-              height: t.sizes.cameraButton,
-              borderRadius: t.radii.lg,
-              backgroundColor: t.colors.overlayLight,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Camera size={t.sizes.icon.lg} color={t.colors.white} strokeWidth={2} />
-          </View>
-        </View>
+        {/* The camera button from Figma is hidden until photo proof exists. */}
+        <Button label="I did it" variant="orange" icon={Check} onPress={() => checkIn(d)} />
       </Card>
     );
   };
