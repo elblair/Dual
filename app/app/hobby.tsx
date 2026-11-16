@@ -1,22 +1,11 @@
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Activity, BookOpen, Code, Dumbbell, Globe, Leaf, Music, Palette, Pencil, Sparkles, Utensils, type LucideIcon } from 'lucide-react-native';
+import { PencilLine, Sparkle } from 'lucide-react-native';
 import { Button, Card, HobbyTile, Logo, Screen, Text } from '@/components';
 import { HOBBIES } from '@/data/sample';
+import { hobbyIconRotation, hobbyIcons } from '@/lib/hobbyIcons';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
-
-const hobbyIcons: Record<string, LucideIcon> = {
-  guitar: Music,
-  running: Activity,
-  spanish: Globe,
-  gym: Dumbbell,
-  reading: BookOpen,
-  drawing: Palette,
-  cooking: Utensils,
-  coding: Code,
-  meditation: Leaf,
-};
 
 /** Hobby (Figma 215:30): step 1 of 2, no account needed. */
 export default function HobbyScreen() {
@@ -46,7 +35,14 @@ export default function HobbyScreen() {
         {rows.map((row, i) => (
           <View key={i} style={{ flexDirection: 'row', gap: t.spacing.md }}>
             {row.map((h) => (
-              <HobbyTile key={h.id} label={h.label} icon={hobbyIcons[h.id]} selected={h.id === hobby.id} onPress={() => setHobbyId(h.id)} />
+              <HobbyTile
+                key={h.id}
+                label={h.label}
+                icon={hobbyIcons[h.id]}
+                iconRotation={hobbyIconRotation[h.id]}
+                selected={h.id === hobby.id}
+                onPress={() => setHobbyId(h.id)}
+              />
             ))}
           </View>
         ))}
@@ -56,7 +52,7 @@ export default function HobbyScreen() {
         variant="orangeTint"
         style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg, borderRadius: t.radii.lg }}
       >
-        <Sparkles size={t.sizes.icon.xl} color={t.colors.orangeDark} strokeWidth={2} />
+        <Sparkle size={t.sizes.icon.xl} color={t.colors.orangeDark} strokeWidth={2} />
         <View style={{ flex: 1, gap: t.spacing.hairline }}>
           <Text variant="captionStrong" color="orangeDark">
             Starter goal
@@ -64,7 +60,7 @@ export default function HobbyScreen() {
           <Text variant="cardTitle">{minutes} minutes a day for 7 days</Text>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Change daily minutes" onPress={cycleMinutes} hitSlop={12}>
-          <Pencil size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />
+          <PencilLine size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />
         </Pressable>
       </Card>
 

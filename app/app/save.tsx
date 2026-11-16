@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Flame, Mail } from 'lucide-react-native';
 import { BackButton, Button, Screen, Text } from '@/components';
+import { useDuels } from '@/data';
 import { useTheme } from '@/theme';
 
 /** Save (Figma 217:407): "Save your streak" account prompt shown after the first check-in. */
@@ -10,6 +11,8 @@ export default function SaveScreen() {
   const t = useTheme();
   const router = useRouter();
   const [note, setNote] = useState('');
+  const { data: duels } = useDuels();
+  const friend = duels?.find((d) => d.status !== 'finished')?.opponent.name ?? 'your friend';
 
   return (
     <Screen scroll>
@@ -32,7 +35,7 @@ export default function SaveScreen() {
 
       <Text variant="titleLg">Save your streak</Text>
       <Text variant="body" color="muted">
-        You’ve already started. Create an account so your dual with Eleanor is safe.
+        You’ve already started. Create an account so your dual with {friend} is safe.
       </Text>
 
       <View style={{ flex: 1 }} />

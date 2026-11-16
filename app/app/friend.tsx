@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { MessageSquare } from 'lucide-react-native';
 import { BackButton, Button, Card, ContactRow, Logo, Screen, Text } from '@/components';
+import { useData } from '@/data';
 import { CONTACTS } from '@/data/sample';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -12,24 +13,38 @@ import { useTheme } from '@/theme';
 export default function FriendScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { hobby, minutes, friendId, setFriendId, code } = useOnboarding();
+  const { hobby, minutes, friendId, setFriendId, code, reset } = useOnboarding();
+  const data = useData();
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
-  const message = `I'm ${hobby.phrase} ${minutes} min a day this week. Dual me so I don't quit? ${hobby.emoji}`;
+  const message = `I’m ${hobby.phrase} ${minutes} min a day this week. Dual me so I don’t quit? ${hobby.emoji}`;
 
   async function sendByText() {
     if (sending) return;
     setSending(true);
+    setError('');
     const full = `${message}\nOpen Dual and enter the code ${code}`;
     try {
+      let shared = true;
       if (Platform.OS === 'web') {
-        // No share sheet in the browser: copy the text instead.
-        await Clipboard.setStringAsync(full);
-        router.replace('/today');
+        // No share sheet in the browser: copy the text instead (best effort; the challenge is created either way).
+        try {
+          await Promise.race([Clipboard.setStringAsync(full), new Promise((resolve) => setTimeout(resolve, 1500))]);
+        } catch {
+          /* clipboard blocked by the browser */
+        }
       } else {
         const result = await Share.share({ message: full });
-        if (result.action === Share.sharedAction) router.replace('/today');
+        shared = result.action === Share.sharedAction;
       }
+      if (shared) {
+        await data.createDuel({ hobbyId: hobby.id, minutes, friendId, inviteCode: code });
+        reset();
+        router.replace('/today');
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
     } finally {
       setSending(false);
     }
@@ -87,6 +102,11 @@ export default function FriendScreen() {
 
       <View style={{ flex: 1 }} />
 
+      {error ? (
+        <Text variant="caption" color="maroonBright" align="center">
+          {error}
+        </Text>
+      ) : null}
       <Button label="Send by text" icon={MessageSquare} onPress={sendByText} disabled={sending} />
     </Screen>
   );

@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { DataProvider } from '@/data';
 import { OnboardingProvider } from '@/state/onboarding';
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -29,9 +30,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <OnboardingProvider>
-        <RootStack />
-      </OnboardingProvider>
+      <DataProvider>
+        <OnboardingProvider>
+          <RootStack />
+        </OnboardingProvider>
+      </DataProvider>
     </ThemeProvider>
   );
 }

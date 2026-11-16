@@ -75,6 +75,12 @@ Skip entirely: stakes/money (also remove stake text from copy), Dual+, accepting
 - Use `gh pr create --base develop` to open PRs; if `gh` is unavailable, give the user the GitHub compare link instead.
 - Before starting a phase: `git switch develop && git pull`, then create the feature branch. Never push or merge without the user's go-ahead.
 
+## Visual verification (every phase with new screens)
+Run Expo web with demo mode (`EXPO_PUBLIC_DEMO=true npx expo start --web --port 8099 --clear`), open it with Claude in Chrome, screenshot every new screen at phone size and compare side by side with `design/png/` and `design/spec.md`. Fix differences before merging and list what could not be matched in the PR.
+- The browser viewport is desktop-wide: wrap the app in a 390x844 frame, e.g. `document.write('<div style="width:390px;height:844px;transform:scale(0.72);transform-origin:0 0"><iframe id="f" src="/today" style="width:390px;height:844px;border:0"></iframe></div>')`, then change `f.src` per screen and use the `zoom` action. Deep links reseed the in-memory mock, so flows that change data must be clicked through.
+- Metro on this machine sometimes serves stale shared modules (theme, Screen) after edits: if a change does not show up, kill the server and restart with `--clear`.
+- Web has no safe-area insets: top padding is `max(inset + 12, 60)` so web and phones both get Figma's 60.
+
 ## Working rules
 - Build in small phases; after each: say how to run/test on a phone, then commit (Conventional Commits) on the phase's feature branch and open a PR into `develop`.
 - Do not write code beyond the approved phase. Ask before changing scope.
