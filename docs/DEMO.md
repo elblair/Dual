@@ -19,6 +19,28 @@ The two graded things:
 
 On Today, the badge must say **Live · <host>** (green). If it says Offline or the app shows "Couldn't load this", the API URL is wrong or the server is not running. **There is no mock fallback unless you set `EXPO_PUBLIC_USE_MOCK=true` on purpose** (it is a single-user, nothing-saved mode and the badge says "Mock data").
 
+## Demo-day checklist
+
+**The day before**
+- [ ] `develop` is merged into `main` and the API is deployed (Render URL in `app/.env`), or your PC runs the API on the LAN (`uvicorn app.main:app --host 0.0.0.0`).
+- [ ] `python check_db.py` prints `OK` (database reachable).
+- [ ] Both phones have Expo Go with the SDK this project uses (58) and open the app from the QR code.
+- [ ] Do the whole script once with two throwaway accounts, then delete their rows in the Neon console (Tables > `users`, `duels`, `checkins`), so the demo starts with accounts that really are new.
+
+**Two hours before**
+- [ ] Render: open `https://<service>.onrender.com/health` (the free tier sleeps; the first call takes about a minute). Open it again 5 minutes before you start.
+- [ ] `app/.env` has the right `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_USE_MOCK=false`. Start Expo with `npx expo start -c` (add `--tunnel` if the Wi-Fi blocks the QR code).
+- [ ] Phone and PC are on the same Wi-Fi (only needed for Expo, not for a deployed API).
+- [ ] Neon console is open in a second window on **Tables**.
+- [ ] A terminal is open in `api/` with the venv active, for `scripts/advance_duel.py` (step 7).
+
+**Right before**
+- [ ] Both phones show **Welcome** (Create account / Log in). If one still has a session, **You > Log out**.
+- [ ] After sign-up the badge on Today says **Live** with the host (green).
+- [ ] Two new email addresses are ready, one per phone (an email that already exists is refused).
+
+**If something goes wrong:** see Troubleshooting below. As a last resort use a browser tab as the second phone (`http://localhost:8081`, a private window for the second account).
+
 ## The script
 
 ### 1. Phone 1: register (graded item 1)
