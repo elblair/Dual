@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Check, Clock, Plus, Users } from 'lucide-react-native';
+import { ChartColumn, Check, ChevronRight, Clock, Plus, Users } from 'lucide-react-native';
 import { Avatar, Button, Card, Chip, ConnectionBadge, ErrorBanner, ErrorView, LoadingView, Pill, PlayerRow, Screen, StreakCard, Text } from '@/components';
 import { useData, useDuels, useGroups, useMe, useStats, type Duel } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { hobbyIcons } from '@/lib/hobbyIcons';
 import { daysLeftLabel, friendName, myDayStates, needsCheckIn, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
 import { todayLabel } from '@/lib/dates';
-import { thisWeek } from '@/lib/week';
+import { recapNumbers, signed, thisWeek } from '@/lib/week';
 import { doneHref, duelHref, resultHref } from '@/lib/routes';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
@@ -63,6 +63,7 @@ export default function TodayScreen() {
         ? 'You’re all checked in for today'
         : 'Start or accept a duel to keep it going';
   const crew = groups?.rivals ?? [];
+  const recap = recapNumbers(stats?.recentCheckIns ?? []);
 
   /** Run a button action and show its error (for example "Can’t reach the server") instead of swallowing it. */
   async function run(fn: () => Promise<unknown>) {
@@ -312,6 +313,21 @@ export default function TodayScreen() {
             </Pressable>
           </View>
         </>
+      ) : null}
+
+      {hasHistory && stats ? (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/recap')}>
+          <Card variant="surface" style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg, borderRadius: t.radii.lg }}>
+            <ChartColumn size={t.sizes.icon.xl} color={t.colors.ink} strokeWidth={2} />
+            <View style={{ flex: 1, gap: t.spacing.hairline }}>
+              <Text variant="label">Weekly recap</Text>
+              <Text variant="caption" color="muted">
+                {recap.thisWeek} {recap.thisWeek === 1 ? 'day' : 'days'} practiced · {signed(recap.thisWeek - recap.lastWeek)} vs last week
+              </Text>
+            </View>
+            <ChevronRight size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />
+          </Card>
+        </Pressable>
       ) : null}
     </Screen>
   );
