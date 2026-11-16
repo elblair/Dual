@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Avatar, BackButton, Button, Card, Screen, Text } from '@/components';
 import { useData, useDuelByCode, useMe } from '@/data';
+import { useOnboarding } from '@/state/onboarding';
 import { hobbyById } from '@/data/sample';
 import { useTheme } from '@/theme';
 
@@ -16,14 +17,24 @@ export default function AcceptScreen() {
   const data = useData();
   const { code } = useLocalSearchParams<{ code?: string }>();
   const { data: duel } = useDuelByCode(code);
-  const { data: me } = useMe();
+  const { data: me, loading: meLoading } = useMe();
+  const { afterName, setAfterName } = useOnboarding();
   const [error, setError] = useState('');
 
-  if (!duel || !me) return <Screen background="surface">{null}</Screen>;
+  // Back from the name screen with a session: carry on with the accept.
+  useEffect(() => {
+    if (me && afterName === 'accept' && duel) {
+      setAfterName(null);
+      accept();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, afterName, duel]);
+
+  if (!duel || meLoading) return <Screen background="surface">{null}</Screen>;
 
   // Left: whoever started the duel. Right: the invited friend (me, unless I'm previewing my own invite).
   const challenger = duel.creator;
-  const invitee = duel.viewerIsCreator ? duel.opponent : { name: me.name, tone: 'opponent' as const };;
+  const invitee = duel.viewerIsCreator ? duel.opponent : { name: me?.name ?? 'You', tone: 'opponent' as const };;
 
   const hobby = hobbyById(duel.hobbyId);
   const rows: [string, string][] = [
@@ -35,6 +46,12 @@ export default function AcceptScreen() {
 
   async function accept() {
     if (!duel) return;
+    if (!me) {
+      // Not signed in yet: ask for a first name, then come back and accept.
+      setAfterName('accept');
+      router.push('/name');
+      return;
+    }
     setError('');
     try {
       await data.acceptDuel(duel.id);

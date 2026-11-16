@@ -67,6 +67,7 @@ export default function HobbyScreen() {
       <View style={{ flex: 1 }} />
 
       <Button label="Next: pick a friend" onPress={() => router.push('/friend')} />
+      <Button label="Create account" variant="outline" onPress={() => router.push('/auth?mode=signup')} />
       <Pressable accessibilityRole="link" onPress={() => router.push('/code')} style={{ alignSelf: 'center' }}>
         <Text variant="labelMedium" color="blue">
           I have a code

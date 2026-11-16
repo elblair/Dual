@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { Check, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react-native';
-import { Avatar, Button, Card, Pill, PlayerRow, Screen, Text } from '@/components';
+import { Avatar, Button, Card, ConnectionBadge, ErrorBanner, ErrorView, LoadingView, Pill, PlayerRow, Screen, Text } from '@/components';
 import { useData, useDuels, useMe, type Duel } from '@/data';
 import { hobbyById } from '@/data/sample';
 import { hobbyIcons } from '@/lib/hobbyIcons';
 import { myDayStates, needsCheckIn, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
 import { todayLabel } from '@/lib/dates';
 import { doneHref, duelHref, resultHref } from '@/lib/routes';
+import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
 /** Today (Figma 215:185): only what to do today, plus this week's progress. */
@@ -15,10 +17,29 @@ export default function TodayScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
-  const { data: me } = useMe();
-  const { data: duels } = useDuels();
+  const { data: me, error: meError, loading: meLoading, refetch: refetchMe } = useMe();
+  const { data: duels, error: duelsError, loading: duelsLoading, refetch: refetchDuels } = useDuels();
+  const { refreshing, onRefresh } = useRefresh(refetchMe, refetchDuels);
+  const [actionError, setActionError] = useState('');
 
-  if (!me || !duels) return <Screen tabBar>{null}</Screen>;
+  if (meLoading || duelsLoading) {
+    return (
+      <Screen tabBar>
+        <ConnectionBadge />
+        <LoadingView />
+      </Screen>
+    );
+  }
+  if (!me && !meError) return <Redirect href="/hobby" />; // signed out
+  if (!me || !duels) {
+    return (
+      <Screen tabBar>
+        <ConnectionBadge />
+        <ErrorView message={(meError ?? duelsError)?.message ?? 'Something went wrong.'} onRetry={onRefresh} />
+      </Screen>
+    );
+  }
+  const loadError = duelsError ?? meError;
 
   const live = duels.filter((d) => d.status === 'active' || d.status === 'paused');
   const pending = duels.filter((d) => d.status === 'pending');
@@ -29,10 +50,21 @@ export default function TodayScreen() {
   const toConfirm = live.filter((d) => d.status === 'active' && d.theirPending);
   const todo = toCheckIn.length + toConfirm.length;
 
-  async function checkIn(d: Duel) {
-    await data.checkIn(d.id);
-    router.push(doneHref(d.id));
+  /** Run a button action and show its error (for example "Can’t reach the server") instead of swallowing it. */
+  async function run(fn: () => Promise<unknown>) {
+    setActionError('');
+    try {
+      await fn();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+    }
   }
+
+  const checkIn = (d: Duel) =>
+    run(async () => {
+      await data.checkIn(d.id);
+      router.push(doneHref(d.id));
+    });
 
   const heroCard = (d: Duel) => {
     const hobby = hobbyById(d.hobbyId);
@@ -79,7 +111,7 @@ export default function TodayScreen() {
           “{d.theirPending?.note}”
         </Text>
       </View>
-      <Pill label="OK" tone="maroon" onPress={() => data.confirmFriend(d.id)} />
+      <Pill label="OK" tone="maroon" onPress={() => run(() => data.confirmFriend(d.id))} />
     </Card>
   );
 
@@ -124,7 +156,7 @@ export default function TodayScreen() {
   const recapTarget = finished[0] ? resultHref(finished[0].id) : live[0] ? duelHref(live[0].id) : null;
 
   return (
-    <Screen scroll tabBar gap="loose">
+    <Screen scroll tabBar gap="loose" refresh={{ refreshing, onRefresh }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ gap: t.spacing.hairline }}>
           <Text variant="eyebrow" color="muted">
@@ -137,8 +169,12 @@ export default function TodayScreen() {
         </Pressable>
       </View>
 
+      <ConnectionBadge />
+      {loadError ? <ErrorBanner message={`${loadError.message} Pull down to try again.`} /> : null}
+      {actionError ? <ErrorBanner message={actionError} /> : null}
+
       <Text variant="bodyStrong" color="muted">
-        {todo === 0 ? 'Nothing to do right now' : `${todo} ${todo === 1 ? 'thing' : 'things'} to do`}
+        Hey, {me.name} · {todo === 0 ? 'nothing to do right now' : `${todo} ${todo === 1 ? 'thing' : 'things'} to do`}
       </Text>
 
       {toCheckIn.map(heroCard)}

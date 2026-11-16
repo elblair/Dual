@@ -1,10 +1,11 @@
 import { Pressable, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { ChevronRight, Check, ShieldCheck, Smartphone, Trophy } from 'lucide-react-native';
-import { Avatar, Button, Card, Screen, Text } from '@/components';
+import { Avatar, Button, Card, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { DEMO } from '@/config';
 import { useData, useDuels, useMe } from '@/data';
 import { hobbyById } from '@/data/sample';
+import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
 /** Sample friendship lines for the two seeded friends; anyone else gets a generic line. */
@@ -18,10 +19,26 @@ export default function YouScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
-  const { data: me } = useMe();
-  const { data: duels } = useDuels();
+  const { data: me, error: meError, loading: meLoading, refetch: refetchMe } = useMe();
+  const { data: duels, error: duelsError, loading: duelsLoading, refetch: refetchDuels } = useDuels();
+  const { refreshing, onRefresh } = useRefresh(refetchMe, refetchDuels);
 
-  if (!me || !duels) return <Screen tabBar>{null}</Screen>;
+  if (meLoading || duelsLoading) {
+    return (
+      <Screen tabBar>
+        <LoadingView />
+      </Screen>
+    );
+  }
+  if (!me && !meError) return <Redirect href="/hobby" />; // signed out
+  if (!me || !duels) {
+    return (
+      <Screen tabBar>
+        <ErrorView message={(meError ?? duelsError)?.message ?? 'Something went wrong.'} onRetry={onRefresh} />
+      </Screen>
+    );
+  }
+  const loadError = duelsError ?? meError;
 
   const hobbies = [...new Set(duels.map((d) => hobbyById(d.hobbyId).label))];
   const rivals = [...new Map(duels.map((d) => [d.opponent.id, d.opponent])).values()];
@@ -39,8 +56,9 @@ export default function YouScreen() {
   ];
 
   return (
-    <Screen scroll tabBar gap="loose">
+    <Screen scroll tabBar gap="loose" refresh={{ refreshing, onRefresh }}>
       <Text variant="display">You</Text>
+      {loadError ? <ErrorBanner message={`${loadError.message} Pull down to try again.`} /> : null}
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.xl }}>
         <Avatar name={me.name} tone="brand" size="xl" ring="orange" />
@@ -153,12 +171,32 @@ export default function YouScreen() {
         ))}
       </Card>
 
+      <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.lg }}>
+        <Text variant="label">{me.isGuest ? 'Guest account' : 'Signed in'}</Text>
+        <Text variant="caption" color="muted">
+          {me.isGuest ? 'Create an account to keep your duals on any phone.' : (me.email ?? me.name)}
+        </Text>
+        {me.isGuest ? (
+          <Button label="Create account" onPress={() => router.push('/auth?mode=signup')} />
+        ) : (
+          <Button
+            label="Log out"
+            variant="outline"
+            onPress={async () => {
+              await data.logout();
+              router.replace('/hobby');
+            }}
+          />
+        )}
+      </Card>
+
       {DEMO ? (
         <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.lg }}>
           <Text variant="label">Demo tools</Text>
           <Text variant="caption" color="muted">
             Only visible when EXPO_PUBLIC_DEMO=true.
           </Text>
+          <Button label="Database" variant="soft" onPress={() => router.push('/database')} />
           <Button label="Fast-forward a day" variant="soft" onPress={() => data.demo.advanceDay()} />
           <Button label="Eleanor checks in" variant="soft" onPress={() => data.demo.opponentCheckIn()} />
           <Button

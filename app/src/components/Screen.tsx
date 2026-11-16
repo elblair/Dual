@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
+import { RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, type ColorName } from '@/theme';
 
@@ -12,11 +12,13 @@ interface ScreenProps {
   tabBar?: boolean;
   /** Gap between blocks: tight = 14 (Friend, Accept, Done, Result, Save), loose = 16 (Hobby, Today, Duel, Groups, You). */
   gap?: 'tight' | 'loose';
+  /** Pull-to-refresh (scrolling screens only). */
+  refresh?: { refreshing: boolean; onRefresh: () => void };
   contentStyle?: StyleProp<ViewStyle>;
 }
 
 /** Page wrapper: 22pt side padding, about 60pt top on a notched phone, 30pt bottom, safe-area aware. */
-export function Screen({ children, scroll, background = 'bg', tabBar, gap = 'tight', contentStyle }: ScreenProps) {
+export function Screen({ children, scroll, background = 'bg', tabBar, gap = 'tight', refresh, contentStyle }: ScreenProps) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const padding = {
@@ -29,7 +31,16 @@ export function Screen({ children, scroll, background = 'bg', tabBar, gap = 'tig
 
   if (scroll) {
     return (
-      <ScrollView style={[{ flex: 1 }, bg]} contentContainerStyle={[{ flexGrow: 1 }, padding, contentStyle]} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={[{ flex: 1 }, bg]}
+        contentContainerStyle={[{ flexGrow: 1 }, padding, contentStyle]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          refresh ? (
+            <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} tintColor={t.colors.muted} colors={[t.colors.maroon]} />
+          ) : undefined
+        }
+      >
         {children}
       </ScrollView>
     );

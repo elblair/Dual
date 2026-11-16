@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, Pause, Users } from 'lucide-react-native';
-import { Avatar, BackButton, Button, Card, Dots, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, Card, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { DEMO } from '@/config';
 import { useData, useDuel, useMe } from '@/data';
 import { hobbyById } from '@/data/sample';
@@ -10,6 +10,7 @@ import { shortDate } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
 import { WEEKDAYS, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
+import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
 /** Duel (Figma 217:79): the score, the 7 dots each, the rules, and the way out (break / forfeit). */
@@ -18,11 +19,25 @@ export default function DuelScreen() {
   const router = useRouter();
   const data = useData();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: duel } = useDuel(id);
-  const { data: me } = useMe();
+  const { data: duel, error: duelError, loading: duelLoading, refetch: refetchDuel } = useDuel(id);
+  const { data: me, refetch: refetchMe } = useMe();
+  const { refreshing, onRefresh } = useRefresh(refetchDuel, refetchMe);
   const [note, setNote] = useState('');
 
-  if (!duel || !me) return <Screen>{null}</Screen>;
+  if (duelLoading) {
+    return (
+      <Screen>
+        <LoadingView />
+      </Screen>
+    );
+  }
+  if (!duel || !me) {
+    return (
+      <Screen>
+        <ErrorView message={duelError?.message ?? 'Duel not found.'} onRetry={onRefresh} />
+      </Screen>
+    );
+  }
 
   const hobby = hobbyById(duel.hobbyId);
   const HobbyIcon = hobbyIcons[duel.hobbyId];
@@ -52,12 +67,14 @@ export default function DuelScreen() {
   ];
 
   return (
-    <Screen scroll gap="loose">
+    <Screen scroll gap="loose" refresh={{ refreshing, onRefresh }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <BackButton />
         <Text variant="headerTitle">{hobby.label}</Text>
         <View style={{ width: t.sizes.backButton }} />
       </View>
+
+      {duelError ? <ErrorBanner message={`${duelError.message} Pull down to try again.`} /> : null}
 
       <Card
         variant="surface"
