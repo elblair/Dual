@@ -35,9 +35,12 @@ App (from `/app`):
 - `npx expo start` then scan the QR in Expo Go (phone and PC on the same Wi-Fi; use `--tunnel` if the network blocks it)
 - `npx tsc --noEmit` type check
 API (from `/api`):
-- `python -m venv .venv && .venv\Scripts\activate && pip install -r requirements.txt`
-- `uvicorn app.main:app --reload --host 0.0.0.0`
-- Env: `DATABASE_URL` (Neon), `JWT_SECRET`, `DEMO_MODE`, `CORS_ORIGINS`. Local `.env` is gitignored.
+- `python -m venv .venv && .venv\Scripts\activate && pip install -r requirements-dev.txt`
+- `pytest` runs the tests on in-memory SQLite (conftest forces `DATABASE_URL=sqlite://` and refuses any other database, so tests never touch Neon)
+- `uvicorn app.main:app --reload --host 0.0.0.0` (without `DATABASE_URL` it uses a local `dev.db` SQLite file)
+- `python check_db.py` smoke-checks the database in `api/.env` (creates tables, never prints the URL)
+- Env: `DATABASE_URL` (Neon), `JWT_SECRET`, `DEMO_MODE`, `CORS_ORIGINS`. Local `.env` is gitignored. Never ask the user to paste secrets into chat; never read `api/.env`.
+- API layout: `app/main.py` (app, CORS, startup create_all + seed), `config.py`, `db.py`, `models.py`, `schemas.py` (camelCase, mirrors `app/src/data/types.ts`), `logic.py` (all duel rules, mirrors `mockSource.ts`), `security.py`, `routers/{auth,duels,demo}.py`, `tests/`. Any change to a rule or field goes into the TypeScript interface, `mockSource.ts` and `logic.py` together.
 
 App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` after changes):
 - `EXPO_PUBLIC_API_URL`: API base URL

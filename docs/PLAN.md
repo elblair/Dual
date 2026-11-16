@@ -57,6 +57,14 @@ Screens never call `fetch` or the mock directly. They use hooks from `app/src/da
 - `POST /demo/advance-day`, `/demo/eleanor-checkin`, `/demo/reset` (only when `DEMO_MODE=true`)
 - JWT bearer auth, bcrypt, `create_all` on startup, seed function for Eleanor and Tanish, CORS enabled (needed for Expo web).
 
+## Phase 4 decisions (built)
+- Users have string ids (`eleanor`, `tanish` are fixed seeded accounts; everyone else a random hex id). Guests are named "Ari" until they register.
+- `Duel` gained `creator` and `viewerIsCreator` in the shared types: the invited friend looks at a duel by code from their own point of view, so Accept shows the challenger (left) and the invitee (right).
+- Real accounts cannot accept their own challenge (the mock still allows it so a one-phone demo works).
+- The day is stored on the duel and caught up with the clock on every read (`settle`); demo fast-forward adds a day offset.
+- Check-ins carry `confirmed`: yours count on your own screen at once and on your friend's once they tap OK; day rollover confirms everything.
+- Tests run on in-memory SQLite only; `api/check_db.py` smoke-checks Neon from `api/.env`.
+
 ## Screen-to-route map
 Hobby `/` (Log in, I have a code) -> Friend `/friend` -> share -> Today. Code -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> Save `/save` (guests only) or back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You (with Demo tools when enabled).
 
