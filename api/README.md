@@ -39,6 +39,7 @@ No data is created on startup: tables only. New accounts start empty.
 | `POST /duels` | `{hobbyId, minutes, friendId?}`: always created `pending`. With `friendId` only that person can accept; without it anyone with the code can |
 | `POST /duels/{id}/accept` | Accept an invite (not your own, and only the invited person if one was named) |
 | `POST /duels/{id}/checkin`, `confirm`, `rest`, `pause`, `resume`, `forfeit` | Playing |
+| `POST /duels/{id}/checkin/details` | `{minutes, note}`: optional minutes (1 to 240) and note (up to 200 characters) on MY check-in for today. The one-tap `checkin` stays the default (goal minutes, no note). Refused once the friend has confirmed it |
 | `POST /duels/{id}/rematch` | `{kind: "same" or "easier"}`, once the duel is over; the friend gets a pending invite |
 | `GET /groups` | People I've dueled with (record) and a wins leaderboard among us, from finished duels |
 

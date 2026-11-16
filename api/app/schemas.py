@@ -93,6 +93,13 @@ class CreateDuelIn(CamelModel):
     friend_id: str | None = Field(default=None, max_length=32)
 
 
+class CheckinDetailsIn(CamelModel):
+    """Optional details for today's check-in (the one-tap check-in logs the duel's goal minutes and no note)."""
+
+    minutes: int = Field(ge=1, le=240)
+    note: str = Field(default="", max_length=200)
+
+
 class RematchIn(CamelModel):
     kind: Literal["same", "easier"]
 

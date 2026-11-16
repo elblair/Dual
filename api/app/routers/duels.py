@@ -5,7 +5,7 @@ from app import logic
 from app.db import get_db
 from app.logic import DomainError
 from app.models import Duel, User
-from app.schemas import CreateDuelIn, DuelOut, RematchIn
+from app.schemas import CheckinDetailsIn, CreateDuelIn, DuelOut, RematchIn
 from app.security import current_user, optional_user
 
 router = APIRouter(prefix="/duels", tags=["duels"])
@@ -68,6 +68,14 @@ router.add_api_route("/{duel_id}/rest", _action(logic.rest_day), methods=["POST"
 router.add_api_route("/{duel_id}/pause", _action(logic.pause_duel), methods=["POST"], response_model=DuelOut)
 router.add_api_route("/{duel_id}/resume", _action(logic.resume_duel), methods=["POST"], response_model=DuelOut)
 router.add_api_route("/{duel_id}/forfeit", _action(logic.forfeit_duel), methods=["POST"], response_model=DuelOut)
+
+
+@router.post("/{duel_id}/checkin/details", response_model=DuelOut)
+def checkin_details(duel_id: int, body: CheckinDetailsIn, user: User = Depends(current_user), db: Session = Depends(get_db)) -> DuelOut:
+    duel = logic.get_duel(db, duel_id, user)
+    logic.add_check_in_details(db, duel, user, body.minutes, body.note)
+    db.commit()
+    return logic.build_view(db, duel, user)
 
 
 @router.post("/{duel_id}/rematch", response_model=DuelOut)

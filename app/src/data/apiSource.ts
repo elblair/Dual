@@ -140,6 +140,7 @@ export function createApiSource(baseUrl: string): DataSource {
     acceptDuel: (id) => duelPost(id, 'accept'),
 
     checkIn: (id) => duelPost(id, 'checkin'),
+    addCheckInDetails: (id, { minutes, note }) => duelPost(id, 'checkin/details', { minutes, note }),
     confirmFriend: (id) => duelPost(id, 'confirm'),
     restDay: (id) => duelPost(id, 'rest'),
     pause: (id) => duelPost(id, 'pause'),
