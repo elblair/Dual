@@ -3,22 +3,28 @@
 export interface Hobby {
   id: string;
   label: string;
+  /** Today card title: "{action} 20 min". */
+  action: string;
   /** Used in the invite text: "I'm {phrase} 20 min a day this week." */
   phrase: string;
   emoji: string;
 }
 
 export const HOBBIES: Hobby[] = [
-  { id: 'guitar', label: 'Guitar', phrase: 'practicing guitar', emoji: '🎸' },
-  { id: 'running', label: 'Running', phrase: 'running', emoji: '🏃' },
-  { id: 'spanish', label: 'Spanish', phrase: 'studying Spanish', emoji: '🗣️' },
-  { id: 'gym', label: 'Gym', phrase: 'hitting the gym', emoji: '🏋️' },
-  { id: 'reading', label: 'Reading', phrase: 'reading', emoji: '📚' },
-  { id: 'drawing', label: 'Drawing', phrase: 'drawing', emoji: '🎨' },
-  { id: 'cooking', label: 'Cooking', phrase: 'cooking', emoji: '🍳' },
-  { id: 'coding', label: 'Coding', phrase: 'coding', emoji: '💻' },
-  { id: 'meditation', label: 'Meditation', phrase: 'meditating', emoji: '🧘' },
+  { id: 'guitar', label: 'Guitar', action: 'Practice guitar', phrase: 'practicing guitar', emoji: '🎸' },
+  { id: 'running', label: 'Running', action: 'Go for a run', phrase: 'running', emoji: '🏃' },
+  { id: 'spanish', label: 'Spanish', action: 'Study Spanish', phrase: 'studying Spanish', emoji: '🗣️' },
+  { id: 'gym', label: 'Gym', action: 'Hit the gym', phrase: 'hitting the gym', emoji: '🏋️' },
+  { id: 'reading', label: 'Reading', action: 'Read', phrase: 'reading', emoji: '📚' },
+  { id: 'drawing', label: 'Drawing', action: 'Draw', phrase: 'drawing', emoji: '🎨' },
+  { id: 'cooking', label: 'Cooking', action: 'Cook', phrase: 'cooking', emoji: '🍳' },
+  { id: 'coding', label: 'Coding', action: 'Code', phrase: 'coding', emoji: '💻' },
+  { id: 'meditation', label: 'Meditation', action: 'Meditate', phrase: 'meditating', emoji: '🧘' },
 ];
+
+export function hobbyById(id: string): Hobby {
+  return HOBBIES.find((h) => h.id === id) ?? HOBBIES[0];
+}
 
 export interface Contact {
   id: string;
