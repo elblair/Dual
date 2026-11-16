@@ -371,14 +371,18 @@ def stats_for(db: Session, user: User) -> StatsOut:
     won = 0
     days = 0
     streak = 0
+    since = utcnow() - timedelta(days=14)
+    recent: list[str] = []
     for d in duels:
         if d.status == "pending":
             continue
-        days += sum(1 for c in d.checkins if c.user_id == user.id)
+        mine = [c for c in d.checkins if c.user_id == user.id]
+        days += len(mine)
+        recent += [_iso(c.created_at) for c in mine if c.created_at >= since]
         streak = max(streak, _streak(d, user.id))
         if d.status == "finished" and d.winner and d.winner != "tie" and ((d.winner == "creator") == (d.creator_id == user.id)):
             won += 1
-    return StatsOut(duels_won=won, days_checked_in=days, current_streak=streak)
+    return StatsOut(duels_won=won, days_checked_in=days, current_streak=streak, recent_check_ins=sorted(recent))
 
 
 def groups_for(db: Session, user: User) -> GroupsOut:

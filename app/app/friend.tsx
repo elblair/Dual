@@ -4,7 +4,7 @@ import { Redirect, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { MessageSquare, Send } from 'lucide-react-native';
 import { BackButton, Button, Card, ContactRow, Logo, Screen, Text, TextField } from '@/components';
-import { useData, useMe, type UserHit } from '@/data';
+import { useData, useGroups, useMe, type UserHit } from '@/data';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
@@ -17,6 +17,7 @@ export default function FriendScreen() {
   const router = useRouter();
   const data = useData();
   const { data: me, loading: meLoading } = useMe();
+  const { data: groups } = useGroups();
   const { hobby, minutes, friend, setFriend, reset } = useOnboarding();
 
   const [query, setQuery] = useState('');
@@ -27,6 +28,7 @@ export default function FriendScreen() {
   const [error, setError] = useState('');
 
   const q = query.trim();
+  const recent = groups?.rivals ?? [];
 
   useEffect(() => {
     if (q.length < 2) {
@@ -122,6 +124,23 @@ export default function FriendScreen() {
           <Text variant="small" color="muted">
             Type at least 2 letters of a name or email. Not on Dual yet? Invite them by text below.
           </Text>
+        ) : null}
+        {q.length < 2 && recent.length > 0 ? (
+          <>
+            <Text variant="smallStrong" color="muted" style={{ marginTop: t.spacing.sm }}>
+              Recent
+            </Text>
+            {recent.map((r) => (
+              <ContactRow
+                key={r.person.id}
+                name={r.person.name}
+                subtitle={`${r.duels} ${r.duels === 1 ? 'duel' : 'duels'} together`}
+                tone="opponent"
+                selected={friend?.id === r.person.id}
+                onPress={() => setFriend(friend?.id === r.person.id ? null : { id: r.person.id, name: r.person.name })}
+              />
+            ))}
+          </>
         ) : null}
         {!searching && !searchError && q.length >= 2 && hits.length === 0 ? (
           <Text variant="small" color="muted">

@@ -199,6 +199,7 @@ export function createMockSource(): DataSource {
         duelsWon: mine.filter((d) => d.result?.winner === 'me').length,
         daysCheckedIn: mine.reduce((n, d) => n + d.myDays.length, 0),
         currentStreak: 0,
+        recentCheckIns: [],
       });
     },
     getGroups(): Promise<Groups> {

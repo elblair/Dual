@@ -6,6 +6,8 @@ export { Dots, buildDays } from './Dots';
 export type { DayState } from './Dots';
 export { Card } from './Card';
 export { Pill } from './Pill';
+export { Chip } from './Chip';
+export { StreakCard } from './StreakCard';
 export { BackButton } from './BackButton';
 export { Logo } from './Logo';
 export { TabBar } from './TabBar';

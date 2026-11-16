@@ -27,6 +27,12 @@ export function theirDayStates(d: Duel): DayState[] {
   return buildDays(d.theirDays);
 }
 
+/** "2 days left" after today, or "Last day" (a 7-day duel on day 5 has 2 days left). */
+export function daysLeftLabel(d: Duel): string {
+  const left = d.lengthDays - 1 - d.today;
+  return left <= 0 ? 'Last day' : left === 1 ? '1 day left' : `${left} days left`;
+}
+
 /** The other player's name for sentences ("Sam gets a tap to confirm it"). */
 export const friendName = (d: Duel) => d.opponent?.name ?? 'Your friend';
 

@@ -219,12 +219,13 @@ const borders = {
 } as const;
 
 const sizes = {
-  avatar: { xxs: 24, xs: 26, sm: 32, md: 40, header: 42, lg: 56, xl: 64, xxl: 72, hero: 92 },
+  avatar: { xxs: 24, xs: 26, sm: 32, md: 40, header: 42, crew: 50, lg: 56, xl: 64, xxl: 72, hero: 92 },
   dot: { md: 14, lg: 18 },
   dotGap: 6,
   backButton: 40,
   radio: 22,
   icon: { badge: 13, xs: 14, copy: 15, sm: 16, md: 18, back: 19, lg: 20, xl: 22, plus: 26, flame: 30, hero: 52 },
+  weekDay: 34, // streak card day bubble
   playerName: 62, // name label next to dots
   barLabel: 64, // label next to a progress bar (Groups)
   bar: 10, // progress bar height (radius 5)
