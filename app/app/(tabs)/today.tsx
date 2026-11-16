@@ -218,7 +218,7 @@ export default function TodayScreen() {
           {invites.length > 0 ? 'Pending invites' : ''}
         </Text>
         <Pressable accessibilityRole="link" onPress={() => router.push('/code')} hitSlop={8}>
-          <Text variant="labelMedium" color="blue">
+          <Text variant="labelMedium" color="link">
             Enter an invite code
           </Text>
         </Pressable>

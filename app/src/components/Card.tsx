@@ -6,8 +6,8 @@ export type CardVariant = 'surface' | 'white' | 'outline' | 'maroon' | 'orangeTi
 
 const look: Record<CardVariant, { bg: ColorName; border?: ColorName; thick?: boolean }> = {
   surface: { bg: 'surface' },
-  white: { bg: 'white' },
-  outline: { bg: 'bg', border: 'border' },
+  white: { bg: 'cardRaised' },
+  outline: { bg: 'card', border: 'border' },
   maroon: { bg: 'maroon' },
   orangeTint: { bg: 'orangeTint' },
   successTint: { bg: 'successTint' },

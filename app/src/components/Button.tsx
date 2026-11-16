@@ -19,7 +19,7 @@ export function Button({ label, onPress, variant = 'primary', icon: Icon, disabl
   const t = useTheme();
   const look: Record<ButtonVariant, { bg: ColorName | null; fg: ColorName; border?: ColorName }> = {
     primary: { bg: 'maroon', fg: 'white' },
-    orange: { bg: 'orange', fg: 'ink' },
+    orange: { bg: 'orange', fg: 'onOrange' },
     outline: { bg: 'bg', fg: 'ink', border: 'border' },
     soft: { bg: 'surfaceStrong', fg: 'ink' },
   };

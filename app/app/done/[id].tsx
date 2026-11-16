@@ -51,7 +51,7 @@ export default function DoneScreen() {
       <View style={{ flex: 1 }} />
 
       <Pressable accessibilityRole="link" onPress={() => router.replace('/today')}>
-        <Text variant="label" color="blue">
+        <Text variant="label" color="link">
           Back to Today
         </Text>
       </Pressable>

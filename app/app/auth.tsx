@@ -83,7 +83,7 @@ export default function AuthScreen() {
         }}
         style={{ alignSelf: 'center' }}
       >
-        <Text variant="labelMedium" color="blue">
+        <Text variant="labelMedium" color="link">
           {signup ? 'I already have an account' : 'Create an account instead'}
         </Text>
       </Pressable>
