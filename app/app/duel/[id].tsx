@@ -7,7 +7,7 @@ import { hobbyById } from '@/data/catalog';
 import { shortDate, whenLabel } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { friendName, lastDayName, leadLabel, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
+import { friendName, goalText, lastDayName, leadLabel, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -43,7 +43,7 @@ export default function DuelScreen() {
   const letters = weekdayLetters(duel.startedAt, duel.lengthDays);
 
   const info: { icon: typeof Users; label: string; value: string }[] = [
-    { icon: HobbyIcon, label: 'Goal', value: `${duel.minutes} min a day · ends ${lastDayName(duel.startedAt, duel.lengthDays)}` },
+    { icon: HobbyIcon, label: 'Goal', value: `${goalText(duel)} · ends ${lastDayName(duel.startedAt, duel.lengthDays)}` },
     {
       icon: Users,
       label: 'How check-ins work',

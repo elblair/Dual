@@ -6,7 +6,7 @@ import { Avatar, Button, Card, Chip, ConnectionBadge, ErrorBanner, ErrorView, Lo
 import { useData, useDuels, useGroups, useMe, useStats, type Duel } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { daysLeftLabel, friendName, myDayStates, needsCheckIn, pendingInviteLabel, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
+import { daysLeftLabel, friendName, goalText, myDayStates, needsCheckIn, pendingInviteLabel, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
 import { todayLabel } from '@/lib/dates';
 import { recapNumbers, signed, thisWeek } from '@/lib/week';
 import { doneHref, duelHref, resultHref, sentHref } from '@/lib/routes';
@@ -87,7 +87,7 @@ export default function TodayScreen() {
       <View style={{ flex: 1, gap: t.spacing.hairline }}>
         <Text variant="bodyStrong">{d.creator.name} invited you</Text>
         <Text variant="caption" color="muted">
-          {hobbyById(d.hobbyId).label} · {d.minutes} min a day · {d.lengthDays} days
+          {hobbyById(d.hobbyId).label} · {goalText(d)} · {d.lengthDays} days
         </Text>
       </View>
       <Pill label="Accept" tone="maroon" onPress={() => run(() => data.acceptDuel(d.id))} />
@@ -115,7 +115,7 @@ export default function TodayScreen() {
           </View>
           <View style={{ flex: 1, gap: t.spacing.hairline }}>
             <Text variant="headingSm" color="white">
-              {hobby.action} {d.minutes} min
+              {goalText(d)}
             </Text>
             <Text variant="small" color="onDarkMuted">
               vs {friendName(d)} · {friendDone ? 'done today' : 'not yet today'}

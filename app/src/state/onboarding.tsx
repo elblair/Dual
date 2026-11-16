@@ -15,7 +15,10 @@ interface OnboardingState {
   hobby: Hobby;
   setHobbyId: (id: string) => void;
   minutes: number;
-  cycleMinutes: () => void;
+  setMinutes: (minutes: number) => void;
+  /** The goal the player wrote, or null to use the suggestion for the hobby and minutes. */
+  goal: string | null;
+  setGoal: (goal: string | null) => void;
   friend: PickedFriend | null;
   setFriend: (next: PickedFriend | null) => void;
   /** An invite code opened while signed out: kept until the person signs up or logs in, then Accept continues with it. */
@@ -30,31 +33,37 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [hobbyId, setHobbyId] = useState(HOBBIES[0].id);
   const [minutes, setMinutes] = useState(MINUTE_OPTIONS[2]);
   const [friend, setFriend] = useState<PickedFriend | null>(null);
+  const [goal, setGoal] = useState<string | null>(null);
   const [pendingCode, setPendingCode] = useState<string | null>(null);
 
-  const cycleMinutes = useCallback(() => {
-    setMinutes((m) => MINUTE_OPTIONS[(MINUTE_OPTIONS.indexOf(m) + 1) % MINUTE_OPTIONS.length]);
+  // A written goal belongs to the hobby it was written for: picking another hobby goes back to the suggestion.
+  const pickHobby = useCallback((id: string) => {
+    setHobbyId(id);
+    setGoal(null);
   }, []);
 
   const reset = useCallback(() => {
     setHobbyId(HOBBIES[0].id);
     setMinutes(MINUTE_OPTIONS[2]);
+    setGoal(null);
     setFriend(null);
   }, []);
 
   const value = useMemo<OnboardingState>(
     () => ({
       hobby: HOBBIES.find((h) => h.id === hobbyId) ?? HOBBIES[0],
-      setHobbyId,
+      setHobbyId: pickHobby,
       minutes,
-      cycleMinutes,
+      setMinutes,
+      goal,
+      setGoal,
       friend,
       setFriend,
       pendingCode,
       setPendingCode,
       reset,
     }),
-    [hobbyId, minutes, friend, pendingCode, cycleMinutes, reset],
+    [hobbyId, minutes, goal, friend, pendingCode, pickHobby, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

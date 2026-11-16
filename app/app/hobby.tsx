@@ -1,9 +1,8 @@
 import { Pressable, View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { PencilLine, Sparkle } from 'lucide-react-native';
-import { Avatar, BackButton, Button, Card, HobbyTile, Logo, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, GoalCard, HobbyTile, Logo, Screen, Text } from '@/components';
 import { useMe } from '@/data';
-import { DUEL_DAYS, HOBBIES } from '@/data/catalog';
+import { defaultGoal, HOBBIES, minutesFromText } from '@/data/catalog';
 import { hobbyIconRotation, hobbyIcons } from '@/lib/hobbyIcons';
 import { useChallenge } from '@/lib/useChallenge';
 import { useOnboarding } from '@/state/onboarding';
@@ -18,7 +17,7 @@ import { useTheme } from '@/theme';
 export default function HobbyScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { hobby, setHobbyId, minutes, cycleMinutes } = useOnboarding();
+  const { hobby, setHobbyId, minutes, setMinutes, goal, setGoal } = useOnboarding();
   const { data: me, loading } = useMe();
   const { friendId, friendName, via } = useLocalSearchParams<{ friendId?: string; friendName?: string; via?: string }>();
   const { send, sending, error, waitingCode } = useChallenge();
@@ -70,23 +69,19 @@ export default function HobbyScreen() {
         ))}
       </View>
 
-      <Card
-        variant="orangeTint"
-        style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg, borderRadius: t.radii.lg }}
-      >
-        <Sparkle size={t.sizes.icon.xl} color={t.colors.orangeDark} strokeWidth={2} />
-        <View style={{ flex: 1, gap: t.spacing.hairline }}>
-          <Text variant="captionStrong" color="orangeDark">
-            Starter goal
-          </Text>
-          <Text variant="cardTitle">
-            {minutes} minutes a day for {DUEL_DAYS} days
-          </Text>
-        </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Change daily minutes" onPress={cycleMinutes} hitSlop={12}>
-          <PencilLine size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />
-        </Pressable>
-      </Card>
+      <GoalCard
+        goal={goal ?? defaultGoal(hobby.id, minutes)}
+        custom={goal !== null}
+        minutes={minutes}
+        onMinutes={setMinutes}
+        onSave={(text) => {
+          // A number of minutes written in the text becomes the minutes logged per check-in.
+          const m = minutesFromText(text) ?? minutes;
+          setMinutes(m);
+          setGoal(text === defaultGoal(hobby.id, m) ? null : text);
+        }}
+        onReset={() => setGoal(null)}
+      />
 
       <View style={{ flex: 1 }} />
 
