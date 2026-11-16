@@ -23,7 +23,7 @@ export default function YouScreen() {
       </Screen>
     );
   }
-  if (!me && !meError) return <Redirect href="/hobby" />; // signed out
+  if (!me && !meError) return <Redirect href="/welcome" />; // signed out
   if (!me || !duels || !stats) {
     return (
       <Screen tabBar>
@@ -90,7 +90,7 @@ export default function YouScreen() {
             variant="outline"
             onPress={async () => {
               await data.logout();
-              router.replace('/hobby');
+              router.replace('/welcome');
             }}
           />
         )}

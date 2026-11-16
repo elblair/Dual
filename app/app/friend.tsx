@@ -49,7 +49,7 @@ export default function FriendScreen() {
     return () => clearTimeout(timer);
   }, [q, data]);
 
-  if (!meLoading && !me) return <Redirect href="/hobby" />; // a session is needed to search
+  if (!meLoading && !me) return <Redirect href="/welcome" />; // a session is needed to search
 
   const message = `I’m ${hobby.phrase} ${minutes} min a day this week. Dual me so I don’t quit? ${hobby.emoji}`;
 

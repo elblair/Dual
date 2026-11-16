@@ -6,7 +6,7 @@ import { useData, useMe } from '@/data';
 
 /**
  * Launcher. First make sure the server can be reached (a clear error with "Try again" if it cannot, never mock data),
- * then send signed-in people to Today and everyone else to the Hobby picker.
+ * then send signed-in people to Today and everyone else to the Welcome screen (sign up / log in).
  */
 export default function Index() {
   const data = useData();
@@ -42,5 +42,5 @@ export default function Index() {
       </Screen>
     );
   }
-  return <Redirect href={me ? '/today' : '/hobby'} />;
+  return <Redirect href={me ? '/today' : '/welcome'} />;
 }

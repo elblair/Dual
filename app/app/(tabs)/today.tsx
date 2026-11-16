@@ -30,7 +30,7 @@ export default function TodayScreen() {
       </Screen>
     );
   }
-  if (!me && !meError) return <Redirect href="/hobby" />; // signed out
+  if (!me && !meError) return <Redirect href="/welcome" />; // signed out
   if (!me || !duels) {
     return (
       <Screen tabBar>
