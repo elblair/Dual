@@ -1,6 +1,7 @@
 import { buildDays, type DayState } from '@/components';
 import type { ColorName } from '@/theme';
 import type { Duel } from '@/data';
+import { defaultGoal, easierGoalText, easierMinutes } from '@/data/catalog';
 
 export const myScore = (d: Duel) => d.myDays.length;
 export const theirScore = (d: Duel) => d.theirDays.length;
@@ -26,6 +27,15 @@ export function myDayStates(d: Duel): DayState[] {
 export function theirDayStates(d: Duel): DayState[] {
   return buildDays(d.theirDays);
 }
+
+/** The goal as the players wrote it, or the suggestion built from the hobby and minutes. */
+export const goalText = (d: Duel) => d.goal ?? defaultGoal(d.hobbyId, d.minutes);
+
+/** The goal an "easier win" rematch starts with (the API computes the same). */
+export const easierGoalFor = (d: Duel) => easierGoalText(d.goal, d.minutes, easierMinutes(d.minutes)) ?? defaultGoal(d.hobbyId, easierMinutes(d.minutes));
+
+/** For a code invite nobody has accepted yet: "Invite sent · code K3X9". */
+export const pendingInviteLabel = (d: Duel) => `Invite sent${d.inviteCode ? ` · code ${d.inviteCode}` : ''}`;
 
 /** "You lead by 1", "Tied", or "Eleanor leads by 2". */
 export function leadLabel(d: Duel): string {

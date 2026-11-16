@@ -9,6 +9,8 @@ export { Pill } from './Pill';
 export { Chip } from './Chip';
 export { StreakCard } from './StreakCard';
 export { RankCard } from './RankCard';
+export { GoalCard } from './GoalCard';
+export { CancelInvite } from './CancelInvite';
 export { BackButton } from './BackButton';
 export { Logo } from './Logo';
 export { TabBar } from './TabBar';

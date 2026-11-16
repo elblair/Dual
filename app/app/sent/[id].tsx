@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { Share2 } from 'lucide-react-native';
-import { Avatar, Button, Card, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
-import { useDuel, useMe } from '@/data';
+import { Hourglass, Share2 } from 'lucide-react-native';
+import { Avatar, Button, Card, CancelInvite, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
+import { useData, useDuel, useMe } from '@/data';
 import { DUEL_DAYS, hobbyById } from '@/data/catalog';
+import { goalText, pendingInviteLabel } from '@/lib/duel';
 import { useTheme } from '@/theme';
 
 /**
  * Sent (Figma Base Sent 197:239): shown right after you challenge someone. Everything comes from the duel you just made.
  * Dropped from the Figma frame: Vibe and Stake (not in the app), and "24 hours to accept" / "we'll text a link" (there is
- * no expiry and no link: a named friend sees it under Pending invites, anyone else enters the code).
+ * no expiry and no link: a named friend sees it under Pending invites, anyone else enters the code). A friend who has not
+ * joined yet is shown as a neutral hourglass avatar with "Invite sent · code ...", never as a made-up name or "?".
  */
 export default function SentScreen() {
   const t = useTheme();
   const router = useRouter();
+  const data = useData();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: duel, error, loading, refetch } = useDuel(id);
   const { data: me } = useMe();
@@ -40,7 +43,7 @@ export default function SentScreen() {
   const hobby = hobbyById(duel.hobbyId);
   const rows: [string, string][] = [
     ['Hobby', hobby.label],
-    ['Goal', `${duel.minutes} min a day`],
+    ['Goal', goalText(duel)],
     ['Length', `${duel.lengthDays || DUEL_DAYS} days`],
     ['Check-ins', 'Friend confirms'],
   ];
@@ -64,8 +67,17 @@ export default function SentScreen() {
         <Text variant="subheading" color="orange" style={{ fontFamily: t.fonts.bold }}>
           VS
         </Text>
-        <Avatar name={friend?.name ?? '?'} tone={friend ? 'opponent' : 'neutral'} size="xxl" />
+        {friend ? (
+          <Avatar name={friend.name} tone="opponent" size="xxl" />
+        ) : (
+          <Avatar name="Your friend has not joined yet" icon={Hourglass} tone="neutral" size="xxl" />
+        )}
       </View>
+      {!friend ? (
+        <Text variant="bodyStrong" color="muted">
+          {pendingInviteLabel(duel)}
+        </Text>
+      ) : null}
 
       <Text variant="eyebrow" color="orangeDark">
         CHALLENGE SENT
@@ -106,6 +118,14 @@ export default function SentScreen() {
 
       <Button label="Back home" onPress={() => router.replace('/today')} />
       <Button label="Invite someone else" variant="soft" icon={Share2} onPress={() => router.replace('/hobby')} />
+      {duel.status === 'pending' && duel.viewerIsCreator ? (
+        <CancelInvite
+          onCancel={async () => {
+            await data.cancelInvite(duel.id);
+            router.replace('/today');
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }

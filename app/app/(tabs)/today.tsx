@@ -6,10 +6,10 @@ import { Avatar, Button, Card, Chip, ConnectionBadge, ErrorBanner, ErrorView, Lo
 import { useData, useDuels, useGroups, useMe, useStats, type Duel } from '@/data';
 import { hobbyById } from '@/data/catalog';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { daysLeftLabel, friendName, myDayStates, needsCheckIn, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
+import { daysLeftLabel, friendName, goalText, myDayStates, needsCheckIn, pendingInviteLabel, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
 import { todayLabel } from '@/lib/dates';
 import { recapNumbers, signed, thisWeek } from '@/lib/week';
-import { doneHref, duelHref, resultHref } from '@/lib/routes';
+import { doneHref, duelHref, resultHref, sentHref } from '@/lib/routes';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -87,7 +87,7 @@ export default function TodayScreen() {
       <View style={{ flex: 1, gap: t.spacing.hairline }}>
         <Text variant="bodyStrong">{d.creator.name} invited you</Text>
         <Text variant="caption" color="muted">
-          {hobbyById(d.hobbyId).label} · {d.minutes} min a day · {d.lengthDays} days
+          {hobbyById(d.hobbyId).label} · {goalText(d)} · {d.lengthDays} days
         </Text>
       </View>
       <Pill label="Accept" tone="maroon" onPress={() => run(() => data.acceptDuel(d.id))} />
@@ -115,7 +115,7 @@ export default function TodayScreen() {
           </View>
           <View style={{ flex: 1, gap: t.spacing.hairline }}>
             <Text variant="headingSm" color="white">
-              {hobby.action} {d.minutes} min
+              {goalText(d)}
             </Text>
             <Text variant="small" color="onDarkMuted">
               vs {friendName(d)} · {friendDone ? 'done today' : 'not yet today'}
@@ -179,7 +179,8 @@ export default function TodayScreen() {
   );
 
   const sentCard = (d: Duel) => (
-    <Card key={d.id} variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.sm }}>
+    <Pressable key={d.id} accessibilityRole="button" onPress={() => router.push(sentHref(d.id))}>
+    <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.sm }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text variant="cardTitle">{hobbyById(d.hobbyId).label}</Text>
         <Text variant="smallStrong" color="muted">
@@ -189,9 +190,10 @@ export default function TodayScreen() {
       <Text variant="caption" color="muted">
         {d.opponent
           ? `Waiting for ${d.opponent.name} to accept.`
-          : `Waiting for a friend. Send them the code ${d.inviteCode} and they enter it with “Enter an invite code”.`}
+          : `${pendingInviteLabel(d)}. They enter it with “Enter an invite code”. Tap to see it again.`}
       </Text>
     </Card>
+    </Pressable>
   );
 
   const finishedCard = (d: Duel) => (

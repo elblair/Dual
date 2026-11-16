@@ -25,7 +25,7 @@ export default function FriendScreen() {
   const { hobby, minutes, friend, setFriend } = useOnboarding();
   const { first } = useLocalSearchParams<{ first?: string }>();
   const friendFirst = first === '1';
-  const { send, sending, error, message } = useChallenge();
+  const { send, sending, error, message, waitingCode } = useChallenge();
 
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<UserHit[]>([]);
@@ -188,6 +188,11 @@ export default function FriendScreen() {
       {error ? (
         <Text variant="caption" color="maroonBright" align="center">
           {error}
+        </Text>
+      ) : null}
+      {waitingCode ? (
+        <Text variant="caption" color="muted" align="center">
+          Not sent yet. Your invite code is {waitingCode}: tap Send by text to share it again.
         </Text>
       ) : null}
       {friendFirst ? (
