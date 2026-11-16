@@ -54,6 +54,7 @@ export function createMockSource(): DataSource {
       id: `m${seq++}`,
       hobbyId: input.hobbyId,
       minutes: input.minutes,
+      goal: input.goal ?? null,
       lengthDays: 7,
       status: 'pending',
       opponent: friend ? { id: friend.id, name: friend.name, tone: 'opponent' } : null,

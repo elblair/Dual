@@ -6,7 +6,7 @@ import { Hourglass, Share2 } from 'lucide-react-native';
 import { Avatar, Button, Card, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
 import { useDuel, useMe } from '@/data';
 import { DUEL_DAYS, hobbyById } from '@/data/catalog';
-import { pendingInviteLabel } from '@/lib/duel';
+import { goalText, pendingInviteLabel } from '@/lib/duel';
 import { useTheme } from '@/theme';
 
 /**
@@ -42,7 +42,7 @@ export default function SentScreen() {
   const hobby = hobbyById(duel.hobbyId);
   const rows: [string, string][] = [
     ['Hobby', hobby.label],
-    ['Goal', `${duel.minutes} min a day`],
+    ['Goal', goalText(duel)],
     ['Length', `${duel.lengthDays || DUEL_DAYS} days`],
     ['Check-ins', 'Friend confirms'],
   ];

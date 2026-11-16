@@ -53,7 +53,7 @@ On Today, the badge must say **Live · <host>** (green). If it says Offline or t
 Do the same with the teammate's name and email. Refresh `users` in Neon: now two rows.
 
 ### 3. Phone 1: start a duel and invite phone 2
-1. **Start a duel**: pick a hobby, tap **Next: pick a friend**.
+1. **Start a duel**: pick a hobby. Optionally tap the **Starter goal** card (or the pencil) to write your own goal (up to 60 characters; the minute chips update the numbers in it), then tap **Next: pick a friend**.
 2. In **Find a friend on Dual** type the teammate's name or the start of their email. The real account appears (the email is masked). Tap it, then **Invite <name>**.
 3. The **Sent** screen confirms it ("Your dual is on its way", with the invite code for a code invite). **Back home** shows the duel under **Your duals** as "Waiting for <name> to accept."
 4. Neon: **duels** has a new row (`status = pending`, `creator_id`, `opponent_id`, `invite_code`).

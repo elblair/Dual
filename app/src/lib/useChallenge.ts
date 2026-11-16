@@ -16,7 +16,7 @@ import { useOnboarding, type PickedFriend } from '@/state/onboarding';
 export function useChallenge() {
   const data = useData();
   const router = useRouter();
-  const { hobby, minutes, reset } = useOnboarding();
+  const { hobby, minutes, goal, reset } = useOnboarding();
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   /** Set when the share sheet was cancelled (iOS reports it): the code exists but was not sent, so we stay on the screen. */
@@ -31,7 +31,7 @@ export function useChallenge() {
     setError('');
     setWaitingCode(null);
     try {
-      const duel = await data.createDuel({ hobbyId: hobby.id, minutes, friendId: friend?.id ?? null });
+      const duel = await data.createDuel({ hobbyId: hobby.id, minutes, goal, friendId: friend?.id ?? null });
       if (!friend) {
         const full = `${message}\nOpen Dual and enter the code ${duel.inviteCode}`;
         if (Platform.OS === 'web') {

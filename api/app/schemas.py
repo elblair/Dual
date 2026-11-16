@@ -53,6 +53,8 @@ class DuelOut(CamelModel):
     id: str
     hobby_id: str
     minutes: int
+    # The goal text the players wrote, or None when the app's suggestion applies.
+    goal: str | None
     length_days: int
     status: Literal["pending", "active", "paused", "finished"]
     # None for an open invite nobody has accepted yet.
@@ -89,6 +91,8 @@ class LoginIn(CamelModel):
 class CreateDuelIn(CamelModel):
     hobby_id: str = Field(min_length=1, max_length=32)
     minutes: int
+    # Own words for the goal (up to 60 characters once trimmed). Omit or null for the suggestion built from hobby and minutes.
+    goal: str | None = Field(default=None, max_length=300)
     # A person found with /users/search. None = an open invite that a friend accepts with the code.
     friend_id: str | None = Field(default=None, max_length=32)
 

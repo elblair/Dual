@@ -8,7 +8,7 @@ from app import models  # noqa: F401  (registers the tables)
 from app.config import get_settings
 from app.db import Base, engine
 from app.logic import DomainError
-from app.migrate import drop_legacy_columns
+from app.migrate import add_missing_columns, drop_legacy_columns
 from app.routers import auth, duels, groups, users
 
 
@@ -17,6 +17,7 @@ async def lifespan(_: FastAPI):
     # A demo: create the tables on startup instead of using migrations. No data is ever created here.
     drop_legacy_columns(engine)
     Base.metadata.create_all(engine)
+    add_missing_columns(engine)
     yield
 
 

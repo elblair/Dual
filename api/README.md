@@ -36,7 +36,7 @@ No data is created on startup: tables only. New accounts start empty.
 | `GET /users/search?q=` | Real accounts by name (contains) or email (starts with), at least 2 characters, never me, email masked |
 | `GET /duels`, `GET /duels/{id}` | My duels, including pending invites I received (the day is caught up with the clock) |
 | `GET /duels/by-code/{code}` | Look up a pending duel by invite code. Works before signing in |
-| `POST /duels` | `{hobbyId, minutes, friendId?}`: always created `pending`. With `friendId` only that person can accept; without it anyone with the code can. Asking again for the same pending challenge (same hobby, minutes and friend) returns the existing duel and code instead of a duplicate |
+| `POST /duels` | `{hobbyId, minutes, goal?, friendId?}` (`goal` = the goal in your own words, trimmed, 1 to 60 characters; omit it for the suggestion built from hobby and minutes; the duel returns it as `goal`, null when not written): always created `pending`. With `friendId` only that person can accept; without it anyone with the code can. Asking again for the same pending challenge (same hobby, minutes and friend) returns the existing duel and code instead of a duplicate |
 | `POST /duels/{id}/accept` | Accept an invite (not your own, and only the invited person if one was named) |
 | `POST /duels/{id}/checkin`, `confirm`, `rest`, `pause`, `resume`, `forfeit` | Playing |
 | `POST /duels/{id}/checkin/details` | `{minutes, note}`: optional minutes (1 to 240) and note (up to 200 characters) on MY check-in for today. The one-tap `checkin` stays the default (goal minutes, no note). Refused once the friend has confirmed it |
@@ -53,6 +53,7 @@ Computed on every read from check-ins and duels (no extra tables). All numbers a
 - `GET /me/stats` returns `xp`, `tier`, `nextTier`, `xpToNext`, `progress` (0 to 1), `restDaysPerDuel` and `tiers` (name, minXp, perk, reached).
 
 ## How a duel works
+- The goal text is stored on the duel (`duels.goal`, nullable; older databases get the column added at startup by `app/migrate.py`). A rematch keeps it; an "easier win" swaps the old minutes for the new ones inside the text when it mentions them.
 - Always `pending` first. It becomes `active` (day 1 of 7) when the invited person accepts, then follows the clock: 24 hours per day since it was accepted.
 - Your own check-in counts on your screen at once; it counts on your friend's screen once they confirm it ("you confirm each other"). When a day rolls over, everything pending is confirmed.
 - Two rest days per player (three from Silver). Pausing freezes the clock for both. Forfeit ends the duel and the friend wins.

@@ -4,6 +4,7 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Avatar, BackButton, Button, Card, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuelByCode, useMe } from '@/data';
 import { hobbyById } from '@/data/catalog';
+import { goalText } from '@/lib/duel';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
@@ -48,7 +49,8 @@ export default function AcceptScreen() {
   const challenger = duel.creator;
   const ownInvite = !!me && duel.viewerIsCreator;
   const rows: [string, string][] = [
-    ['Hobby', `${hobby.label} · ${duel.minutes} min a day`],
+    ['Hobby', hobby.label],
+    ['Goal', goalText(duel)],
     ['Length', `${duel.lengthDays} days, starts when you accept`],
     ['Check-ins', 'One tap · you confirm each other'],
   ];
