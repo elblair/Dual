@@ -21,7 +21,7 @@ export default function HobbyScreen() {
   const { hobby, setHobbyId, minutes, cycleMinutes } = useOnboarding();
   const { data: me, loading } = useMe();
   const { friendId, friendName, via } = useLocalSearchParams<{ friendId?: string; friendName?: string; via?: string }>();
-  const { send, sending, error } = useChallenge();
+  const { send, sending, error, waitingCode } = useChallenge();
   const chosen = friendId && friendName ? { id: friendId, name: friendName } : null;
   const direct = !!chosen || via === 'text';
 
@@ -93,6 +93,11 @@ export default function HobbyScreen() {
       {error ? (
         <Text variant="caption" color="maroonBright" align="center">
           {error}
+        </Text>
+      ) : null}
+      {waitingCode ? (
+        <Text variant="caption" color="muted" align="center">
+          Not sent yet. Your invite code is {waitingCode}: tap Send by text to share it again.
         </Text>
       ) : null}
       {direct ? (

@@ -2,16 +2,18 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { Share2 } from 'lucide-react-native';
+import { Hourglass, Share2 } from 'lucide-react-native';
 import { Avatar, Button, Card, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
 import { useDuel, useMe } from '@/data';
 import { DUEL_DAYS, hobbyById } from '@/data/catalog';
+import { pendingInviteLabel } from '@/lib/duel';
 import { useTheme } from '@/theme';
 
 /**
  * Sent (Figma Base Sent 197:239): shown right after you challenge someone. Everything comes from the duel you just made.
  * Dropped from the Figma frame: Vibe and Stake (not in the app), and "24 hours to accept" / "we'll text a link" (there is
- * no expiry and no link: a named friend sees it under Pending invites, anyone else enters the code).
+ * no expiry and no link: a named friend sees it under Pending invites, anyone else enters the code). A friend who has not
+ * joined yet is shown as a neutral hourglass avatar with "Invite sent · code ...", never as a made-up name or "?".
  */
 export default function SentScreen() {
   const t = useTheme();
@@ -64,8 +66,17 @@ export default function SentScreen() {
         <Text variant="subheading" color="orange" style={{ fontFamily: t.fonts.bold }}>
           VS
         </Text>
-        <Avatar name={friend?.name ?? '?'} tone={friend ? 'opponent' : 'neutral'} size="xxl" />
+        {friend ? (
+          <Avatar name={friend.name} tone="opponent" size="xxl" />
+        ) : (
+          <Avatar name="Your friend has not joined yet" icon={Hourglass} tone="neutral" size="xxl" />
+        )}
       </View>
+      {!friend ? (
+        <Text variant="bodyStrong" color="muted">
+          {pendingInviteLabel(duel)}
+        </Text>
+      ) : null}
 
       <Text variant="eyebrow" color="orangeDark">
         CHALLENGE SENT

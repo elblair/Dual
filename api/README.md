@@ -36,7 +36,7 @@ No data is created on startup: tables only. New accounts start empty.
 | `GET /users/search?q=` | Real accounts by name (contains) or email (starts with), at least 2 characters, never me, email masked |
 | `GET /duels`, `GET /duels/{id}` | My duels, including pending invites I received (the day is caught up with the clock) |
 | `GET /duels/by-code/{code}` | Look up a pending duel by invite code. Works before signing in |
-| `POST /duels` | `{hobbyId, minutes, friendId?}`: always created `pending`. With `friendId` only that person can accept; without it anyone with the code can |
+| `POST /duels` | `{hobbyId, minutes, friendId?}`: always created `pending`. With `friendId` only that person can accept; without it anyone with the code can. Asking again for the same pending challenge (same hobby, minutes and friend) returns the existing duel and code instead of a duplicate |
 | `POST /duels/{id}/accept` | Accept an invite (not your own, and only the invited person if one was named) |
 | `POST /duels/{id}/checkin`, `confirm`, `rest`, `pause`, `resume`, `forfeit` | Playing |
 | `POST /duels/{id}/checkin/details` | `{minutes, note}`: optional minutes (1 to 240) and note (up to 200 characters) on MY check-in for today. The one-tap `checkin` stays the default (goal minutes, no note). Refused once the friend has confirmed it |

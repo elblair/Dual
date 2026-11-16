@@ -27,6 +27,9 @@ export function theirDayStates(d: Duel): DayState[] {
   return buildDays(d.theirDays);
 }
 
+/** For a code invite nobody has accepted yet: "Invite sent · code K3X9". */
+export const pendingInviteLabel = (d: Duel) => `Invite sent${d.inviteCode ? ` · code ${d.inviteCode}` : ''}`;
+
 /** "You lead by 1", "Tied", or "Eleanor leads by 2". */
 export function leadLabel(d: Duel): string {
   const diff = myScore(d) - theirScore(d);
