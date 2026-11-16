@@ -6,7 +6,8 @@
  * define `midnightColors` below (same keys as `lightColors`), add a `midnightTheme`,
  * and pick it in ThemeProvider with `useColorScheme()`. No component changes needed.
  *
- * Source: design/spec.md (Figma tokens + estimates read from the PNG exports).
+ * Every value is read from the Figma file (fwmURCNVOUlAAJfknpGhDS, page "Dual v2 · Improved",
+ * row "Claude's Pick" + Break from the Base row). See design/spec.md.
  */
 
 const lightColors = {
@@ -18,25 +19,28 @@ const lightColors = {
   // surfaces
   bg: '#ffffff',
   surface: '#f5f4f7',
-  surfaceStrong: '#e8e7ec', // Break back button, soft buttons, big tab pills (estimate)
+  surfaceStrong: '#eae9ee', // pills, icon circles, "See how it ends" button
   border: '#e4e3e9',
   dotEmpty: '#e4e3e9',
   // brand
-  maroon: '#6e1023', // brand: primary buttons, selected states
+  maroon: '#6e1023', // primary buttons, selected states
   maroonBright: '#a8203a', // opponent avatars / dots, destructive text
   maroonTint: '#f7eff1', // selected row background
   // "do this now"
   orange: '#f28c38',
   orangeDark: '#c4651a', // eyebrow labels
-  orangeTint: '#fdeee3', // starter goal / recap / streak cards (estimate)
+  orangeTint: '#fdf1e7', // starter goal / recap / streak cards
   // people
   blue: '#4a6286', // "you" avatar + dots, link text, Groups hero card
-  blueTint: '#eaeef7', // highlighted leaderboard row (estimate)
+  blueTint: '#edf1f7', // highlighted leaderboard row
   // status
-  success: '#2e9e5b', // done check, leading score (estimate)
-  successTint: '#e6f3ea', // (estimate)
-  // overlays
-  overlayLight: 'rgba(255,255,255,0.16)', // icon tiles on maroon, tracks on slate
+  success: '#2e9e5b',
+  successTint: '#e6f4ec',
+  // translucent whites on maroon / slate cards
+  overlayLight: 'rgba(255,255,255,0.16)', // icon tile, camera button
+  overlayTrack: 'rgba(255,255,255,0.2)', // progress track
+  onDarkMuted: 'rgba(255,255,255,0.8)', // secondary text on maroon / slate
+  onDarkSubtle: 'rgba(255,255,255,0.85)', // footnote on slate
 } as const;
 
 export type ColorName = keyof typeof lightColors;
@@ -44,40 +48,56 @@ export type Colors = Record<ColorName, string>;
 
 const fonts = {
   regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
 } as const;
 
 const fontSizes = {
-  eyebrow: 11,
+  tiny: 10,
+  micro: 11,
   caption: 12,
   small: 13,
   subtitle: 14,
   body: 15,
   button: 16,
+  headingSm: 17,
   subheading: 18,
   heading: 20,
+  headingLg: 22,
   title: 28,
-  display: 34,
-  score: 44,
+  titleLg: 30,
+  display: 32,
+  score: 48,
 } as const;
 
 export type TextVariant =
   | 'eyebrow'
+  | 'score'
   | 'display'
+  | 'titleLg'
   | 'title'
+  | 'headingLg'
   | 'heading'
+  | 'headingSm'
+  | 'headerTitle'
   | 'subheading'
+  | 'cardTitle'
   | 'body'
   | 'bodyStrong'
   | 'label'
+  | 'labelMedium'
   | 'subtitle'
   | 'small'
+  | 'smallMedium'
   | 'smallStrong'
   | 'caption'
   | 'captionStrong'
-  | 'button'
-  | 'score';
+  | 'micro'
+  | 'microMedium'
+  | 'microStrong'
+  | 'tiny'
+  | 'button';
 
 export interface TextStyleToken {
   fontFamily: string;
@@ -87,70 +107,91 @@ export interface TextStyleToken {
 }
 
 const text: Record<TextVariant, TextStyleToken> = {
-  eyebrow: { fontFamily: fonts.bold, fontSize: fontSizes.eyebrow, letterSpacing: 0.66, textTransform: 'uppercase' },
+  eyebrow: { fontFamily: fonts.bold, fontSize: fontSizes.micro, letterSpacing: 0.66, textTransform: 'uppercase' },
+  score: { fontFamily: fonts.bold, fontSize: fontSizes.score },
   display: { fontFamily: fonts.bold, fontSize: fontSizes.display },
+  titleLg: { fontFamily: fonts.bold, fontSize: fontSizes.titleLg },
   title: { fontFamily: fonts.bold, fontSize: fontSizes.title },
+  headingLg: { fontFamily: fonts.bold, fontSize: fontSizes.headingLg },
   heading: { fontFamily: fonts.bold, fontSize: fontSizes.heading },
+  headingSm: { fontFamily: fonts.bold, fontSize: fontSizes.headingSm },
+  headerTitle: { fontFamily: fonts.semibold, fontSize: fontSizes.headingSm },
   subheading: { fontFamily: fonts.semibold, fontSize: fontSizes.subheading },
+  cardTitle: { fontFamily: fonts.bold, fontSize: fontSizes.button },
   body: { fontFamily: fonts.regular, fontSize: fontSizes.body },
   bodyStrong: { fontFamily: fonts.semibold, fontSize: fontSizes.body },
   label: { fontFamily: fonts.semibold, fontSize: fontSizes.subtitle },
+  labelMedium: { fontFamily: fonts.medium, fontSize: fontSizes.subtitle },
   subtitle: { fontFamily: fonts.regular, fontSize: fontSizes.subtitle },
   small: { fontFamily: fonts.regular, fontSize: fontSizes.small },
+  smallMedium: { fontFamily: fonts.medium, fontSize: fontSizes.small },
   smallStrong: { fontFamily: fonts.semibold, fontSize: fontSizes.small },
   caption: { fontFamily: fonts.regular, fontSize: fontSizes.caption },
   captionStrong: { fontFamily: fonts.semibold, fontSize: fontSizes.caption },
+  micro: { fontFamily: fonts.regular, fontSize: fontSizes.micro },
+  microMedium: { fontFamily: fonts.medium, fontSize: fontSizes.micro },
+  microStrong: { fontFamily: fonts.semibold, fontSize: fontSizes.micro },
+  tiny: { fontFamily: fonts.regular, fontSize: fontSizes.tiny },
   button: { fontFamily: fonts.semibold, fontSize: fontSizes.button },
-  score: { fontFamily: fonts.bold, fontSize: fontSizes.score },
 };
 
+/** Raw Figma values, named by number when there is no better meaning (s6 = 6pt). */
 const spacing = {
   hairline: 2,
   xs: 4,
+  s6: 6,
   sm: 8,
+  s9: 9,
   md: 10,
   lg: 12,
+  s13: 13,
   xl: 14,
   xxl: 16,
+  s18: 18,
   xxxl: 20,
   gutter: 22, // screen side padding
+  section: 28,
+  tabBottom: 28, // tab bar bottom padding (minimum)
+  screenGap: 14, // gap between blocks (Friend, Accept, Done, Result, Save)
+  screenGapLoose: 16, // gap between blocks (Hobby, Today, Duel, Groups, You)
   screenTopExtra: 12, // added to the safe-area top inset (about 60pt on a notched iPhone)
   screenBottomMin: 30, // minimum bottom padding
-  section: 28,
 } as const;
 
 const radii = {
   xs: 2,
+  bar: 4, // large logo bars
   sm: 12,
   md: 14,
   lg: 16,
   xl: 18,
-  xxl: 28,
+  hero: 22, // Today hero card, Groups hero card
+  score: 24, // Duel score card
   pill: 999,
 } as const;
 
 const borders = {
   hairline: 1,
-  thick: 1.5,
-  selected: 2,
-  ring: 3,
+  thick: 1.5, // selected cards, radio outline
+  selected: 2, // "today" dot ring
+  ring: 3, // avatar ring
 } as const;
 
 const sizes = {
-  avatar: { xs: 24, sm: 32, md: 40, lg: 64, xl: 72 },
+  avatar: { xxs: 24, xs: 26, sm: 32, md: 40, header: 42, lg: 56, xl: 64, xxl: 72, hero: 92 },
   dot: { md: 14, lg: 18 },
-  dotGap: { md: 6, lg: 6 },
+  dotGap: 6,
   backButton: 40,
   radio: 22,
-  iconSm: 14,
-  icon: 18,
-  iconLg: 22,
-  tabIcon: 24,
+  icon: { badge: 13, xs: 14, copy: 15, sm: 16, md: 18, back: 19, lg: 20, xl: 22, plus: 26, flame: 30, hero: 52 },
   plusButton: 52,
   iconTile: 44,
+  cameraButton: 54,
+  successBadge: 104,
+  flameTile: 64,
   logo: {
-    sm: { barWidth: 4, barHeight: 14, gap: 2, font: 14 },
-    lg: { barWidth: 8, barHeight: 22, gap: 3, font: 26 },
+    sm: { barWidth: 4, barHeight: 14, barGap: 2, textGap: 4, font: 14 },
+    lg: { barWidth: 7, barHeight: 22, barGap: 3, textGap: 7, font: 22 },
   },
 } as const;
 

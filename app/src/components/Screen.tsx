@@ -8,20 +8,22 @@ interface ScreenProps {
   /** Scrollable content (default false: fixed column, use a flex spacer to push buttons down). */
   scroll?: boolean;
   background?: ColorName;
-  /** Remove the bottom padding when a tab bar sits below the screen. */
+  /** A tab bar sits below this screen (it handles the bottom safe area itself). */
   tabBar?: boolean;
+  /** Gap between blocks: tight = 14 (Friend, Accept, Done, Result, Save), loose = 16 (Hobby, Today, Duel, Groups, You). */
+  gap?: 'tight' | 'loose';
   contentStyle?: StyleProp<ViewStyle>;
 }
 
-/** Page wrapper: 22pt side padding, about 60pt top on a notched phone, safe-area aware, 14pt gap between blocks. */
-export function Screen({ children, scroll, background = 'bg', tabBar, contentStyle }: ScreenProps) {
+/** Page wrapper: 22pt side padding, about 60pt top on a notched phone, 30pt bottom, safe-area aware. */
+export function Screen({ children, scroll, background = 'bg', tabBar, gap = 'tight', contentStyle }: ScreenProps) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const padding = {
     paddingTop: insets.top + t.spacing.screenTopExtra,
-    paddingBottom: tabBar ? t.spacing.xxl : Math.max(insets.bottom, t.spacing.screenBottomMin),
+    paddingBottom: tabBar ? t.spacing.screenBottomMin : Math.max(insets.bottom, t.spacing.screenBottomMin),
     paddingHorizontal: t.spacing.gutter,
-    gap: t.spacing.xl,
+    gap: gap === 'loose' ? t.spacing.screenGapLoose : t.spacing.screenGap,
   };
   const bg = { backgroundColor: t.colors[background] };
 

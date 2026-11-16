@@ -28,7 +28,7 @@ export function BackButton({ onPress, tone = 'default' }: BackButtonProps) {
         opacity: pressed ? 0.8 : 1,
       })}
     >
-      <ChevronLeft size={t.sizes.iconLg} color={t.colors.ink} strokeWidth={2.2} />
+      <ChevronLeft size={t.sizes.icon.back} color={t.colors.ink} strokeWidth={2.2} />
     </Pressable>
   );
 }

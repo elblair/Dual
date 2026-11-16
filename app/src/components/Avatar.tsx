@@ -3,7 +3,8 @@ import { useTheme, type ColorName } from '@/theme';
 import { Text } from './Text';
 
 export type AvatarTone = 'you' | 'opponent' | 'brand' | 'neutral';
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+/** Pixel sizes: xxs 24 (dot rows), xs 26 (Done/Result), sm 32 (leaderboard), md 40, header 42, lg 56 (Duel), xl 64 (You), xxl 72 (Accept), hero 92 (Break). */
+export type AvatarSize = 'xxs' | 'xs' | 'sm' | 'md' | 'header' | 'lg' | 'xl' | 'xxl' | 'hero';
 
 const toneColor: Record<AvatarTone, ColorName> = {
   you: 'blue',

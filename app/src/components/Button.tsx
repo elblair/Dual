@@ -48,7 +48,7 @@ export function Button({ label, onPress, variant = 'primary', icon: Icon, disabl
         style,
       ]}
     >
-      {Icon ? <Icon size={t.sizes.icon} color={t.colors[fg]} strokeWidth={2} /> : null}
+      {Icon ? <Icon size={t.sizes.icon.md} color={t.colors[fg]} strokeWidth={2} /> : null}
       <Text variant="button" color={fg}>
         {label}
       </Text>

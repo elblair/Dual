@@ -29,8 +29,8 @@ export function Pill({ label, onPress, tone = 'soft', icon: Icon, style }: PillP
           alignItems: 'center',
           justifyContent: 'center',
           gap: t.spacing.sm,
-          paddingHorizontal: t.spacing.xxxl,
-          paddingVertical: t.spacing.lg,
+          paddingHorizontal: t.spacing.xxl,
+          paddingVertical: t.spacing.s9,
           borderRadius: t.radii.pill,
           backgroundColor: t.colors[bg],
           opacity: pressed ? 0.85 : 1,
@@ -38,8 +38,8 @@ export function Pill({ label, onPress, tone = 'soft', icon: Icon, style }: PillP
         style,
       ]}
     >
-      {Icon ? <Icon size={t.sizes.icon} color={t.colors[fg]} strokeWidth={2} /> : null}
-      <Text variant="label" color={fg}>
+      {Icon ? <Icon size={t.sizes.icon.copy} color={t.colors[fg]} strokeWidth={2} /> : null}
+      <Text variant="smallStrong" color={fg}>
         {label}
       </Text>
     </Pressable>

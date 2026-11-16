@@ -53,12 +53,12 @@ export default function KitchenSink() {
 
         {section('Avatars')}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}>
-          <Avatar name="Ari" size="xs" />
+          <Avatar name="Ari" size="xxs" />
           <Avatar name="Eleanor" tone="opponent" size="sm" />
           <Avatar name="Tanish" size="md" />
           <Avatar name="Ben" tone="neutral" size="md" />
-          <Avatar name="Ari" tone="brand" size="lg" ring="orange" />
-          <Avatar name="Ari" size="xl" ring="white" />
+          <Avatar name="Ari" tone="brand" size="xl" ring="orange" />
+          <Avatar name="Ari" size="xxl" ring="white" />
         </View>
 
         {section('Dots (7 per person)')}

@@ -33,7 +33,7 @@ export function Card({ variant = 'surface', children, style }: CardProps) {
           borderRadius: t.radii.xl,
           paddingHorizontal: t.spacing.xxl,
           paddingVertical: t.spacing.xl,
-          borderWidth: border ? (thick ? t.borders.selected : t.borders.hairline) : 0,
+          borderWidth: border ? (thick ? t.borders.thick : t.borders.hairline) : 0,
           borderColor: border ? t.colors[border] : undefined,
         },
         style,
