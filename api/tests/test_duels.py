@@ -37,7 +37,7 @@ def test_an_open_invite_has_a_code_and_no_opponent(player):
 
 
 def test_invite_codes_are_unique(player):
-    codes = {player.challenge()["inviteCode"] for _ in range(20)}
+    codes = {player.challenge(minutes=5 + i)["inviteCode"] for i in range(20)}  # 20 different challenges (the same one is reused)
     assert len(codes) == 20
 
 

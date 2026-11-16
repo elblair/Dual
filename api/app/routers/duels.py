@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
 from app import logic
@@ -27,7 +27,7 @@ def duel_by_code(code: str, user: User | None = Depends(optional_user), db: Sess
 
 @router.post("", response_model=DuelOut)
 def create_duel(body: CreateDuelIn, user: User = Depends(current_user), db: Session = Depends(get_db)) -> DuelOut:
-    duel = logic.create_duel(db, user, body.hobby_id, body.minutes, body.friend_id)
+    duel = logic.create_duel(db, user, body.hobby_id, body.minutes, body.friend_id, body.goal)
     db.commit()
     return logic.build_view(db, duel, user)
 
@@ -37,6 +37,14 @@ def get_duel(duel_id: int, user: User = Depends(current_user), db: Session = Dep
     duel = logic.get_duel(db, duel_id, user)
     db.commit()
     return logic.build_view(db, duel, user)
+
+
+@router.delete("/{duel_id}", status_code=204)
+def cancel_invite(duel_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Response:
+    """Cancel a pending invite I created. Only the creator can, and only until it is accepted."""
+    logic.cancel_invite(db, duel_id, user)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/{duel_id}/accept", response_model=DuelOut)

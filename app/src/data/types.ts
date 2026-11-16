@@ -30,6 +30,8 @@ export interface Duel {
   id: string;
   hobbyId: string;
   minutes: number;
+  /** The goal in the players' own words, or null when the suggestion (hobby + minutes) applies. Use `goalText(duel)`. */
+  goal: string | null;
   lengthDays: number;
   status: DuelStatus;
   /** The other player from my point of view (for an invite I received: whoever sent it). Null for an open invite nobody accepted. */
@@ -69,6 +71,8 @@ export interface Activity {
 export interface CreateDuelInput {
   hobbyId: string;
   minutes: number;
+  /** The goal in your own words (trimmed, up to 60 characters). Omit for the suggestion. */
+  goal?: string | null;
   /** A person found with search. Omit for an open invite that a friend accepts with the code. */
   friendId?: string | null;
 }

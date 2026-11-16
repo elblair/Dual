@@ -1,5 +1,6 @@
 """Duel rules. Mirrors app/src/data/mockSource.ts (the opt-in mock) so both behave the same way."""
 
+import re
 import secrets
 import threading
 from collections import Counter
@@ -35,6 +36,7 @@ from app.schemas import (
 )
 
 LENGTH_DAYS = 7
+GOAL_MAX = 60  # characters, after trimming
 ACTIVITY_LIMIT = 6  # check-ins shown in "Recent check-ins"
 CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"  # no 0/O/1/I/L
 
@@ -67,6 +69,25 @@ def utcnow() -> datetime:
 
 def _iso(dt: datetime | None) -> str | None:
     return (dt.isoformat() + "Z") if dt else None
+
+
+def clean_goal(goal: str | None) -> str | None:
+    """None stays None (the suggestion). Otherwise trim and tidy the spaces; it must not be empty or longer than GOAL_MAX."""
+    if goal is None:
+        return None
+    text = " ".join(goal.split())
+    if not text:
+        raise DomainError("Write a goal, or keep the suggestion.", status=422)
+    if len(text) > GOAL_MAX:
+        raise DomainError(f"Keep your goal under {GOAL_MAX} characters.", status=422)
+    return text
+
+
+def easier_goal(goal: str | None, old_minutes: int, new_minutes: int) -> str | None:
+    """The goal text for an "easier win": a written goal that mentions the old minutes gets the new number; otherwise it is kept."""
+    if goal is None:
+        return None
+    return re.sub(rf"(?<!\d){old_minutes}(?!\d)", str(new_minutes), goal, count=1)
 
 
 def easier_minutes(minutes: int) -> int:
@@ -141,6 +162,7 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         id=str(duel.id),
         hobby_id=duel.hobby_id,
         minutes=duel.minutes,
+        goal=duel.goal,
         length_days=duel.length_days,
         status=duel.status,
         opponent=person_for(other, viewer_id) if other else None,
@@ -275,11 +297,12 @@ def finished_together(db: Session, user: User) -> Counter[str]:
 # ---------------------------------------------------------------- actions
 
 
-def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id: str | None) -> Duel:
+def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id: str | None, goal: str | None = None) -> Duel:
     """Start a duel. It stays pending until the other person accepts: a person picked from search sees it under
-    "Pending invites", anyone else enters the invite code."""
+    "Pending invites", anyone else enters the invite code. Creating the same pending challenge again returns the existing one."""
     if not 5 <= minutes <= 240:
         raise DomainError("Pick between 5 and 240 minutes a day.")
+    goal = clean_goal(goal)
     friend = None
     if friend_id:
         friend = db.get(User, friend_id)
@@ -288,10 +311,23 @@ def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id:
         if friend.id == user.id:
             raise DomainError("You can’t challenge yourself.")
 
+    # Asking again for the same pending challenge (a retry after a cancelled share sheet, a double tap) gives back the
+    # same duel and the same invite code instead of piling up duplicates.
+    same_friend = Duel.opponent_id.is_(None) if friend is None else Duel.opponent_id == friend.id
+    existing = db.scalar(
+        select(Duel)
+        .where(Duel.creator_id == user.id, Duel.status == "pending", Duel.hobby_id == hobby_id, Duel.minutes == minutes, same_friend,
+               Duel.goal.is_(None) if goal is None else Duel.goal == goal)
+        .order_by(Duel.id.desc())
+    )
+    if existing is not None:
+        return existing
+
     now = utcnow()
     duel = Duel(
         hobby_id=hobby_id,
         minutes=minutes,
+        goal=goal,
         length_days=LENGTH_DAYS,
         status="pending",
         creator_id=user.id,
@@ -304,6 +340,18 @@ def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id:
     db.add(duel)
     db.flush()
     return duel
+
+
+def cancel_invite(db: Session, duel_id: int, user: User) -> None:
+    """Delete a pending duel I created (a named invite or a code nobody has used). Nothing else can be deleted."""
+    duel = db.get(Duel, duel_id)
+    if duel is None or user.id not in (duel.creator_id, duel.opponent_id):
+        raise DomainError("Duel not found.", status=404)
+    if duel.creator_id != user.id:
+        raise DomainError("Only the person who sent the invite can cancel it.", status=403)
+    if duel.status != "pending":
+        raise DomainError("Only an invite that has not been accepted can be cancelled.")
+    db.delete(duel)
 
 
 def accept_duel(db: Session, duel: Duel, user: User) -> Duel:
@@ -404,7 +452,8 @@ def rematch(db: Session, old: Duel, user: User, kind: str) -> Duel:
         raise DomainError("You can start a rematch once this duel is over.")
     other = old.opponent_id if old.creator_id == user.id else old.creator_id
     minutes = easier_minutes(old.minutes) if kind == "easier" else old.minutes
-    return create_duel(db, user, old.hobby_id, minutes, other)
+    goal = easier_goal(old.goal, old.minutes, minutes) if kind == "easier" else old.goal
+    return create_duel(db, user, old.hobby_id, minutes, other, goal)
 
 
 # ---------------------------------------------------------------- stats and groups (all computed from the database)

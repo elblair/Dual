@@ -4,8 +4,8 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronRight, RefreshCw, Trophy, Users, type LucideIcon } from 'lucide-react-native';
 import { Button, Card, ErrorView, LoadingView, PlayerRow, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
-import { easierMinutes, hobbyById } from '@/data/catalog';
-import { friendName, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
+import { hobbyById } from '@/data/catalog';
+import { easierGoalFor, friendName, goalText, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
 import { duelHref } from '@/lib/routes';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -60,8 +60,8 @@ export default function ResultScreen() {
       : `You practiced ${a} ${a === 1 ? 'day' : 'days'}, ${opp} practiced ${b}.`;
 
   const options: { key: Next; icon: LucideIcon; title: string; sub: string }[] = [
-    { key: 'rematch', icon: RefreshCw, title: 'Rematch', sub: `Same goal, ${duel.lengthDays} days` },
-    { key: 'easier', icon: Trophy, title: 'Easier win', sub: `${easierMinutes(duel.minutes)} min a day, same friend` },
+    { key: 'rematch', icon: RefreshCw, title: 'Rematch', sub: `Same goal: ${goalText(duel)}` },
+    { key: 'easier', icon: Trophy, title: 'Easier win', sub: `${easierGoalFor(duel)}, same friend` },
     { key: 'new', icon: Users, title: 'New friend', sub: 'Challenge someone else' },
   ];
   const buttonLabel = next === 'rematch' ? 'Send rematch' : next === 'easier' ? 'Send the easier dual' : 'Pick a friend';

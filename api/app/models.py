@@ -22,6 +22,8 @@ class Duel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     hobby_id: Mapped[str] = mapped_column(String(32))
     minutes: Mapped[int] = mapped_column(Integer)
+    # The goal in the players' own words ("Scales for 20 minutes"). None = the app's suggestion built from the hobby and minutes.
+    goal: Mapped[str | None] = mapped_column(String(80), nullable=True)
     length_days: Mapped[int] = mapped_column(Integer, default=7)
     # pending | active | paused | finished
     status: Mapped[str] = mapped_column(String(16), index=True)

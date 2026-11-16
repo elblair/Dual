@@ -54,6 +54,7 @@ export function createMockSource(): DataSource {
       id: `m${seq++}`,
       hobbyId: input.hobbyId,
       minutes: input.minutes,
+      goal: input.goal ?? null,
       lengthDays: 7,
       status: 'pending',
       opponent: friend ? { id: friend.id, name: friend.name, tone: 'opponent' } : null,
@@ -131,6 +132,14 @@ export function createMockSource(): DataSource {
       duels = [d, ...duels];
       notify();
       return Promise.resolve(clone(d));
+    },
+    cancelInvite(id) {
+      const d = duels.find((x) => x.id === id);
+      if (!d) return fail('Duel not found.');
+      if (d.status !== 'pending' || !d.viewerIsCreator) return fail('Only an invite that has not been accepted can be cancelled.');
+      duels = duels.filter((x) => x.id !== id);
+      notify();
+      return Promise.resolve();
     },
     acceptDuel: (id) =>
       act(id, (d) => {
