@@ -67,8 +67,8 @@ def test_describe_lists_the_players_and_the_code(active_duel, db):
 
 def test_purge_removes_only_the_seeded_accounts_and_their_duels(duo, db):
     ari, _ = duo
-    db.add_all([User(id="eleanor", name="Eleanor", is_guest=False, created_at=db.get(User, ari.id).created_at),
-                User(id="tanish", name="Tanish", is_guest=False, created_at=db.get(User, ari.id).created_at)])
+    db.add_all([User(id="eleanor", name="Eleanor", created_at=db.get(User, ari.id).created_at),
+                User(id="tanish", name="Tanish", created_at=db.get(User, ari.id).created_at)])
     db.commit()
     d = Duel(hobby_id="guitar", minutes=20, status="active", creator_id=ari.id, opponent_id="eleanor", invite_code="SEED",
              started_at=db.get(User, ari.id).created_at, created_at=db.get(User, ari.id).created_at)
@@ -88,9 +88,9 @@ def test_purge_removes_only_the_seeded_accounts_and_their_duels(duo, db):
 def test_legacy_columns_from_older_versions_are_dropped():
     engine = create_engine("sqlite://")
     with engine.begin() as conn:
-        conn.execute(text("create table users (id varchar primary key, name varchar, is_seeded boolean)"))
+        conn.execute(text("create table users (id varchar primary key, name varchar, is_seeded boolean, is_guest boolean)"))
         conn.execute(text("create table duels (id integer primary key, invitee_id varchar, day_offset integer, status varchar)"))
-    assert sorted(drop_legacy_columns(engine)) == ["duels.day_offset", "duels.invitee_id", "users.is_seeded"]
+    assert sorted(drop_legacy_columns(engine)) == ["duels.day_offset", "duels.invitee_id", "users.is_guest", "users.is_seeded"]
     assert {c["name"] for c in inspect(engine).get_columns("users")} == {"id", "name"}
     assert {c["name"] for c in inspect(engine).get_columns("duels")} == {"id", "status"}
     assert drop_legacy_columns(engine) == []  # idempotent

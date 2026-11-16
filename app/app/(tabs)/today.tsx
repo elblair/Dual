@@ -213,14 +213,17 @@ export default function TodayScreen() {
         </Card>
       ) : null}
 
-      {invites.length > 0 ? (
-        <>
-          <Text variant="bodyStrong" color="muted">
-            Pending invites
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text variant="bodyStrong" color="muted">
+          {invites.length > 0 ? 'Pending invites' : ''}
+        </Text>
+        <Pressable accessibilityRole="link" onPress={() => router.push('/code')} hitSlop={8}>
+          <Text variant="labelMedium" color="blue">
+            Enter an invite code
           </Text>
-          {invites.map(inviteCard)}
-        </>
-      ) : null}
+        </Pressable>
+      </View>
+      {invites.map(inviteCard)}
 
       {toCheckIn.map(heroCard)}
       {toConfirm.map(confirmCard)}

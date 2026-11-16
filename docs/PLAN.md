@@ -1,12 +1,12 @@
 # Dual build plan
 
-> **Read the section "Direction change after Phase 5" first.** Everything below about seeded friends (Eleanor, Tanish, Ben), demo duels, Demo tools, the Database screen, `DEMO_MODE` and the mock fallback is historical: it was removed. The app now shows only real data from the API (see `docs/DEMO.md` for the two-phone demo).
+> **Read the section "Direction change after Phase 5" first.** Everything below about guests (the "Guest first, account later" decision, `/auth/guest`, the first-name prompt, "Save your streak") was removed too: see "Direction change: no guests" at the end of the decisions. Everything below about seeded friends (Eleanor, Tanish, Ben), demo duels, Demo tools, the Database screen, `DEMO_MODE` and the mock fallback is historical: it was removed. The app now shows only real data from the API (see `docs/DEMO.md` for the two-phone demo).
 
 Approved (with the changes folded in below). See `CLAUDE.md` and `design/spec.md`. Code starts at Phase 0.
 
 ## Decisions (final)
 
-1. **Guest first, account later.** First screen is Hobby ("No account needed"). The API creates a guest user on first open and returns a token. "Save your streak" upgrades the guest to an email + password account. "Log in" on Hobby signs in to an existing account.
+1. **(Superseded: no guests now.)** Guest first, account later. First screen was Hobby ("No account needed"). The API creates a guest user on first open and returns a token. "Save your streak" upgrades the guest to an email + password account. "Log in" on Hobby signs in to an existing account.
 2. **Accepting = invite code, in-app.** "Send by text" opens the native share sheet with the message and a short code (e.g. `K3X9`). The friend taps "I have a code" on Hobby and sees Accept. The browser chrome from the Accept frame is dropped. On Expo web (no share sheet) the code is copied to the clipboard instead.
 3. **Friend picker keeps Eleanor, Tanish and Ben.**
    - **Eleanor** is a real seeded account (email/password in the seed script). Challenging her creates a real duel that she auto-accepts, so a one-phone demo works. The Demo tools can make her check in.
@@ -84,8 +84,16 @@ The graded demo is two real people on two real phones. This supersedes the demo 
 - **Clock:** a duel's day follows real 24-hour days since it was accepted. The presenter script `api/scripts/advance_duel.py <code|id> <days>` moves `started_at` back in the database so the Result can be shown; the app has no such control.
 - **Check-ins** still carry `confirmed` ("you confirm each other"); there is no check-in note input, so the "Confirm X's N min" card has no quote.
 
+## Direction change: no guests (branch `fix/first-screen-login`)
+Every user must sign up or log in first.
+- **Welcome `/welcome`** is the first screen for anyone signed out: Create account and Log in only. Log out returns to it, and so do the signed-out redirects on Today, You, Friend, Hobby and Code.
+- **Removed:** `POST /auth/guest`, the `users.is_guest` column (dropped by `app/migrate.py` on startup), the first-name-only `/name` screen, `/save` ("Save your streak"), guest upgrade in `POST /auth/register` (register always adds a new row), the guest card on Done and You, and the Create account button on Hobby. `isGuest` is gone from the shared types.
+- **Invite codes after login:** "Enter an invite code" is a link on Today (next to Pending invites) and on Friend (the + flow); both open `/code`, which needs a session.
+- **Invite opened while signed out:** `/accept?code=XXXX` keeps the code (`pendingCode` in the onboarding state), shows Welcome (with a note that there is an invite), and after sign up or log in the auth screen continues to Accept with that code.
+- Old guest rows already in a database are harmless leftovers (no email, nobody can log in as them); the friend search only returns accounts with an email.
+
 ## Screen-to-route map
-Hobby `/` (Log in, I have a code) -> Friend `/friend` -> share -> Today. Code -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> Save `/save` (guests only) or back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You (with Demo tools when enabled).
+Welcome `/welcome` (Create account, Log in) -> `/auth` -> Today. Today "+" -> Hobby `/hobby` -> Friend `/friend` -> share -> Today. Today / Friend "Enter an invite code" -> Code `/code` -> Accept `/accept` -> Today. Today "I did it" -> Done `/done` -> back. Today card -> Duel `/duel/[id]` -> Break `/break`, Result `/result/[id]`. Tabs: Today, Groups, "+" (Hobby flow), You.
 
 ## Phases (each ends with phone test steps and a commit)
 

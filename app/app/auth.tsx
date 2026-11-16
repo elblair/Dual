@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BackButton, Button, Screen, Text, TextField } from '@/components';
 import { useData } from '@/data';
+import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
 /** Email sign-up / log-in. NOT in Figma: a minimal form built from the same tokens. */
@@ -10,6 +11,7 @@ export default function AuthScreen() {
   const t = useTheme();
   const router = useRouter();
   const data = useData();
+  const { pendingCode, setPendingCode } = useOnboarding();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const signup = mode !== 'login';
 
@@ -28,7 +30,13 @@ export default function AuthScreen() {
       const creds = { email: email.trim().toLowerCase(), password };
       if (signup) await data.register({ ...creds, name: name.trim() });
       else await data.login(creds);
-      router.replace('/today');
+      if (pendingCode) {
+        // They opened an invite while signed out: carry on to Accept now that they have an account.
+        setPendingCode(null);
+        router.replace({ pathname: '/accept', params: { code: pendingCode } });
+      } else {
+        router.replace('/today');
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
     } finally {

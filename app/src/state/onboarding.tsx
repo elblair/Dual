@@ -18,9 +18,9 @@ interface OnboardingState {
   cycleMinutes: () => void;
   friend: PickedFriend | null;
   setFriend: (next: PickedFriend | null) => void;
-  /** A guest has to give a first name before searching for friends or accepting: where to go afterwards. */
-  afterName: 'friend' | 'accept' | null;
-  setAfterName: (next: 'friend' | 'accept' | null) => void;
+  /** An invite code opened while signed out: kept until the person signs up or logs in, then Accept continues with it. */
+  pendingCode: string | null;
+  setPendingCode: (next: string | null) => void;
   reset: () => void;
 }
 
@@ -30,7 +30,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [hobbyId, setHobbyId] = useState(HOBBIES[0].id);
   const [minutes, setMinutes] = useState(MINUTE_OPTIONS[2]);
   const [friend, setFriend] = useState<PickedFriend | null>(null);
-  const [afterName, setAfterName] = useState<'friend' | 'accept' | null>(null);
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
 
   const cycleMinutes = useCallback(() => {
     setMinutes((m) => MINUTE_OPTIONS[(MINUTE_OPTIONS.indexOf(m) + 1) % MINUTE_OPTIONS.length]);
@@ -50,11 +50,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       cycleMinutes,
       friend,
       setFriend,
-      afterName,
-      setAfterName,
+      pendingCode,
+      setPendingCode,
       reset,
     }),
-    [hobbyId, minutes, friend, afterName, cycleMinutes, reset],
+    [hobbyId, minutes, friend, pendingCode, cycleMinutes, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

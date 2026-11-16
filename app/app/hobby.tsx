@@ -15,7 +15,7 @@ export default function HobbyScreen() {
   const { hobby, setHobbyId, minutes, cycleMinutes } = useOnboarding();
   const { data: me, loading } = useMe();
 
-  // Nobody gets here without an account (or a guest session from an invite code): the first screen is sign up / log in.
+  // Nobody gets here without an account: the first screen is sign up / log in.
   if (!me) return loading ? null : <Redirect href="/welcome" />;
 
   function next() {
@@ -73,9 +73,6 @@ export default function HobbyScreen() {
       <View style={{ flex: 1 }} />
 
       <Button label="Next: pick a friend" onPress={next} />
-      {me.isGuest ? (
-        <Button label="Create account" variant="outline" onPress={() => router.push('/auth?mode=signup')} />
-      ) : null}
     </Screen>
   );
 }

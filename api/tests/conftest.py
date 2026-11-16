@@ -33,12 +33,9 @@ def db(client):
 class Player:
     """A signed-in person with helpers, so tests read like the app."""
 
-    def __init__(self, client: TestClient, name: str = "Ari", email: str | None = None):
+    def __init__(self, client: TestClient, name: str, email: str):
         self.client = client
-        if email:  # a real account, found by search
-            r = client.post("/auth/register", json={"name": name, "email": email, "password": "hunter22"})
-        else:  # a guest with just a first name
-            r = client.post("/auth/guest", json={"name": name})
+        r = client.post("/auth/register", json={"name": name, "email": email, "password": "hunter22"})
         assert r.status_code == 200, r.text
         body = r.json()
         self.me = body["me"]
@@ -78,9 +75,9 @@ class Player:
 def make_player(client):
     counter = {"n": 0}
 
-    def make(name="Ari", account=False):
+    def make(name="Ari"):
         counter["n"] += 1
-        email = f"{name.lower().replace(' ', '.')}.{counter['n']}@example.com" if account else None
+        email = f"{name.lower().replace(' ', '.')}.{counter['n']}@example.com"
         return Player(client, name=name, email=email)
 
     return make
@@ -94,7 +91,7 @@ def player(make_player):
 @pytest.fixture
 def duo(make_player):
     """Two real accounts: ari (starts duels) and sam (is invited)."""
-    return make_player("Ari", account=True), make_player("Sam", account=True)
+    return make_player("Ari"), make_player("Sam")
 
 
 @pytest.fixture

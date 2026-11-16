@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform, Share, View } from 'react-native';
+import { Platform, Pressable, Share, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { MessageSquare, Send } from 'lucide-react-native';
@@ -163,6 +163,12 @@ export default function FriendScreen() {
           </Card>
         </>
       )}
+
+      <Pressable accessibilityRole="link" onPress={() => router.push('/code')} style={{ alignSelf: 'center' }}>
+        <Text variant="labelMedium" color="blue">
+          Got an invite code? Enter it
+        </Text>
+      </Pressable>
 
       <View style={{ flex: 1 }} />
 

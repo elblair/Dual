@@ -3,7 +3,6 @@
 export interface Me {
   id: string;
   name: string;
-  isGuest: boolean;
   email?: string;
 }
 
@@ -68,11 +67,6 @@ export interface AuthInput {
 }
 
 export interface RegisterInput extends AuthInput {
-  name: string;
-}
-
-export interface GuestInput {
-  /** First name only. */
   name: string;
 }
 

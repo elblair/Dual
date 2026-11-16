@@ -1,4 +1,4 @@
-import type { AuthInput, CreateDuelInput, Duel, Groups, GuestInput, Me, RegisterInput, Stats, UserHit } from './types';
+import type { AuthInput, CreateDuelInput, Duel, Groups, Me, RegisterInput, Stats, UserHit } from './types';
 
 /**
  * The one interface the app talks to. `apiSource` (FastAPI + Neon) is the real thing; `mockSource` is an explicit
@@ -16,11 +16,9 @@ export interface DataSource {
   /** Called after every change so screens can refetch. Returns an unsubscribe function. */
   subscribe(listener: () => void): () => void;
 
-  /** The signed-in person (guest or account), or null when there is no session. */
+  /** The signed-in person, or null when there is no session. */
   getMe(): Promise<Me | null>;
-  /** Start as a guest with just a first name. */
-  startGuest(input: GuestInput): Promise<Me>;
-  /** Sign up: upgrades the current guest, or adds a brand-new user when there is no session. */
+  /** Sign up: adds a new user (everyone has an account; there are no guests). */
   register(input: RegisterInput): Promise<Me>;
   login(input: AuthInput): Promise<Me>;
   logout(): Promise<void>;

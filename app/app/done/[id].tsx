@@ -2,12 +2,12 @@ import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable } from 'react-native';
 import { Check } from 'lucide-react-native';
-import { Button, Card, PlayerRow, Screen, Text } from '@/components';
+import { Card, PlayerRow, Screen, Text } from '@/components';
 import { useDuel, useMe } from '@/data';
 import { friendName, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
 import { useTheme } from '@/theme';
 
-/** Done (Figma 217:2): "Day N logged". Guests also get the "Save your streak" card. */
+/** Done (Figma 217:2): "Day N logged". */
 export default function DoneScreen() {
   const t = useTheme();
   const router = useRouter();
@@ -47,16 +47,6 @@ export default function DoneScreen() {
         <PlayerRow name={me.name} label="You" avatarTone="you" dotsTone="you" days={myDayStates(duel)} avatarSize="xs" />
         <PlayerRow name={friendName(duel)} avatarTone="opponent" dotsTone="opponent" days={theirDayStates(duel)} avatarSize="xs" />
       </Card>
-
-      {me.isGuest ? (
-        <Card variant="orangeTint" style={{ alignSelf: 'stretch', paddingHorizontal: t.spacing.s18, paddingVertical: t.spacing.xxl, gap: t.spacing.md }}>
-          <Text variant="cardTitle">Save your streak</Text>
-          <Text variant="small" color="muted">
-            You’re {a} {a === 1 ? 'day' : 'days'} in. Make an account so you don’t lose it. 20 seconds.
-          </Text>
-          <Button label="Create account" variant="orange" onPress={() => router.push('/save')} />
-        </Card>
-      ) : null}
 
       <View style={{ flex: 1 }} />
 

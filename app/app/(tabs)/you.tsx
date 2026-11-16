@@ -78,22 +78,18 @@ export default function YouScreen() {
       </View>
 
       <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.lg }}>
-        <Text variant="label">{me.isGuest ? 'Guest account' : 'Signed in'}</Text>
+        <Text variant="label">Signed in</Text>
         <Text variant="caption" color="muted">
-          {me.isGuest ? 'Create an account to keep your duels on any phone.' : (me.email ?? me.name)}
+          {me.email ?? me.name}
         </Text>
-        {me.isGuest ? (
-          <Button label="Create account" onPress={() => router.push('/auth?mode=signup')} />
-        ) : (
-          <Button
-            label="Log out"
-            variant="outline"
-            onPress={async () => {
-              await data.logout();
-              router.replace('/welcome');
-            }}
-          />
-        )}
+        <Button
+          label="Log out"
+          variant="outline"
+          onPress={async () => {
+            await data.logout();
+            router.replace('/welcome');
+          }}
+        />
       </Card>
     </Screen>
   );

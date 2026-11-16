@@ -30,8 +30,7 @@ No data is created on startup: tables only. New accounts start empty.
 | Method and path | What it does |
 |---|---|
 | `GET /health` | Liveness check |
-| `POST /auth/guest` | `{name}`: a guest account named with a first name, plus a token |
-| `POST /auth/register` | `{name, email, password}`: with a signed-in guest it upgrades that guest; with no session it adds a brand-new user row. Returns `{token, me}` |
+| `POST /auth/register` | `{name, email, password}`: always adds a brand-new user row (there are no guests). Returns `{token, me}` |
 | `POST /auth/login` | Email + password, returns `{token, me}` |
 | `GET /me`, `GET /me/stats` | The signed-in user; duels won, days checked in, current streak (from the database) |
 | `GET /users/search?q=` | Real accounts by name (contains) or email (starts with), at least 2 characters, never me, email masked |

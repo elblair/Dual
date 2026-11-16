@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Avatar, BackButton, Button, Card, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuelByCode, useMe } from '@/data';
 import { hobbyById } from '@/data/catalog';
@@ -18,18 +18,16 @@ export default function AcceptScreen() {
   const { code } = useLocalSearchParams<{ code?: string }>();
   const { data: duel, error: duelError, loading: duelLoading, refetch } = useDuelByCode(code);
   const { data: me, loading: meLoading } = useMe();
-  const { afterName, setAfterName } = useOnboarding();
+  const { pendingCode, setPendingCode } = useOnboarding();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Back from the name screen with a session: carry on with the accept.
+  // Signed out: sign up or log in first. The code is kept and Accept comes back to it afterwards.
+  const signedOut = !meLoading && !me && !!code;
   useEffect(() => {
-    if (me && afterName === 'accept' && duel) {
-      setAfterName(null);
-      accept();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me, afterName, duel]);
+    if (signedOut && pendingCode !== code) setPendingCode(code ?? null);
+  }, [signedOut, pendingCode, code, setPendingCode]);
+  if (signedOut) return <Redirect href="/welcome" />;
 
   if (duelLoading || meLoading) {
     return (
@@ -57,12 +55,6 @@ export default function AcceptScreen() {
 
   async function accept() {
     if (!duel) return;
-    if (!me) {
-      // Not signed in yet: ask for a first name, then come back and accept.
-      setAfterName('accept');
-      router.push('/name');
-      return;
-    }
     setBusy(true);
     setError('');
     try {

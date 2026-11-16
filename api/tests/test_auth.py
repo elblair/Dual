@@ -11,23 +11,19 @@ def test_a_fresh_database_has_no_data(client, db):
     assert db.query(Duel).count() == 0
 
 
-# ---------------------------------------------------------------- guests
+# ---------------------------------------------------------------- no guests
 
 
-def test_guest_is_named_with_the_first_name_they_give(make_player):
-    p = make_player("Maya")
-    assert p.me["isGuest"] is True
-    assert p.me["name"] == "Maya"
-    assert p.get("/me").json()["id"] == p.id
+def test_there_is_no_guest_sign_in(client):
+    """Every user signs up or logs in: the old first-name-only endpoint is gone."""
+    assert client.post("/auth/guest", json={"name": "Maya"}).status_code in (404, 405)
+    assert "isGuest" not in client.post(
+        "/auth/register", json={"name": "Maya", "email": "maya@example.com", "password": "hunter22"}
+    ).json()["me"]
 
 
-def test_a_new_guest_starts_with_no_duels(player):
+def test_a_new_account_starts_with_no_duels(player):
     assert player.duels() == []
-
-
-def test_a_guest_needs_a_first_name(client):
-    assert client.post("/auth/guest", json={"name": ""}).status_code == 422
-    assert client.post("/auth/guest", json={"name": "   "}).status_code == 422
 
 
 def test_requests_without_a_token_are_rejected(client):
@@ -44,7 +40,6 @@ def test_register_without_a_session_adds_a_new_user_row(client, db):
     body = r.json()
     assert body["me"]["name"] == "Sam"
     assert body["me"]["email"] == "sam@example.com"
-    assert body["me"]["isGuest"] is False
 
     row = db.query(User).filter(User.email == "sam@example.com").one()
     assert row.id == body["me"]["id"]
@@ -55,14 +50,12 @@ def test_register_without_a_session_adds_a_new_user_row(client, db):
     assert me.status_code == 200 and me.json()["name"] == "Sam"
 
 
-def test_register_with_a_guest_session_upgrades_that_guest_and_keeps_their_duels(player, db):
-    player.challenge()
+def test_register_ignores_any_session_and_always_adds_a_new_row(player, db):
+    """No "upgrade a guest": signing up while holding a token still creates a separate account."""
     r = player.post("/auth/register", {"name": "Sam", "email": "sam@example.com", "password": "hunter22"})
     assert r.status_code == 200
-    assert r.json()["me"]["id"] == player.id  # same row, not a new one
-    assert r.json()["me"]["isGuest"] is False
-    assert len(player.duels()) == 1
-    assert db.query(User).count() == 1
+    assert r.json()["me"]["id"] != player.id
+    assert db.query(User).count() == 2
 
 
 def test_register_rejects_a_taken_email(client, make_player):
@@ -71,8 +64,8 @@ def test_register_rejects_a_taken_email(client, make_player):
     assert again.status_code == 409
     assert again.json()["detail"] == "That email already has an account. Try logging in."
 
-    guest = make_player()
-    assert guest.post("/auth/register", {"name": "B", "email": "a@example.com", "password": "secret2"}).status_code == 409
+    other = make_player()
+    assert other.post("/auth/register", {"name": "B", "email": "a@example.com", "password": "secret2"}).status_code == 409
 
 
 def test_register_validates_input(client):
@@ -100,8 +93,3 @@ def test_login_errors_are_clear(client):
     assert wrong.status_code == 401 and wrong.json()["detail"] == "Wrong password."
     missing = client.post("/auth/login", json={"email": "nobody@example.com", "password": "hunter22"})
     assert missing.status_code == 401 and "No account" in missing.json()["detail"]
-
-
-def test_guests_cannot_log_in(client, make_player):
-    make_player("Kim")
-    assert client.post("/auth/login", json={"email": "kim@example.com", "password": "whatever"}).status_code == 401
