@@ -127,3 +127,19 @@ Each item is **one `feature/` branch and one PR into `develop`**, with tests and
 
 ## 6. What I will not do without an OK
 Build anything on this list. After you reply with the items to build (and answers to section 5), I'll start with the first branch.
+
+## 7. Build status (updated after the team's answers)
+
+| Item | Status | PR |
+|---|---|---|
+| a. Dark mode (Midnight) + Appearance setting | built | #15 |
+| b. Home additions (streak card, days left, crew row, recent friends) | built | #16 |
+| XP, tiers (one working perk) and friendship levels, computed on read | built | #17 |
+| c. Duel page additions (lead pill, how check-ins work, recent check-ins) | built | #18 |
+| d. Sent screen | built | #19 |
+| f. Weekly recap (computed on open) | built | #20 |
+| e. Minutes + note on a check-in, Confirm screen (one tap stays the default) | built | #21 |
+| g. Daily reminder (local notification) | **not built**: see below | n/a |
+| h. "Started a second duel" measurement | done as a doc: `docs/METRICS.md` (SQL, no tracker) | this PR |
+
+**Why g was not built.** The rule was to build it only if local notifications could be verified in Expo Go on both iOS and Android. The Expo docs for SDK 58 say local notifications remain available in Expo Go and list a daily trigger for both platforms, but that is documentation, not a test: it could not be run on real devices here, Android Expo Go has an `expo-notifications` limitation for remote push (a warning at import is possible), exact timing on Android 12+ needs an alarm permission (otherwise approximate), and Android 13+ needs a notification channel before the permission prompt appears. It can be built (about half a day) once someone tests a scheduled notification on an iPhone and an Android phone in Expo Go.
