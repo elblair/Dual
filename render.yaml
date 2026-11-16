@@ -1,0 +1,23 @@
+# Render Blueprint for the Dual API (free tier, Oregon, same region as the Neon database).
+# Render > New + > Blueprint > pick this repo. Render asks for DATABASE_URL (the Neon string); everything else is filled in.
+# Never put real secrets in this file.
+services:
+  - type: web
+    name: dual-api
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL
+        sync: false # asked for in the dashboard: paste the Neon connection string there
+      - key: JWT_SECRET
+        generateValue: true # Render makes a long random string
+      - key: CORS_ORIGINS
+        value: "*"
