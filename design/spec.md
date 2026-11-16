@@ -166,6 +166,7 @@ White, 1pt top border `border`, padding 10 top / 28 bottom, items centered: Toda
 ## Implementation notes (deliberate differences from the frames)
 - Hero card on Today says "vs Eleanor · done today" (not "she's done today"): no gendered pronouns in app copy.
 - Stakes dropped everywhere: no stake row on Duel, no stake card on Friend, Forfeit copy without "your stake goes to charity", "$10 to charity" stat replaced by "days checked in". The Accept "Stake: None" row stays.
+- The camera button next to "I did it" on Today is hidden (nothing behind it); "I did it" is full width.
 - Settings gear on Duel and You is not built. Dual+ row on You is dropped; a "Lock screen widget" row (opens the static Lock image) is added.
 - Running duels show the Strava card instead of a check-in card (sample data), so they never count toward "things to do".
 - Weekday letters under the Duel dots are fixed M to S (a duel always starts Monday in the mock).
