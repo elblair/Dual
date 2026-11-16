@@ -20,7 +20,7 @@ export function Screen({ children, scroll, background = 'bg', tabBar, gap = 'tig
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const padding = {
-    paddingTop: insets.top + t.spacing.screenTopExtra,
+    paddingTop: Math.max(insets.top + t.spacing.screenTopExtra, t.spacing.screenTop),
     paddingBottom: tabBar ? t.spacing.screenBottomMin : Math.max(insets.bottom, t.spacing.screenBottomMin),
     paddingHorizontal: t.spacing.gutter,
     gap: gap === 'loose' ? t.spacing.screenGapLoose : t.spacing.screenGap,

@@ -138,6 +138,7 @@ const text: Record<TextVariant, TextStyleToken> = {
 /** Raw Figma values, named by number when there is no better meaning (s6 = 6pt). */
 const spacing = {
   hairline: 2,
+  s3: 3,
   xs: 4,
   s6: 6,
   sm: 8,
@@ -146,6 +147,7 @@ const spacing = {
   lg: 12,
   s13: 13,
   xl: 14,
+  s15: 15,
   xxl: 16,
   s18: 18,
   xxxl: 20,
@@ -154,7 +156,9 @@ const spacing = {
   tabBottom: 28, // tab bar bottom padding (minimum)
   screenGap: 14, // gap between blocks (Friend, Accept, Done, Result, Save)
   screenGapLoose: 16, // gap between blocks (Hobby, Today, Duel, Groups, You)
-  screenTopExtra: 12, // added to the safe-area top inset (about 60pt on a notched iPhone)
+  screenTop: 60, // minimum top padding (Figma: 60 from the screen edge, status bar included)
+  screenTopExtra: 12, // added to the safe-area top inset when that is larger than screenTop
+  breakTop: 56, // Break screen (Base row) top padding
   screenBottomMin: 30, // minimum bottom padding
 } as const;
 
@@ -184,6 +188,9 @@ const sizes = {
   backButton: 40,
   radio: 22,
   icon: { badge: 13, xs: 14, copy: 15, sm: 16, md: 18, back: 19, lg: 20, xl: 22, plus: 26, flame: 30, hero: 52 },
+  playerName: 62, // name label next to dots
+  barLabel: 64, // label next to a progress bar (Groups)
+  bar: 10, // progress bar height (radius 5)
   plusButton: 52,
   iconTile: 44,
   cameraButton: 54,

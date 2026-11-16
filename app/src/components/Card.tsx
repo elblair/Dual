@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme, type ColorName } from '@/theme';
 
 export type CardVariant = 'surface' | 'white' | 'outline' | 'maroon' | 'orangeTint' | 'successTint' | 'slate' | 'selected';
@@ -21,18 +21,18 @@ interface CardProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** Rounded container (radius 18, padding 16 x 14). Override padding/radius through `style`. */
+/** Rounded container (radius 18, padding 16 x 14). Override padding/radius through `style` (`padding` replaces both defaults). */
 export function Card({ variant = 'surface', children, style }: CardProps) {
   const t = useTheme();
   const { bg, border, thick } = look[variant];
+  const overridesPadding = StyleSheet.flatten(style)?.padding !== undefined;
   return (
     <View
       style={[
         {
           backgroundColor: t.colors[bg],
           borderRadius: t.radii.xl,
-          paddingHorizontal: t.spacing.xxl,
-          paddingVertical: t.spacing.xl,
+          ...(overridesPadding ? null : { paddingHorizontal: t.spacing.xxl, paddingVertical: t.spacing.xl }),
           borderWidth: border ? (thick ? t.borders.thick : t.borders.hairline) : 0,
           borderColor: border ? t.colors[border] : undefined,
         },
