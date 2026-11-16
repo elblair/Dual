@@ -18,7 +18,7 @@ export function Dots({ days, tone, size = 'md' }: DotsProps) {
   const fill = tone === 'you' ? t.colors.blue : t.colors.maroonBright;
 
   return (
-    <View style={{ flexDirection: 'row', gap: t.sizes.dotGap[size] }} accessibilityLabel={`${days.filter((d) => d === 'done').length} of 7 days done`}>
+    <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }} accessibilityLabel={`${days.filter((d) => d === 'done').length} of 7 days done`}>
       {days.map((state, i) => (
         <View
           key={i}

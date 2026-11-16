@@ -35,8 +35,8 @@ export function TabBar({ active, onSelect, onPlus }: TabBarProps) {
         onPress={() => onSelect(key)}
         style={{ flex: 1, alignItems: 'center', gap: t.spacing.xs }}
       >
-        <Icon size={t.sizes.tabIcon} color={color} strokeWidth={2} />
-        <Text variant="captionStrong" style={{ color }}>
+        <Icon size={t.sizes.icon.xl} color={color} strokeWidth={2} />
+        <Text variant={selected ? 'microStrong' : 'microMedium'} style={{ color }}>
           {label}
         </Text>
       </Pressable>
@@ -56,11 +56,10 @@ export function TabBar({ active, onSelect, onPlus }: TabBarProps) {
           backgroundColor: t.colors.orange,
           alignItems: 'center',
           justifyContent: 'center',
-          marginTop: -t.spacing.sm,
           opacity: pressed ? 0.85 : 1,
         })}
       >
-        <Plus size={t.sizes.iconLg + 6} color={t.colors.white} strokeWidth={2.4} />
+        <Plus size={t.sizes.icon.plus} color={t.colors.white} strokeWidth={2.4} />
       </Pressable>
     </View>
   );
@@ -73,8 +72,8 @@ export function TabBar({ active, onSelect, onPlus }: TabBarProps) {
         backgroundColor: t.colors.bg,
         borderTopWidth: t.borders.hairline,
         borderTopColor: t.colors.border,
-        paddingTop: t.spacing.lg,
-        paddingBottom: Math.max(insets.bottom, t.spacing.lg),
+        paddingTop: t.spacing.md,
+        paddingBottom: Math.max(insets.bottom, t.spacing.tabBottom),
       }}
     >
       {renderTab(tabs[0])}
