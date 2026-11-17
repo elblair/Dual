@@ -13,12 +13,21 @@ The two graded things:
 |---|---|
 | Database | Neon project; `api/.env` has `DATABASE_URL` and `JWT_SECRET`. `python check_db.py` prints `OK` and `Users: ..., duels: ...`. |
 | API | **Render (default):** https://dual-api-memp.onrender.com . Open `/health` from the phone's browser to check (the free tier sleeps: the first call takes about a minute). **Or your PC:** `cd api`, activate the venv, `uvicorn app.main:app --host 0.0.0.0`, check `http://<your PC IP>:8000/health`. |
-| **Web app (easiest)** | Open the Dual web app link (`https://<name>.onrender.com`, see `docs/RENDER_WEB.md`) on **both** phones once: iPhone Safari **Share > Add to Home Screen**, Android Chrome **menu > Add to Home screen / Install app**. From then on **demo from the Dual icon**: it opens full screen, with no Expo Go, no cable and no laptop. Only the API sleeps: open `/health` a few minutes before. |
+| **Web app (easiest)** | Open the Dual web app link (https://dual-3d1g.onrender.com, set up in `docs/RENDER_WEB.md`) on **both** phones once: iPhone Safari **Share > Add to Home Screen**, Android Chrome **menu > Add to Home screen / Install app**. From then on **demo from the Dual icon**: it opens full screen, with no Expo Go, no cable and no laptop. Only the API sleeps: open `/health` a few minutes before. |
 | App on both phones (Expo Go, alternative) | `app/.env`: `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` (no DATABASE_URL or JWT_SECRET in this file). `cd app && npx expo start -c`. Both phones scan the QR in Expo Go (same Wi-Fi as the PC, or `--tunnel`; the API itself needs no Wi-Fi with Render). With a local API use `http://<your PC's LAN IP>:8000` instead. |
 | Neon console | A second window: your project, **Tables** (left menu). Keep `users`, `duels` and `checkins` handy. |
 | Clean start | Use two new email addresses (an email that already exists is refused). To wipe test data: `python scripts/purge_seed_data.py` removes any old demo accounts; delete other rows in the Neon Tables view. |
 
 On Today, the badge must say **Live · <host>** (green). If it says Offline or the app shows "Couldn't load this", the API URL is wrong or the server is not running. **There is no mock fallback unless you set `EXPO_PUBLIC_USE_MOCK=true` on purpose** (it is a single-user, nothing-saved mode and the badge says "Mock data").
+
+## Install on the phones (web app)
+
+Web app link: **https://dual-3d1g.onrender.com**
+
+**Add to Home Screen (once per phone)**
+- **iPhone (Safari only, not Chrome):** open the link, tap the **Share** button (square with an arrow, bottom bar), scroll down and tap **Add to Home Screen**, then **Add** (top right; the name is "Dual"). If you do not see it, tap **View More** first. Open Dual from the new icon: it runs full screen without Safari bars.
+- **Android (Chrome):** open the link, tap the **⋮** menu (top right), then **Install app** (or **Add to Home screen**) and confirm.
+- It is the same app and the same account either way; the icon only removes the browser bars. Log in once in the icon (it keeps its own login, separate from the Safari tab).
 
 ## Demo-day checklist
 
