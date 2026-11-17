@@ -13,7 +13,8 @@ The two graded things:
 |---|---|
 | Database | Neon project; `api/.env` has `DATABASE_URL` and `JWT_SECRET`. `python check_db.py` prints `OK` and `Users: ..., duels: ...`. |
 | API | **Render (default):** https://dual-api-memp.onrender.com . Open `/health` from the phone's browser to check (the free tier sleeps: the first call takes about a minute). **Or your PC:** `cd api`, activate the venv, `uvicorn app.main:app --host 0.0.0.0`, check `http://<your PC IP>:8000/health`. |
-| App on both phones | `app/.env`: `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` (no DATABASE_URL or JWT_SECRET in this file). `cd app && npx expo start -c`. Both phones scan the QR in Expo Go (same Wi-Fi as the PC, or `--tunnel`; the API itself needs no Wi-Fi with Render). With a local API use `http://<your PC's LAN IP>:8000` instead. |
+| **Web app (easiest)** | Open the Dual web app link (`https://<name>.onrender.com`, see `docs/RENDER_WEB.md`) on **both** phones once: iPhone Safari **Share > Add to Home Screen**, Android Chrome **menu > Add to Home screen / Install app**. From then on **demo from the Dual icon**: it opens full screen, with no Expo Go, no cable and no laptop. Only the API sleeps: open `/health` a few minutes before. |
+| App on both phones (Expo Go, alternative) | `app/.env`: `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` (no DATABASE_URL or JWT_SECRET in this file). `cd app && npx expo start -c`. Both phones scan the QR in Expo Go (same Wi-Fi as the PC, or `--tunnel`; the API itself needs no Wi-Fi with Render). With a local API use `http://<your PC's LAN IP>:8000` instead. |
 | Neon console | A second window: your project, **Tables** (left menu). Keep `users`, `duels` and `checkins` handy. |
 | Clean start | Use two new email addresses (an email that already exists is refused). To wipe test data: `python scripts/purge_seed_data.py` removes any old demo accounts; delete other rows in the Neon Tables view. |
 
@@ -24,7 +25,7 @@ On Today, the badge must say **Live · <host>** (green). If it says Offline or t
 **The day before**
 - [ ] `develop` is merged into `main` and the API is deployed (Render URL in `app/.env`), or your PC runs the API on the LAN (`uvicorn app.main:app --host 0.0.0.0`).
 - [ ] `python check_db.py` prints `OK` (database reachable).
-- [ ] Both phones have Expo Go with the SDK this project uses (58) and open the app from the QR code.
+- [ ] Both phones have the **Dual icon on the home screen** (web app, `docs/RENDER_WEB.md`) and it opens to Welcome or Today. Or, instead: Expo Go with the SDK this project uses (58), opening the app from the QR code.
 - [ ] Do the whole script once with two throwaway accounts, then delete their rows in the Neon console (Tables > `users`, `duels`, `checkins`), so the demo starts with accounts that really are new.
 
 **Two hours before**
