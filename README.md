@@ -46,6 +46,10 @@ The Expo Go in the phone's store must match the project's SDK (58). Do not chang
 
 The API is live on Render (Oregon, free tier) at **https://dual-api-memp.onrender.com** and redeploys automatically when `main` changes; check it at `/health`. `render.yaml` is the Render Blueprint and `docs/RENDER_HANDOFF.md` has the click-by-click setup. To use it from a phone, set `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` in `app/.env` and restart Expo with `npx expo start -c`.
 
+## Deploy the web app
+
+The same app also runs as a website: a free Render **static site** (never sleeps) built with `npx expo export --platform web` and defined in `render.yaml` (`dual-web`). Open its link on a phone, choose **Share > Add to Home Screen** (iPhone, Safari) or **Install app / Add to Home screen** (Android, Chrome), and Dual opens full screen from its icon with no browser bars: no Expo Go, no laptop. `docs/RENDER_WEB.md` has the click-by-click setup, including the exact `CORS_ORIGINS` value for the API. "Send by text" uses the browser's share sheet (Web Share API) and copies the text where there is none.
+
 Releases: `develop` -> `main` PRs titled `release: v0.x.0`, merged with a **merge commit** (never squash), then tagged (see `CONTRIBUTING.md`).
 
 ## Git workflow

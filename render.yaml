@@ -1,4 +1,4 @@
-# Render Blueprint for the Dual API (free tier, Oregon, same region as the Neon database).
+# Render Blueprint for Dual: the API (a web service) and the web app (a static site). Free tier, Oregon.
 # Render > New + > Blueprint > pick this repo. Render asks for DATABASE_URL (the Neon string); everything else is filled in.
 # Never put real secrets in this file.
 services:
@@ -20,4 +20,34 @@ services:
       - key: JWT_SECRET
         generateValue: true # Render makes a long random string
       - key: CORS_ORIGINS
-        value: "*"
+        sync: false # set in the dashboard: the web app's URL plus localhost (docs/RENDER_WEB.md). Left unset it allows every origin.
+
+  # The web app (Expo web export, a single-page app). Free static site: it never sleeps. Auto-deploys from main.
+  # EXPO_PUBLIC_* values are inlined at BUILD time, so changing one means a redeploy. Never put secrets here.
+  - type: web
+    name: dual-web
+    runtime: static
+    plan: free
+    branch: main
+    rootDir: app
+    buildCommand: npm ci && npx expo export --platform web
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: EXPO_PUBLIC_API_URL
+        value: https://dual-api-memp.onrender.com
+      - key: EXPO_PUBLIC_USE_MOCK
+        value: "false"
+    routes:
+      # Deep links such as /duel/123 (and a reload on any screen) serve the app; the router then opens the right screen.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /manifest.json
+        name: Cache-Control
+        value: no-cache
