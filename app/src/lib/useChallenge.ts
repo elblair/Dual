@@ -6,10 +6,19 @@ import { useData } from '@/data';
 import { sentHref } from '@/lib/routes';
 import { useOnboarding, type PickedFriend } from '@/state/onboarding';
 
+/** Copies text in the browser; never throws and never waits more than 1.5 s (the browser may block the clipboard). */
+async function copyText(text: string) {
+  try {
+    await Promise.race([Clipboard.setStringAsync(text), new Promise((resolve) => setTimeout(resolve, 1500))]);
+  } catch {
+    /* clipboard blocked by the browser */
+  }
+}
+
 /**
  * Creates the duel from the hobby and minutes picked so far and goes to the Sent screen.
  * Used by the Friend step (hobby first) and by the Hobby step (friend first). With a friend the duel is a named invite;
- * without one it is an open invite and the code is shared by text (the browser has no share sheet: the text is copied instead).
+ * without one it is an open invite and the code is shared by text (native share sheet; in the browser the Web Share API, or the text is copied).
  * The duel is created BEFORE the share sheet because the invite code comes from the server and goes into the text. If the sheet is
  * cancelled on iOS we stay on the screen; trying again reuses the same pending duel and code (the API returns the existing one).
  */
@@ -35,10 +44,20 @@ export function useChallenge() {
       if (!friend) {
         const full = `${message}\nOpen Dual and enter the code ${duel.inviteCode}`;
         if (Platform.OS === 'web') {
-          try {
-            await Promise.race([Clipboard.setStringAsync(full), new Promise((resolve) => setTimeout(resolve, 1500))]);
-          } catch {
-            /* clipboard blocked by the browser */
+          // Browser: the Web Share API opens the share sheet (iOS Safari, Android Chrome). Without it the text is copied.
+          // The sheet needs a fresh tap; after a slow first request the browser may refuse it (NotAllowedError). Then we stay
+          // on the screen with the code (copied), and the second tap is fast because the duel already exists.
+          const nav = typeof navigator !== 'undefined' ? navigator : undefined;
+          if (nav && typeof nav.share === 'function') {
+            try {
+              await nav.share({ text: full });
+            } catch {
+              await copyText(full);
+              setWaitingCode(duel.inviteCode);
+              return;
+            }
+          } else {
+            await copyText(full);
           }
         } else {
           const result = await Share.share({ message: full });

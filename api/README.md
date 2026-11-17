@@ -22,7 +22,7 @@ Open http://localhost:8000/docs for the interactive docs. With an empty `DATABAS
 |---|---|
 | `DATABASE_URL` | Neon connection string (`postgresql://...?sslmode=require`). Empty = local SQLite. |
 | `JWT_SECRET` | Long random string that signs login tokens. Required with Postgres. |
-| `CORS_ORIGINS` | Comma-separated web origins, or `*`. |
+| `CORS_ORIGINS` | Comma-separated web origins (exact, with `https://`, no trailing slash), or `*`. In production: the static site URL plus `http://localhost:8081,http://localhost:8099,http://127.0.0.1:8099` (`docs/RENDER_WEB.md`). |
 
 No data is created on startup: tables only. New accounts start empty.
 
