@@ -48,7 +48,7 @@ The API is live on Render (Oregon, free tier) at **https://dual-api-memp.onrende
 
 ## Deploy the web app
 
-The same app also runs as a website: a free Render **static site** (never sleeps) built with `npx expo export --platform web` and defined in `render.yaml` (`dual-web`). Open its link on a phone, choose **Share > Add to Home Screen** (iPhone, Safari) or **Install app / Add to Home screen** (Android, Chrome), and Dual opens full screen from its icon with no browser bars: no Expo Go, no laptop. `docs/RENDER_WEB.md` has the click-by-click setup, including the exact `CORS_ORIGINS` value for the API. "Send by text" uses the browser's share sheet (Web Share API) and copies the text where there is none.
+The web app is live at **https://dual-3d1g.onrender.com** (Render, deploys from `main`). The same app runs as a website: a free Render **static site** (never sleeps) built with `npx expo export --platform web` and defined in `render.yaml` (`dual-web`). Open its link on a phone, choose **Share > Add to Home Screen** (iPhone, Safari) or **Install app / Add to Home screen** (Android, Chrome), and Dual opens full screen from its icon (iPhone: Safari > Share > Add to Home Screen > Add; Android: Chrome ⋮ > Install app) with no browser bars: no Expo Go, no laptop. `docs/RENDER_WEB.md` has the click-by-click setup, including the exact `CORS_ORIGINS` value for the API. "Send by text" uses the browser's share sheet (Web Share API) and copies the text where there is none.
 
 Releases: `develop` -> `main` PRs titled `release: v0.x.0`, merged with a **merge commit** (never squash), then tagged (see `CONTRIBUTING.md`).
 
