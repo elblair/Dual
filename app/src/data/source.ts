@@ -22,6 +22,10 @@ export interface DataSource {
   register(input: RegisterInput): Promise<Me>;
   login(input: AuthInput): Promise<Me>;
   logout(): Promise<void>;
+  /** Check the 6-digit code emailed at sign-up. Resolves with me (emailVerified: true). */
+  verifyEmail(code: string): Promise<Me>;
+  /** Email a new code (the old one stops working). */
+  resendCode(): Promise<void>;
 
   /** Find real accounts to challenge, by name or the start of their email. */
   searchUsers(query: string): Promise<UserHit[]>;

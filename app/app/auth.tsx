@@ -6,7 +6,7 @@ import { useData } from '@/data';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
 
-/** Email sign-up / log-in. NOT in Figma: a minimal form built from the same tokens. */
+/** Email sign-up / log-in. NOT in Figma: a minimal form built from the same tokens. Sign-up continues to Verify (6-digit email code). */
 export default function AuthScreen() {
   const t = useTheme();
   const router = useRouter();
@@ -28,9 +28,11 @@ export default function AuthScreen() {
     setError('');
     try {
       const creds = { email: email.trim().toLowerCase(), password };
-      if (signup) await data.register({ ...creds, name: name.trim() });
-      else await data.login(creds);
-      if (pendingCode) {
+      const me = signup ? await data.register({ ...creds, name: name.trim() }) : await data.login(creds);
+      if (!me.emailVerified) {
+        // Verify first; Verify carries on to Accept when they came from an invite (pendingCode stays set).
+        router.replace('/verify');
+      } else if (pendingCode) {
         // They opened an invite while signed out: carry on to Accept now that they have an account.
         setPendingCode(null);
         router.replace({ pathname: '/accept', params: { code: pendingCode } });
@@ -52,7 +54,7 @@ export default function AuthScreen() {
 
       <Text variant="titleLg">{signup ? 'Create your account' : 'Welcome back'}</Text>
       <Text variant="body" color="muted">
-        {signup ? 'Takes about 20 seconds. Your streak and your dual come with you.' : 'Log in to pick up your duals where you left off.'}
+        {signup ? 'Takes about 20 seconds. We’ll email you a 6-digit code to check it’s you.' : 'Log in to pick up your duals where you left off.'}
       </Text>
 
       <View style={{ gap: t.spacing.xl, marginTop: t.spacing.sm }}>

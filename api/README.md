@@ -22,6 +22,8 @@ Open http://localhost:8000/docs for the interactive docs. With an empty `DATABAS
 |---|---|
 | `DATABASE_URL` | Neon connection string (`postgresql://...?sslmode=require`). Empty = local SQLite. |
 | `JWT_SECRET` | Long random string that signs login tokens. Required with Postgres. |
+| `BREVO_API_KEY` | Sends the 6-digit sign-up codes (Brevo free plan, see `docs/EMAIL.md`). Leave empty locally: the code is printed in the uvicorn log. |
+| `EMAIL_FROM` / `EMAIL_FROM_NAME` | The sender you verified in Brevo, and the name people see (default `Dual`). |
 | `CORS_ORIGINS` | Comma-separated web origins (exact, with `https://`, no trailing slash), or `*`. In production: the static site URL plus `http://localhost:8081,http://localhost:8099,http://127.0.0.1:8099` (`docs/RENDER_WEB.md`). |
 
 No data is created on startup: tables only. New accounts start empty.

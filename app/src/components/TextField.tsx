@@ -6,7 +6,7 @@ import { Text } from './Text';
 interface TextFieldProps
   extends Pick<
     TextInputProps,
-    'value' | 'onChangeText' | 'placeholder' | 'secureTextEntry' | 'keyboardType' | 'autoCapitalize' | 'maxLength' | 'autoComplete'
+    'value' | 'onChangeText' | 'placeholder' | 'secureTextEntry' | 'keyboardType' | 'autoCapitalize' | 'maxLength' | 'autoComplete' | 'textContentType'
   > {
   label: string;
 }

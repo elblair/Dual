@@ -47,7 +47,7 @@ Web app link: **https://dual-3d1g.onrender.com**
 **Right before**
 - [ ] Both phones show **Welcome** (Create account / Log in). If one still has a session, **You > Log out**.
 - [ ] After sign-up the badge on Today says **Live** with the host (green).
-- [ ] Two new email addresses are ready, one per phone (an email that already exists is refused).
+- [ ] Two new email addresses are ready, one per phone (an email that already exists is refused), and **both inboxes are open** on the phones: sign-up emails a 6-digit code (Brevo must be set up on Render, `docs/EMAIL.md`; check Spam the first time).
 
 **If something goes wrong:** see Troubleshooting below. As a last resort use a browser tab as the second phone (`http://localhost:8081`, a private window for the second account).
 
@@ -56,8 +56,8 @@ Web app link: **https://dual-3d1g.onrender.com**
 ### 1. Phone 1: register (graded item 1)
 1. Open the app. The first screen is **Welcome** with **Create account** and **Log in** (no guests, nothing else).
 2. Tap **Create account**. Enter a name, an email and a password (6+ characters). A bad email or a short password is refused.
-3. Tap **Create account**. The app calls `POST /auth/register`, saves the user in Neon and lands on **Today**: **Hey, <name>**, the **Live** badge, and **No duels yet** with a **Start a duel** button.
-4. **Show the new row in Neon:** console, **Tables → users**, refresh. The new row is on top: name, email, `created_at`, and `password_hash` (a bcrypt hash, never the password), and no guest flag: every user is a real account.
+3. Tap **Create account**. The app calls `POST /auth/register`, saves the user in Neon and opens **Verify your email**. Type the 6-digit code from the email and tap **Verify** (`POST /auth/verify-email`). It lands on **Today**: **Hey, <name>**, the **Live** badge, and **No duels yet** with a **Start a duel** button.
+4. **Show the new row in Neon:** console, **Tables → users**, refresh. The new row is on top: name, email, `email_verified_at` (set once the code was typed), `created_at`, and `password_hash` (a bcrypt hash, never the password), and no guest flag: every user is a real account.
 
 ### 2. Phone 2: register
 Do the same with the teammate's name and email. Refresh `users` in Neon: now two rows.

@@ -13,7 +13,21 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(80))
     email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # When the person typed the code we emailed them. None = not verified yet (the app shows the Verify screen).
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class EmailCode(Base):
+    """The latest 6-digit sign-up code for a user. Only a hash is kept; a new code replaces the old one."""
+
+    __tablename__ = "email_codes"
+
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    sent_at: Mapped[datetime] = mapped_column(DateTime)
 
 
 class Duel(Base):

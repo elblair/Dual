@@ -101,3 +101,11 @@ def active_duel(duo):
     duel = ari.challenge(sam)
     sam.accept(duel["id"])
     return ari, sam, duel["id"]
+
+
+@pytest.fixture(autouse=True)
+def no_real_email(monkeypatch):
+    """Tests never send email: sign-up codes go to a list instead (the `outbox` fixture in a test can read them)."""
+    from app import verification
+
+    monkeypatch.setattr(verification, "send_email", lambda *args, **kwargs: None)
