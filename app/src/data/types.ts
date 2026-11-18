@@ -4,6 +4,8 @@ export interface Me {
   id: string;
   name: string;
   email?: string;
+  /** False until the person types the 6-digit code we emailed at sign-up (the app shows the Verify screen). */
+  emailVerified: boolean;
 }
 
 export interface Person {

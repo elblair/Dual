@@ -21,6 +21,10 @@ services:
         generateValue: true # Render makes a long random string
       - key: CORS_ORIGINS
         sync: false # set in the dashboard: the web app's URL plus localhost (docs/RENDER_WEB.md). Left unset it allows every origin.
+      - key: BREVO_API_KEY
+        sync: false # Brevo API key for the sign-up codes (docs/EMAIL.md). Left unset, codes only go to the server log.
+      - key: EMAIL_FROM
+        sync: false # the sender address you verified in Brevo
 
   # The web app (Expo web export, a single-page app). Free static site: it never sleeps. Auto-deploys from main.
   # EXPO_PUBLIC_* values are inlined at BUILD time, so changing one means a redeploy. Never put secrets here.

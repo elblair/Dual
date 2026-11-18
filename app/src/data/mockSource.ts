@@ -23,7 +23,7 @@ export function createMockSource(): DataSource {
   let duels: Duel[] = [];
   let seq = 1;
   let users = 1;
-  const accounts: { id: string; name: string; email: string; password: string }[] = [];
+  const accounts: { id: string; name: string; email: string; password: string; verified: boolean }[] = [];
   const listeners = new Set<() => void>();
 
   const notify = () => listeners.forEach((l) => l());
@@ -94,16 +94,25 @@ export function createMockSource(): DataSource {
     register({ name, email, password }) {
       if (accounts.some((a) => a.email === email)) return fail('That email already has an account. Try logging in.');
       const id = `u${users++}`;
-      accounts.push({ id, name, email, password });
-      return start({ id, name, email });
+      accounts.push({ id, name, email, password, verified: false });
+      return start({ id, name, email, emailVerified: false });
     },
     login({ email, password }) {
       const a = accounts.find((x) => x.email === email);
       if (!a) return fail('No account with that email. Try creating one.');
       if (a.password !== password) return fail('Wrong password.');
       duels = [];
-      return start({ id: a.id, name: a.name, email });
+      return start({ id: a.id, name: a.name, email, emailVerified: a.verified });
     },
+    // The mock sends no email: any 6 digits verify.
+    verifyEmail(code) {
+      if (!me) return fail('Please sign in.');
+      if (!/^\d{6}$/.test(code.trim())) return fail('Enter the 6-digit code.');
+      const a = accounts.find((x) => x.id === me!.id);
+      if (a) a.verified = true;
+      return start({ ...me, emailVerified: true });
+    },
+    resendCode: () => Promise.resolve(),
     logout() {
       me = null;
       duels = [];

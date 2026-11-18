@@ -14,6 +14,8 @@ class MeOut(CamelModel):
     id: str
     name: str
     email: str | None = None
+    # False until the person types the code we emailed at sign-up.
+    email_verified: bool = False
 
 
 class AuthOut(CamelModel):
@@ -81,6 +83,10 @@ class RegisterIn(CamelModel):
     name: str = Field(min_length=1, max_length=80)
     email: str = Field(min_length=3, max_length=255, pattern=r"^[^@\s]+@[^@\s]+$")
     password: str = Field(min_length=6, max_length=128)
+
+
+class VerifyEmailIn(CamelModel):
+    code: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")
 
 
 class LoginIn(CamelModel):

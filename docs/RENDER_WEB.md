@@ -2,6 +2,8 @@
 
 The web app is the Expo web export served as a **free Render static site**. It never sleeps (only the API does), redeploys from `main`, and talks to the API at `https://dual-api-memp.onrender.com`. Phones open the link and use **Add to Home Screen**: no Expo Go, no laptop.
 
+**Live:** https://dual-3d1g.onrender.com (deployed from `main`, v0.3.0). The steps below are how it was set up and how to redo it.
+
 Do this from the GitHub account that owns the repo (`elblair/Dual`), after the `release: v0.3.0` PR is merged into `main`. About 10 minutes. No secrets are involved: the only build settings are the public API URL and `EXPO_PUBLIC_USE_MOCK=false`.
 
 ## 1. Create the static site
@@ -32,10 +34,10 @@ Do this from the GitHub account that owns the repo (`elblair/Dual`), after the `
 When the build is green, copy the site URL (`https://<name>.onrender.com`). It is not a secret.
 
 ## 2. Restrict CORS on the API (do this once the URL is known)
-Dashboard > **dual-api** > **Environment** > edit `CORS_ORIGINS` and set it to (replace `<name>` with the real site name, no trailing slash, no spaces):
+Dashboard > **dual-api** > **Environment** > edit `CORS_ORIGINS` and set it to (no trailing slash, no spaces):
 
 ```
-https://<name>.onrender.com,http://localhost:8081,http://localhost:8099,http://127.0.0.1:8099
+https://dual-3d1g.onrender.com,http://localhost:8081,http://localhost:8099,http://127.0.0.1:8099
 ```
 
 - The first one is the web app. The `localhost` ones are for developing with Expo web on a laptop.
@@ -45,8 +47,15 @@ https://<name>.onrender.com,http://localhost:8081,http://localhost:8099,http://1
 ## 3. Check it
 1. Open the site URL on a phone: the Welcome screen appears.
 2. Register. Today shows the green **Live** badge with the API host.
-3. Open `https://<name>.onrender.com/duel/1` directly (or reload on any screen): the app loads (it shows an error for a duel that is not yours, which is fine).
+3. Open `https://dual-3d1g.onrender.com/duel/1` directly (or reload on any screen): the app loads (it shows an error for a duel that is not yours, which is fine).
 4. If you see **Offline**: check the `CORS_ORIGINS` value first, then that `EXPO_PUBLIC_API_URL` is set on the static site (changing it needs a redeploy: Site > **Manual Deploy** > **Clear build cache & deploy**).
+
+## 4. Add it to the home screen
+
+**Add to Home Screen (once per phone)**
+- **iPhone (Safari only, not Chrome):** open the link, tap the **Share** button (square with an arrow, bottom bar), scroll down and tap **Add to Home Screen**, then **Add** (top right; the name is "Dual"). If you do not see it, tap **View More** first. Open Dual from the new icon: it runs full screen without Safari bars.
+- **Android (Chrome):** open the link, tap the **⋮** menu (top right), then **Install app** (or **Add to Home screen**) and confirm.
+- It is the same app and the same account either way; the icon only removes the browser bars. Log in once in the icon (it keeps its own login, separate from the Safari tab).
 
 ## Good to know
 - `EXPO_PUBLIC_*` values are baked into the build, so a changed value only takes effect after a new deploy.

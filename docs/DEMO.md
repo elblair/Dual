@@ -13,12 +13,21 @@ The two graded things:
 |---|---|
 | Database | Neon project; `api/.env` has `DATABASE_URL` and `JWT_SECRET`. `python check_db.py` prints `OK` and `Users: ..., duels: ...`. |
 | API | **Render (default):** https://dual-api-memp.onrender.com . Open `/health` from the phone's browser to check (the free tier sleeps: the first call takes about a minute). **Or your PC:** `cd api`, activate the venv, `uvicorn app.main:app --host 0.0.0.0`, check `http://<your PC IP>:8000/health`. |
-| **Web app (easiest)** | Open the Dual web app link (`https://<name>.onrender.com`, see `docs/RENDER_WEB.md`) on **both** phones once: iPhone Safari **Share > Add to Home Screen**, Android Chrome **menu > Add to Home screen / Install app**. From then on **demo from the Dual icon**: it opens full screen, with no Expo Go, no cable and no laptop. Only the API sleeps: open `/health` a few minutes before. |
+| **Web app (easiest)** | Open the Dual web app link (https://dual-3d1g.onrender.com, set up in `docs/RENDER_WEB.md`) on **both** phones once: iPhone Safari **Share > Add to Home Screen**, Android Chrome **menu > Add to Home screen / Install app**. From then on **demo from the Dual icon**: it opens full screen, with no Expo Go, no cable and no laptop. Only the API sleeps: open `/health` a few minutes before. |
 | App on both phones (Expo Go, alternative) | `app/.env`: `EXPO_PUBLIC_API_URL=https://dual-api-memp.onrender.com` and `EXPO_PUBLIC_USE_MOCK=false` (no DATABASE_URL or JWT_SECRET in this file). `cd app && npx expo start -c`. Both phones scan the QR in Expo Go (same Wi-Fi as the PC, or `--tunnel`; the API itself needs no Wi-Fi with Render). With a local API use `http://<your PC's LAN IP>:8000` instead. |
 | Neon console | A second window: your project, **Tables** (left menu). Keep `users`, `duels` and `checkins` handy. |
 | Clean start | Use two new email addresses (an email that already exists is refused). To wipe test data: `python scripts/purge_seed_data.py` removes any old demo accounts; delete other rows in the Neon Tables view. |
 
 On Today, the badge must say **Live · <host>** (green). If it says Offline or the app shows "Couldn't load this", the API URL is wrong or the server is not running. **There is no mock fallback unless you set `EXPO_PUBLIC_USE_MOCK=true` on purpose** (it is a single-user, nothing-saved mode and the badge says "Mock data").
+
+## Install on the phones (web app)
+
+Web app link: **https://dual-3d1g.onrender.com**
+
+**Add to Home Screen (once per phone)**
+- **iPhone (Safari only, not Chrome):** open the link, tap the **Share** button (square with an arrow, bottom bar), scroll down and tap **Add to Home Screen**, then **Add** (top right; the name is "Dual"). If you do not see it, tap **View More** first. Open Dual from the new icon: it runs full screen without Safari bars.
+- **Android (Chrome):** open the link, tap the **⋮** menu (top right), then **Install app** (or **Add to Home screen**) and confirm.
+- It is the same app and the same account either way; the icon only removes the browser bars. Log in once in the icon (it keeps its own login, separate from the Safari tab).
 
 ## Demo-day checklist
 
@@ -38,7 +47,7 @@ On Today, the badge must say **Live · <host>** (green). If it says Offline or t
 **Right before**
 - [ ] Both phones show **Welcome** (Create account / Log in). If one still has a session, **You > Log out**.
 - [ ] After sign-up the badge on Today says **Live** with the host (green).
-- [ ] Two new email addresses are ready, one per phone (an email that already exists is refused).
+- [ ] Two new email addresses are ready, one per phone (an email that already exists is refused), and **both inboxes are open** on the phones: sign-up emails a 6-digit code (Brevo must be set up on Render, `docs/EMAIL.md`; check Spam the first time).
 
 **If something goes wrong:** see Troubleshooting below. As a last resort use a browser tab as the second phone (`http://localhost:8081`, a private window for the second account).
 
@@ -47,8 +56,8 @@ On Today, the badge must say **Live · <host>** (green). If it says Offline or t
 ### 1. Phone 1: register (graded item 1)
 1. Open the app. The first screen is **Welcome** with **Create account** and **Log in** (no guests, nothing else).
 2. Tap **Create account**. Enter a name, an email and a password (6+ characters). A bad email or a short password is refused.
-3. Tap **Create account**. The app calls `POST /auth/register`, saves the user in Neon and lands on **Today**: **Hey, <name>**, the **Live** badge, and **No duels yet** with a **Start a duel** button.
-4. **Show the new row in Neon:** console, **Tables → users**, refresh. The new row is on top: name, email, `created_at`, and `password_hash` (a bcrypt hash, never the password), and no guest flag: every user is a real account.
+3. Tap **Create account**. The app calls `POST /auth/register`, saves the user in Neon and opens **Verify your email**. Type the 6-digit code from the email and tap **Verify** (`POST /auth/verify-email`). It lands on **Today**: **Hey, <name>**, the **Live** badge, and **No duels yet** with a **Start a duel** button.
+4. **Show the new row in Neon:** console, **Tables → users**, refresh. The new row is on top: name, email, `email_verified_at` (set once the code was typed), `created_at`, and `password_hash` (a bcrypt hash, never the password), and no guest flag: every user is a real account.
 
 ### 2. Phone 2: register
 Do the same with the teammate's name and email. Refresh `users` in Neon: now two rows.

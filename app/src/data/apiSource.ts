@@ -122,6 +122,14 @@ export function createApiSource(baseUrl: string): DataSource {
     },
     register: ({ name, email, password }) => signIn('/auth/register', { name, email, password }),
     login: ({ email, password }) => signIn('/auth/login', { email, password }),
+    async verifyEmail(code) {
+      const me = await request<Me>('POST', '/auth/verify-email', { code: code.trim() });
+      notify();
+      return me;
+    },
+    async resendCode() {
+      await request<null>('POST', '/auth/resend-code', {});
+    },
     async logout() {
       await setToken(null);
       notify();
