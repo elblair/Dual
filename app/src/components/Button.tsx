@@ -1,4 +1,4 @@
-import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, type StyleProp, type ViewStyle } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { useTheme, type ColorName } from '@/theme';
 import { Text } from './Text';
@@ -11,11 +11,13 @@ interface ButtonProps {
   variant?: ButtonVariant;
   icon?: LucideIcon;
   disabled?: boolean;
+  /** Shows a spinner in place of the icon and ignores taps (the label stays, so the button keeps its size). */
+  loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 /** Full-width pill-ish button. primary = maroon, orange = "do this now" (check-in only), outline, soft = gray. */
-export function Button({ label, onPress, variant = 'primary', icon: Icon, disabled, style }: ButtonProps) {
+export function Button({ label, onPress, variant = 'primary', icon: Icon, disabled, loading, style }: ButtonProps) {
   const t = useTheme();
   const look: Record<ButtonVariant, { bg: ColorName | null; fg: ColorName; border?: ColorName }> = {
     primary: { bg: 'maroon', fg: 'white' },
@@ -29,7 +31,8 @@ export function Button({ label, onPress, variant = 'primary', icon: Icon, disabl
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      disabled={disabled}
+      disabled={disabled || loading}
+      accessibilityState={{ disabled: !!disabled, busy: !!loading }}
       onPress={onPress}
       style={({ pressed }) => [
         {
@@ -49,7 +52,7 @@ export function Button({ label, onPress, variant = 'primary', icon: Icon, disabl
         style,
       ]}
     >
-      {Icon ? <Icon size={t.sizes.icon.md} color={t.colors[fg]} strokeWidth={2} /> : null}
+      {loading ? <ActivityIndicator size="small" color={t.colors[fg]} /> : Icon ? <Icon size={t.sizes.icon.md} color={t.colors[fg]} strokeWidth={2} /> : null}
       <Text variant="button" color={fg}>
         {label}
       </Text>

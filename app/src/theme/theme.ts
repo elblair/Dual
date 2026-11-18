@@ -236,10 +236,25 @@ const sizes = {
   cameraButton: 54,
   successBadge: 104,
   flameTile: 64,
+  strengthBar: 6, // password strength segments (Auth)
+  codeBox: { width: 46, height: 56 }, // one digit of the email code (Verify)
+  checkBadge: 72, // "Verified" check (Verify)
   logo: {
     sm: { barWidth: 4, barHeight: 14, barGap: 2, textGap: 4, font: 14 },
     lg: { barWidth: 7, barHeight: 22, barGap: 3, textGap: 7, font: 22 },
   },
+} as const;
+
+/** Animation timing (ms) and distances (pt). Not in Figma: kept short so the app never feels slow. */
+const motion = {
+  fast: 150,
+  base: 250,
+  slow: 400,
+  stagger: 70, // delay between items that fade in one after another
+  celebrate: 650, // how long the "Verified" check shows before moving on
+  enterDistance: 12, // content slides up this far as it fades in
+  shakeDistance: 8, // wrong-code shake
+  popScale: 0.6, // the check badge grows from this scale
 } as const;
 
 export interface Theme {
@@ -252,9 +267,10 @@ export interface Theme {
   radii: typeof radii;
   borders: typeof borders;
   sizes: typeof sizes;
+  motion: typeof motion;
 }
 
-const shared = { fonts, fontSizes, text, spacing, radii, borders, sizes };
+const shared = { fonts, fontSizes, text, spacing, radii, borders, sizes, motion };
 
 export const lightTheme: Theme = {
   name: 'light',
