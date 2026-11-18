@@ -9,7 +9,10 @@ LEGACY_COLUMNS = {"users": ["is_seeded", "is_guest"], "duels": ["invitee_id", "d
 
 
 # table -> {column: SQL type} for columns added after a table was first created (all nullable, so old rows stay valid)
-NEW_COLUMNS = {"duels": {"goal": "VARCHAR(80)"}}
+NEW_COLUMNS = {"duels": {"goal": "VARCHAR(80)"}, "users": {"email_verified_at": "TIMESTAMP"}}
+
+# Run once, right after a column is added: accounts made before email verification existed count as verified.
+BACKFILL = {"users.email_verified_at": "UPDATE users SET email_verified_at = created_at WHERE email_verified_at IS NULL"}
 
 
 def add_missing_columns(engine: Engine) -> list[str]:
@@ -24,6 +27,8 @@ def add_missing_columns(engine: Engine) -> list[str]:
             if column not in existing:
                 with engine.begin() as conn:
                     conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {sql_type}"))
+                    if f"{table}.{column}" in BACKFILL:
+                        conn.execute(text(BACKFILL[f"{table}.{column}"]))
                 added.append(f"{table}.{column}")
     return added
 

@@ -14,6 +14,10 @@ class Settings:
     database_url: str
     jwt_secret: str
     cors_origins: list[str]
+    # Brevo (free plan) sends the sign-up codes. Without a key the code is written to the server log instead.
+    brevo_api_key: str
+    email_from: str
+    email_from_name: str
 
 
 def _normalize_database_url(url: str) -> str:
@@ -40,4 +44,7 @@ def get_settings() -> Settings:
         database_url=url,
         jwt_secret=secret,
         cors_origins=origins or ["*"],
+        brevo_api_key=os.environ.get("BREVO_API_KEY", "").strip(),
+        email_from=os.environ.get("EMAIL_FROM", "").strip(),
+        email_from_name=os.environ.get("EMAIL_FROM_NAME", "Dual").strip() or "Dual",
     )

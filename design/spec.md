@@ -174,7 +174,7 @@ All sample content in the frames is replaced by real data from the API; the fram
 - You: stats are duels won, days checked in and current streak; no tier card, no rivals list, no connected-apps or lock-screen rows, no Dual+.
 - Save ("Save your streak") was dropped: there are no guest accounts, so everyone signs up on Welcome first. No Apple/Google buttons.
 - Icons are Lucide, so a few glyphs differ slightly from Figma's.
-- Not in Figma, built from tokens: Welcome (`/welcome`), code entry (`/code`, after login), email form (`/auth`), the friend search, loading/error states, the Live / Offline badge, and the account card on You.
+- Not in Figma, built from tokens: Welcome (`/welcome`), code entry (`/code`, after login), email form (`/auth`), Verify your email (`/verify`, the 6-digit code), the friend search, loading/error states, the Live / Offline badge, and the account card on You.
 
 ## Navigation
 Hobby -> Friend -> (Send by text) -> Accept -> (Accept) -> Today. Today: "I did it" -> Done -> Save (or Back to Today); dual card -> Duel -> Break / Result; Sunday recap -> Result. Tabs: Today, Groups, "+" (Hobby flow), You. Result: Rematch/Easier win -> Today, New rival -> Friend.
