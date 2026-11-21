@@ -1,4 +1,4 @@
-import { buildDays, type DayState } from '@/components';
+import { buildDays, buildSlots, type DayState } from '@/components';
 import type { ColorName } from '@/theme';
 import type { Duel } from '@/data';
 import { defaultGoal, easierGoalText, easierMinutes } from '@/data/catalog';
@@ -12,19 +12,24 @@ export const scoreText = (d: Duel) => `${myScore(d)} – ${theirScore(d)}`;
 export const isLive = (d: Duel) => d.status === 'active' && d.today <= 6;
 export const checkedInToday = (d: Duel) => d.myDays.includes(d.today);
 export const restingToday = (d: Duel) => d.myRestDays.includes(d.today);
-export const needsCheckIn = (d: Duel) => isLive(d) && !checkedInToday(d) && !restingToday(d);
+/** A weekly or "N times a week" duel counts check-ins, not days: it has slots, and the days between are free. */
+export const countsSlots = (d: Duel) => d.frequency !== 'daily';
+export const allCheckInsDone = (d: Duel) => d.myDays.length >= d.slots;
+export const needsCheckIn = (d: Duel) => isLive(d) && !checkedInToday(d) && !restingToday(d) && !allCheckInsDone(d);
 
 /** Green when tied or ahead, maroon when behind. */
 export function scoreColor(d: Duel): ColorName {
   return myScore(d) >= theirScore(d) ? 'success' : 'maroonBright';
 }
 
-/** My 7 dots: orange ring on today while the duel is live. */
+/** My dots: one per day when daily (orange ring on today while the duel is live), otherwise one per check-in slot. */
 export function myDayStates(d: Duel): DayState[] {
+  if (countsSlots(d)) return buildSlots(d.myDays.length, d.slots, needsCheckIn(d));
   return buildDays(d.myDays, isLive(d) ? d.today : undefined, d.myRestDays);
 }
 
 export function theirDayStates(d: Duel): DayState[] {
+  if (countsSlots(d)) return buildSlots(d.theirDays.length, d.slots, false);
   return buildDays(d.theirDays);
 }
 

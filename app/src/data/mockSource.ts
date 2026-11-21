@@ -56,6 +56,7 @@ export function createMockSource(): DataSource {
       minutes: input.minutes,
       goal: input.goal ?? null,
       lengthDays: 7,
+      slots: input.frequency === 'weekly' ? 1 : input.frequency === 'perWeek' ? input.timesPerWeek ?? 7 : 7,
       frequency: input.frequency ?? 'daily',
       timesPerWeek: input.timesPerWeek ?? null,
       verification: input.verification ?? 'mutual',
@@ -72,7 +73,7 @@ export function createMockSource(): DataSource {
       myDays: [],
       theirDays: [],
       myRestDays: [],
-      restLeft: 2,
+      restLeft: (input.frequency ?? 'daily') === 'daily' ? 2 : 0,
       theirPending: null,
       activity: [],
       pausedUntil: null,
@@ -185,6 +186,7 @@ export function createMockSource(): DataSource {
       act(id, (d) => {
         if (d.status !== 'active') throw new Error('This duel is not active.');
         if (d.myDays.includes(d.today)) throw new Error('You already checked in today.');
+        if (d.myDays.length >= d.slots) throw new Error('You have done all your check-ins for this duel.');
         d.myDays.push(d.today);
         return d;
       }),
@@ -192,6 +194,7 @@ export function createMockSource(): DataSource {
     confirmFriend: (id) => act(id, (d) => d),
     restDay: (id) =>
       act(id, (d) => {
+        if (d.frequency !== 'daily') throw new Error('Rest days are only for daily duels. In this one you pick the days yourself.');
         if (d.restLeft <= 0) throw new Error('No rest days left this week.');
         if (d.myDays.includes(d.today) || d.myRestDays.includes(d.today)) throw new Error('Today is already logged.');
         d.myRestDays.push(d.today);

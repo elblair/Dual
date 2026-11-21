@@ -5,7 +5,7 @@ import { useTheme } from '@/theme';
 export type DayState = 'done' | 'today' | 'empty' | 'rest';
 
 interface DotsProps {
-  /** Exactly 7 entries, Monday-style day 1 to day 7 of the duel. */
+  /** One entry per check-in slot: 7 (day 1 to day 7) in a daily duel, fewer when the duel is weekly or N times a week. */
   days: DayState[];
   /** you = blue, opponent = maroon (the one way to show who's winning). */
   tone: 'you' | 'opponent';
@@ -18,7 +18,7 @@ export function Dots({ days, tone, size = 'md' }: DotsProps) {
   const fill = tone === 'you' ? t.colors.blue : t.colors.maroonBright;
 
   return (
-    <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }} accessibilityLabel={`${days.filter((d) => d === 'done').length} of 7 days done`}>
+    <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }} accessibilityLabel={`${days.filter((d) => d === 'done').length} of ${days.length} done`}>
       {days.map((state, i) => (
         <View
           key={i}
@@ -34,6 +34,12 @@ export function Dots({ days, tone, size = 'md' }: DotsProps) {
       ))}
     </View>
   );
+}
+
+/** The dots for a weekly or "N times a week" duel: one per slot, filled in order as check-ins are made (the days do not matter).
+ *  The orange ring is on the next slot while today still needs a check-in. */
+export function buildSlots(done: number, slots: number, needsToday: boolean): DayState[] {
+  return Array.from({ length: slots }, (_, i) => (i < done ? 'done' : i === done && needsToday ? 'today' : 'empty'));
 }
 
 /** Build the 7 dots from a list of checked-in day indexes (0 to 6) and the current day index. */

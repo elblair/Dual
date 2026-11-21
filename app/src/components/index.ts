@@ -2,7 +2,7 @@ export { Text } from './Text';
 export { Screen } from './Screen';
 export { Button } from './Button';
 export { Avatar } from './Avatar';
-export { Dots, buildDays } from './Dots';
+export { Dots, buildDays, buildSlots } from './Dots';
 export type { DayState } from './Dots';
 export { Card } from './Card';
 export { Pill } from './Pill';

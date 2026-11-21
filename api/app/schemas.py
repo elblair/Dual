@@ -69,6 +69,7 @@ class DuelOut(CamelModel):
     # The goal text the players wrote, or None when the app's suggestion applies.
     goal: str | None
     length_days: int
+    slots: int  # check-ins each player can make (the dots): 7 daily, 1 weekly, N perWeek
     # Duel settings the creator chose (old duels: daily, mutual, compete, no number).
     frequency: Frequency
     # Only when frequency is perWeek.
