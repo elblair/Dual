@@ -1,9 +1,8 @@
 import { Pressable, View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Avatar, BackButton, Button, GoalCard, HobbyTile, Logo, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, CategoryPicker, GoalCard, Logo, Screen, Text } from '@/components';
 import { useMe } from '@/data';
-import { defaultGoal, HOBBIES, minutesFromText } from '@/data/catalog';
-import { hobbyIconRotation, hobbyIcons } from '@/lib/hobbyIcons';
+import { defaultGoal, minutesFromText } from '@/data/catalog';
 import { useChallenge } from '@/lib/useChallenge';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -31,8 +30,6 @@ export default function HobbyScreen() {
     router.push('/friend');
   }
 
-  const rows = [HOBBIES.slice(0, 3), HOBBIES.slice(3, 6), HOBBIES.slice(6, 9)];
-
   return (
     <Screen scroll gap="loose">
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -52,22 +49,7 @@ export default function HobbyScreen() {
         </View>
       ) : null}
 
-      <View style={{ gap: t.spacing.md }}>
-        {rows.map((row, i) => (
-          <View key={i} style={{ flexDirection: 'row', gap: t.spacing.md }}>
-            {row.map((h) => (
-              <HobbyTile
-                key={h.id}
-                label={h.label}
-                icon={hobbyIcons[h.id]}
-                iconRotation={hobbyIconRotation[h.id]}
-                selected={h.id === hobby.id}
-                onPress={() => setHobbyId(h.id)}
-              />
-            ))}
-          </View>
-        ))}
-      </View>
+      <CategoryPicker value={[hobby.id]} onChange={(ids) => setHobbyId(ids[0])} />
 
       <GoalCard
         goal={goal ?? defaultGoal(hobby.id, minutes)}

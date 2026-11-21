@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { HOBBIES, MINUTE_OPTIONS, type Hobby } from '@/data/catalog';
+import { DEFAULT_HOBBY_ID, hobbyById, MINUTE_OPTIONS, type Hobby } from '@/data/catalog';
 
 /** Who the player picked in the friend search (null = invite someone by text). */
 export interface PickedFriend {
@@ -30,7 +30,7 @@ interface OnboardingState {
 const Ctx = createContext<OnboardingState | null>(null);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const [hobbyId, setHobbyId] = useState(HOBBIES[0].id);
+  const [hobbyId, setHobbyId] = useState(DEFAULT_HOBBY_ID);
   const [minutes, setMinutes] = useState(MINUTE_OPTIONS[2]);
   const [friend, setFriend] = useState<PickedFriend | null>(null);
   const [goal, setGoal] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => {
-    setHobbyId(HOBBIES[0].id);
+    setHobbyId(DEFAULT_HOBBY_ID);
     setMinutes(MINUTE_OPTIONS[2]);
     setGoal(null);
     setFriend(null);
@@ -51,7 +51,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<OnboardingState>(
     () => ({
-      hobby: HOBBIES.find((h) => h.id === hobbyId) ?? HOBBIES[0],
+      hobby: hobbyById(hobbyId),
       setHobbyId: pickHobby,
       minutes,
       setMinutes,

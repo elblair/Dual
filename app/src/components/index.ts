@@ -17,6 +17,7 @@ export { TabBar } from './TabBar';
 export type { TabKey } from './TabBar';
 export { Radio } from './Radio';
 export { HobbyTile } from './HobbyTile';
+export { CategoryPicker } from './CategoryPicker';
 export { ContactRow } from './ContactRow';
 export { TextField } from './TextField';
 export { FadeIn } from './FadeIn';
