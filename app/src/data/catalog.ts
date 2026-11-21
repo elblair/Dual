@@ -13,20 +13,114 @@ export interface Hobby {
   emoji: string;
 }
 
-export const HOBBIES: Hobby[] = [
-  { id: 'guitar', label: 'Guitar', action: 'Practice guitar', phrase: 'practicing guitar', emoji: '🎸' },
-  { id: 'running', label: 'Running', action: 'Go for a run', phrase: 'running', emoji: '🏃' },
-  { id: 'spanish', label: 'Spanish', action: 'Study Spanish', phrase: 'studying Spanish', emoji: '🗣️' },
-  { id: 'gym', label: 'Gym', action: 'Hit the gym', phrase: 'hitting the gym', emoji: '🏋️' },
-  { id: 'reading', label: 'Reading', action: 'Read', phrase: 'reading', emoji: '📚' },
-  { id: 'drawing', label: 'Drawing', action: 'Draw', phrase: 'drawing', emoji: '🎨' },
-  { id: 'cooking', label: 'Cooking', action: 'Cook', phrase: 'cooking', emoji: '🍳' },
-  { id: 'coding', label: 'Coding', action: 'Code', phrase: 'coding', emoji: '💻' },
-  { id: 'meditation', label: 'Meditation', action: 'Meditate', phrase: 'meditating', emoji: '🧘' },
+/** A group of hobbies ("Languages"). The Hobby step shows categories first and opens one to pick the specific hobby. */
+export interface Category {
+  id: string;
+  label: string;
+  hobbies: Hobby[];
+}
+
+const hobby = (id: string, label: string, action: string, phrase: string, emoji: string): Hobby => ({ id, label, action, phrase, emoji });
+
+/**
+ * The fixed catalog (not user data). Hobby ids are stored on duels, so an id is never renamed or removed: the nine original
+ * ids (guitar, running, spanish, gym, reading, drawing, cooking, coding, meditation) are kept as they were.
+ */
+export const CATEGORIES: Category[] = [
+  {
+    id: 'music',
+    label: 'Music',
+    hobbies: [
+      hobby('guitar', 'Guitar', 'Practice guitar', 'practicing guitar', '🎸'),
+      hobby('piano', 'Piano', 'Practice piano', 'practicing piano', '🎹'),
+      hobby('singing', 'Singing', 'Sing', 'singing', '🎤'),
+      hobby('drums', 'Drums', 'Practice drums', 'practicing drums', '🥁'),
+    ],
+  },
+  {
+    id: 'fitness',
+    label: 'Fitness',
+    hobbies: [
+      hobby('running', 'Running', 'Go for a run', 'running', '🏃'),
+      hobby('gym', 'Gym', 'Hit the gym', 'hitting the gym', '🏋️'),
+      hobby('yoga', 'Yoga', 'Do yoga', 'doing yoga', '🤸'),
+      hobby('cycling', 'Cycling', 'Go for a ride', 'cycling', '🚴'),
+      hobby('swimming', 'Swimming', 'Go for a swim', 'swimming', '🏊'),
+    ],
+  },
+  {
+    id: 'languages',
+    label: 'Languages',
+    hobbies: [
+      hobby('spanish', 'Spanish', 'Study Spanish', 'studying Spanish', '🗣️'),
+      hobby('french', 'French', 'Study French', 'studying French', '🥐'),
+      hobby('japanese', 'Japanese', 'Study Japanese', 'studying Japanese', '🎌'),
+      hobby('mandarin', 'Mandarin', 'Study Mandarin', 'studying Mandarin', '🀄'),
+      hobby('german', 'German', 'Study German', 'studying German', '🥨'),
+    ],
+  },
+  {
+    id: 'creative',
+    label: 'Creative',
+    hobbies: [
+      hobby('drawing', 'Drawing', 'Draw', 'drawing', '🎨'),
+      hobby('writing', 'Writing', 'Write', 'writing', '✍️'),
+      hobby('photography', 'Photography', 'Shoot photos', 'taking photos', '📷'),
+      hobby('crafts', 'Crafts', 'Make crafts', 'making crafts', '✂️'),
+    ],
+  },
+  {
+    id: 'learning',
+    label: 'Learning',
+    hobbies: [
+      hobby('reading', 'Reading', 'Read', 'reading', '📚'),
+      hobby('coding', 'Coding', 'Code', 'coding', '💻'),
+      hobby('studying', 'Studying', 'Study', 'studying', '🎓'),
+    ],
+  },
+  {
+    id: 'wellness',
+    label: 'Wellness',
+    hobbies: [
+      hobby('meditation', 'Meditation', 'Meditate', 'meditating', '🧘'),
+      hobby('journaling', 'Journaling', 'Journal', 'journaling', '📓'),
+      hobby('stretching', 'Stretching', 'Stretch', 'stretching', '🙆'),
+    ],
+  },
+  {
+    id: 'food',
+    label: 'Food',
+    hobbies: [hobby('cooking', 'Cooking', 'Cook', 'cooking', '🍳'), hobby('baking', 'Baking', 'Bake', 'baking', '🧁')],
+  },
 ];
 
+export const HOBBIES: Hobby[] = CATEGORIES.flatMap((c) => c.hobbies);
+
+/** What is selected before anyone picks (and what an unknown id falls back to). */
+export const DEFAULT_HOBBY_ID = 'guitar';
+
 export function hobbyById(id: string): Hobby {
-  return HOBBIES.find((h) => h.id === id) ?? HOBBIES[0];
+  return HOBBIES.find((h) => h.id === id) ?? HOBBIES.find((h) => h.id === DEFAULT_HOBBY_ID)!;
+}
+
+/** The category a hobby belongs to. */
+export function categoryOf(hobbyId: string): Category | undefined {
+  return CATEGORIES.find((c) => c.hobbies.some((h) => h.id === hobbyId));
+}
+
+/**
+ * Search across both levels. A word that matches a category name ("lang") returns the whole category; otherwise only the
+ * hobbies whose name matches. Categories with no match are left out. An empty search returns nothing.
+ */
+export function searchCatalog(query: string): { category: Category; hobbies: Hobby[] }[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const results: { category: Category; hobbies: Hobby[] }[] = [];
+  for (const category of CATEGORIES) {
+    const hobbies = category.label.toLowerCase().includes(q) ? category.hobbies : category.hobbies.filter((h) => h.label.toLowerCase().includes(q));
+    if (hobbies.length > 0) results.push({ category, hobbies });
+  }
+  return results;
 }
 
 /** Starter goal choices the pencil on the Hobby screen cycles through. */
