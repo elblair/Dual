@@ -7,7 +7,7 @@ import { Text } from './Text';
 interface TextFieldProps
   extends Pick<
     TextInputProps,
-    'value' | 'onChangeText' | 'placeholder' | 'secureTextEntry' | 'keyboardType' | 'autoCapitalize' | 'maxLength' | 'autoComplete' | 'textContentType'
+    'value' | 'onChangeText' | 'placeholder' | 'secureTextEntry' | 'keyboardType' | 'autoCapitalize' | 'maxLength' | 'autoComplete' | 'textContentType' | 'multiline'
   > {
   label: string;
   /** A small green check at the right once the value is valid. */
@@ -52,6 +52,7 @@ export function TextField({ label, autoCapitalize = 'none', valid, trailing, ...
               color: t.colors.ink,
               paddingHorizontal: t.spacing.xxl,
               paddingVertical: t.spacing.xl,
+              ...(input.multiline ? { minHeight: t.sizes.textArea, textAlignVertical: 'top' as const } : null),
             },
           ]}
         />

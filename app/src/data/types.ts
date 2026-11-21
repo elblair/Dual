@@ -6,6 +6,19 @@ export interface Me {
   email?: string;
   /** False until the person types the 6-digit code we emailed at sign-up (the app shows the Verify screen). */
   emailVerified: boolean;
+  /** Profile (Edit profile). A new account has none of these. */
+  bio: string | null;
+  /** Hobby ids from the catalog (`hobbyById`). */
+  interests: string[];
+  /** Id of a preset avatar, or null for the default initial. */
+  avatar: string | null;
+}
+
+/** Edit profile: only the fields you send change; null (or an empty text) clears one. */
+export interface ProfileInput {
+  bio?: string | null;
+  interests?: string[];
+  avatar?: string | null;
 }
 
 export interface Person {

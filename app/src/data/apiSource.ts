@@ -32,7 +32,7 @@ export function createApiSource(baseUrl: string): DataSource {
   }
 
   /** One place for every network call, so errors are friendly and sessions expire cleanly. */
-  async function request<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  async function request<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
     if (!root) throw new Error(notConfigured);
     await ready;
     const headers: Record<string, string> = { Accept: 'application/json' };
@@ -72,7 +72,7 @@ export function createApiSource(baseUrl: string): DataSource {
   }
 
   /** Run a mutation, then tell every screen to refetch. */
-  async function mutate<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  async function mutate<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
     const result = await request<T>(method, path, body);
     notify();
     return result;
@@ -134,6 +134,8 @@ export function createApiSource(baseUrl: string): DataSource {
       await setToken(null);
       notify();
     },
+
+    updateProfile: (input) => mutate<Me>('PATCH', '/me', input),
 
     searchUsers: (query) => request<UserHit[]>('GET', `/users/search?q=${encodeURIComponent(query.trim())}`),
 
