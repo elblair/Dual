@@ -238,6 +238,7 @@ const sizes = {
   flameTile: 64,
   strengthBar: 6, // password strength segments (Auth)
   codeBox: { width: 46, height: 56 }, // one digit of the email code (Verify)
+  textArea: 96, // minimum height of a multi-line text field (Edit profile bio)
   checkBadge: 72, // "Verified" check (Verify)
   logo: {
     sm: { barWidth: 4, barHeight: 14, barGap: 2, textGap: 4, font: 14 },

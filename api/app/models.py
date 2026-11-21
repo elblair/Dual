@@ -15,6 +15,12 @@ class User(Base):
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # When the person typed the code we emailed them. None = not verified yet (the app shows the Verify screen).
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Profile (Edit profile screen). All optional.
+    bio: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    # Hobby ids from the app's catalog, comma-separated ("guitar,spanish"). Read with logic.interests_of.
+    interests: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # The id of a preset avatar (the picker comes later). None = the default initial avatar.
+    avatar: Mapped[str | None] = mapped_column(String(32), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
 

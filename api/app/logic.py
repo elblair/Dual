@@ -75,6 +75,41 @@ def _iso(dt: datetime | None) -> str | None:
     return (dt.isoformat() + "Z") if dt else None
 
 
+BIO_MAX = 160  # characters, after trimming
+INTERESTS_MAX = 12
+AVATAR_MAX = 32  # characters
+_INTEREST_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
+
+
+def interests_of(user: User) -> list[str]:
+    return user.interests.split(",") if user.interests else []
+
+
+def update_profile(user: User, provided: dict) -> None:
+    """Change only the profile fields that were sent. Empty text or null clears a field."""
+    if "bio" in provided:
+        bio = (provided["bio"] or "").strip()
+        if len(bio) > BIO_MAX:
+            raise DomainError(f"Keep your bio under {BIO_MAX} characters.", status=422)
+        user.bio = bio or None
+    if "interests" in provided:
+        ids: list[str] = []
+        for raw in provided["interests"] or []:
+            interest = raw.strip().lower()
+            if not _INTEREST_ID.match(interest):
+                raise DomainError("One of your interests is not valid.", status=422)
+            if interest not in ids:
+                ids.append(interest)
+        if len(ids) > INTERESTS_MAX:
+            raise DomainError(f"Pick up to {INTERESTS_MAX} interests.", status=422)
+        user.interests = ",".join(ids) or None
+    if "avatar" in provided:
+        avatar = (provided["avatar"] or "").strip()
+        if len(avatar) > AVATAR_MAX:
+            raise DomainError("That avatar is not valid.", status=422)
+        user.avatar = avatar or None
+
+
 def clean_goal(goal: str | None) -> str | None:
     """None stays None (the suggestion). Otherwise trim and tidy the spaces; it must not be empty or longer than GOAL_MAX."""
     if goal is None:

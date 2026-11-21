@@ -1,6 +1,6 @@
 import { easierMinutes } from './catalog';
 import type { DataSource } from './source';
-import type { CreateDuelInput, Duel, Groups, Me, Person, Stats, UserHit } from './types';
+import type { CreateDuelInput, Duel, Groups, Me, Person, ProfileInput, Stats, UserHit } from './types';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
@@ -23,7 +23,7 @@ export function createMockSource(): DataSource {
   let duels: Duel[] = [];
   let seq = 1;
   let users = 1;
-  const accounts: { id: string; name: string; email: string; password: string; verified: boolean }[] = [];
+  const accounts: { id: string; name: string; email: string; password: string; verified: boolean; profile: Pick<Me, 'bio' | 'interests' | 'avatar'> }[] = [];
   const listeners = new Set<() => void>();
 
   const notify = () => listeners.forEach((l) => l());
@@ -100,15 +100,16 @@ export function createMockSource(): DataSource {
     register({ name, email, password }) {
       if (accounts.some((a) => a.email === email)) return fail('That email already has an account. Try logging in.');
       const id = `u${users++}`;
-      accounts.push({ id, name, email, password, verified: false });
-      return start({ id, name, email, emailVerified: false });
+      const profile = { bio: null, interests: [], avatar: null };
+      accounts.push({ id, name, email, password, verified: false, profile });
+      return start({ id, name, email, emailVerified: false, ...profile });
     },
     login({ email, password }) {
       const a = accounts.find((x) => x.email === email);
       if (!a) return fail('No account with that email. Try creating one.');
       if (a.password !== password) return fail('Wrong password.');
       duels = [];
-      return start({ id: a.id, name: a.name, email, emailVerified: a.verified });
+      return start({ id: a.id, name: a.name, email, emailVerified: a.verified, ...a.profile });
     },
     // The mock sends no email: any 6 digits verify.
     verifyEmail(code) {
@@ -124,6 +125,21 @@ export function createMockSource(): DataSource {
       duels = [];
       notify();
       return Promise.resolve();
+    },
+
+    updateProfile(input: ProfileInput) {
+      if (!me) return fail('Please sign in.');
+      const next = { ...me };
+      if ('bio' in input) {
+        const bio = (input.bio ?? '').trim();
+        if (bio.length > 160) return fail('Keep your bio under 160 characters.');
+        next.bio = bio || null;
+      }
+      if ('interests' in input) next.interests = [...new Set((input.interests ?? []).map((i) => i.trim().toLowerCase()))].filter(Boolean).slice(0, 12);
+      if ('avatar' in input) next.avatar = input.avatar?.trim() || null;
+      const account = accounts.find((a) => a.id === me!.id);
+      if (account) account.profile = { bio: next.bio, interests: next.interests, avatar: next.avatar };
+      return start(next);
     },
 
     searchUsers(query): Promise<UserHit[]> {

@@ -1,4 +1,4 @@
-import type { AuthInput, CreateDuelInput, Duel, Groups, Me, RegisterInput, Stats, UserHit } from './types';
+import type { AuthInput, CreateDuelInput, Duel, Groups, Me, ProfileInput, RegisterInput, Stats, UserHit } from './types';
 
 /**
  * The one interface the app talks to. `apiSource` (FastAPI + Neon) is the real thing; `mockSource` is an explicit
@@ -26,6 +26,9 @@ export interface DataSource {
   verifyEmail(code: string): Promise<Me>;
   /** Email a new code (the old one stops working). */
   resendCode(): Promise<void>;
+
+  /** Edit profile (bio, interests, avatar). Resolves with the updated me. */
+  updateProfile(input: ProfileInput): Promise<Me>;
 
   /** Find real accounts to challenge, by name or the start of their email. */
   searchUsers(query: string): Promise<UserHit[]>;

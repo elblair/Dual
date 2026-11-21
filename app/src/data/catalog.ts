@@ -134,6 +134,10 @@ export function easierMinutes(minutes: number): number {
 /** A written goal is trimmed and at most this many characters (the API enforces the same rule). */
 export const GOAL_MAX = 60;
 
+/** The profile bio is at most this many characters, and a profile has at most this many interests (the API enforces both). */
+export const BIO_MAX = 160;
+export const INTERESTS_MAX = 12;
+
 /** The suggestion shown until the player writes their own: "Practice guitar 20 min a day". */
 export function defaultGoal(hobbyId: string, minutes: number): string {
   return `${hobbyById(hobbyId).action} ${minutes} min a day`;

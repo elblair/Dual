@@ -20,7 +20,7 @@ NEW_COLUMNS = {
         "unit": "VARCHAR(24)",
         "target": "INTEGER",
     },
-    "users": {"email_verified_at": "TIMESTAMP"},
+    "users": {"email_verified_at": "TIMESTAMP", "bio": "VARCHAR(160)", "interests": "VARCHAR(500)", "avatar": "VARCHAR(32)"},
 }
 
 # Run once, right after a column is added: accounts made before email verification existed count as verified.

@@ -48,6 +48,9 @@ class Player:
     def post(self, url, json=None):
         return self.client.post(url, headers=self.headers, json=json)
 
+    def patch(self, url, json=None):
+        return self.client.patch(url, headers=self.headers, json=json)
+
     def duels(self):
         r = self.get("/duels")
         assert r.status_code == 200, r.text

@@ -21,6 +21,12 @@ class MeOut(CamelModel):
     email: str | None = None
     # False until the person types the code we emailed at sign-up.
     email_verified: bool = False
+    # Profile: all optional (a new account has none of them).
+    bio: str | None = None
+    # Hobby ids from the app's catalog.
+    interests: list[str] = []
+    # Id of a preset avatar, or None for the default initial.
+    avatar: str | None = None
 
 
 class AuthOut(CamelModel):
@@ -97,6 +103,14 @@ class RegisterIn(CamelModel):
     name: str = Field(min_length=1, max_length=80)
     email: str = Field(min_length=3, max_length=255, pattern=r"^[^@\s]+@[^@\s]+$")
     password: str = Field(min_length=6, max_length=128)
+
+
+class ProfileIn(CamelModel):
+    """Edit profile. Only the fields that are sent change; null (or an empty text) clears one."""
+
+    bio: str | None = Field(default=None, max_length=1000)
+    interests: list[str] | None = Field(default=None, max_length=50)
+    avatar: str | None = Field(default=None, max_length=100)
 
 
 class VerifyEmailIn(CamelModel):

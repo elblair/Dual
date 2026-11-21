@@ -12,6 +12,7 @@ export { RankCard } from './RankCard';
 export { GoalCard } from './GoalCard';
 export { CancelInvite } from './CancelInvite';
 export { BackButton } from './BackButton';
+export { HeaderButton } from './HeaderButton';
 export { Logo } from './Logo';
 export { TabBar } from './TabBar';
 export type { TabKey } from './TabBar';
