@@ -8,14 +8,22 @@ from app import logic, verification
 from app.db import get_db
 from app.logic import DomainError
 from app.models import User
-from app.schemas import AuthOut, LoginIn, MeOut, RegisterIn, VerifyEmailIn
+from app.schemas import AuthOut, LoginIn, MeOut, ProfileIn, RegisterIn, VerifyEmailIn
 from app.security import create_token, current_user, hash_password, verify_password
 
 router = APIRouter(tags=["auth"])
 
 
 def _me(user: User) -> MeOut:
-    return MeOut(id=user.id, name=user.name, email=user.email, email_verified=user.email_verified_at is not None)
+    return MeOut(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        email_verified=user.email_verified_at is not None,
+        bio=user.bio,
+        interests=logic.interests_of(user),
+        avatar=user.avatar,
+    )
 
 
 def _auth(user: User) -> AuthOut:
@@ -74,4 +82,12 @@ def resend_code(user: User = Depends(current_user), db: Session = Depends(get_db
 
 @router.get("/me", response_model=MeOut)
 def me(user: User = Depends(current_user)) -> MeOut:
+    return _me(user)
+
+
+@router.patch("/me", response_model=MeOut)
+def update_me(body: ProfileIn, user: User = Depends(current_user), db: Session = Depends(get_db)) -> MeOut:
+    """Edit profile: bio, interests and avatar. Only the fields sent are changed."""
+    logic.update_profile(user, {name: getattr(body, name) for name in body.model_fields_set})
+    db.commit()
     return _me(user)
