@@ -9,7 +9,19 @@ LEGACY_COLUMNS = {"users": ["is_seeded", "is_guest"], "duels": ["invitee_id", "d
 
 
 # table -> {column: SQL type} for columns added after a table was first created (all nullable, so old rows stay valid)
-NEW_COLUMNS = {"duels": {"goal": "VARCHAR(80)"}, "users": {"email_verified_at": "TIMESTAMP"}}
+NEW_COLUMNS = {
+    "duels": {
+        "goal": "VARCHAR(80)",
+        # Duel settings v2. Old duels get today's behavior: daily, mutual confirm, compete, no number.
+        "frequency": "VARCHAR(12) NOT NULL DEFAULT 'daily'",
+        "times_per_week": "INTEGER",
+        "verification": "VARCHAR(12) NOT NULL DEFAULT 'mutual'",
+        "mode": "VARCHAR(12) NOT NULL DEFAULT 'compete'",
+        "unit": "VARCHAR(24)",
+        "target": "INTEGER",
+    },
+    "users": {"email_verified_at": "TIMESTAMP"},
+}
 
 # Run once, right after a column is added: accounts made before email verification existed count as verified.
 BACKFILL = {"users.email_verified_at": "UPDATE users SET email_verified_at = created_at WHERE email_verified_at IS NULL"}

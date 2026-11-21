@@ -56,6 +56,12 @@ export function createMockSource(): DataSource {
       minutes: input.minutes,
       goal: input.goal ?? null,
       lengthDays: 7,
+      frequency: input.frequency ?? 'daily',
+      timesPerWeek: input.timesPerWeek ?? null,
+      verification: input.verification ?? 'mutual',
+      mode: input.mode ?? 'compete',
+      unit: input.unit ?? null,
+      target: input.target ?? null,
       status: 'pending',
       opponent: friend ? { id: friend.id, name: friend.name, tone: 'opponent' } : null,
       creator: self(),
@@ -203,6 +209,12 @@ export function createMockSource(): DataSource {
         const d = newDuel({
           hobbyId: old.hobbyId,
           minutes: kind === 'easier' ? easierMinutes(old.minutes) : old.minutes,
+          frequency: old.frequency,
+          timesPerWeek: old.timesPerWeek,
+          verification: old.verification,
+          mode: old.mode,
+          unit: old.unit,
+          target: old.target,
           friendId: old.opponent?.id ?? null,
         });
         duels = [d, ...duels];

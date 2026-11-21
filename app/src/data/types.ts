@@ -17,6 +17,13 @@ export interface Person {
 
 export type DuelStatus = 'pending' | 'active' | 'paused' | 'finished';
 
+/** How often a check-in is due: every day, once a week, or `timesPerWeek` times a week. */
+export type Frequency = 'daily' | 'weekly' | 'perWeek';
+/** How check-ins are verified (both players agree on it): the friend confirms, a photo, or the honor system. */
+export type Verification = 'mutual' | 'photo' | 'honor';
+/** Compete has a winner; together is shared progress with no winner. */
+export type DuelMode = 'compete' | 'together';
+
 /** A friend's check-in that is waiting for "you confirm each other". Counts only once confirmed. */
 export interface PendingCheckin {
   minutes: number;
@@ -35,6 +42,15 @@ export interface Duel {
   /** The goal in the players' own words, or null when the suggestion (hobby + minutes) applies. Use `goalText(duel)`. */
   goal: string | null;
   lengthDays: number;
+  /** Duel settings the creator chose. Duels made before these existed are daily, mutual, compete, with no number. */
+  frequency: Frequency;
+  /** Only when frequency is 'perWeek'. */
+  timesPerWeek: number | null;
+  verification: Verification;
+  mode: DuelMode;
+  /** What is counted ("miles") and the target per period. Both null for a plain yes/no check-in. */
+  unit: string | null;
+  target: number | null;
   status: DuelStatus;
   /** The other player from my point of view (for an invite I received: whoever sent it). Null for an open invite nobody accepted. */
   opponent: Person | null;
@@ -75,6 +91,13 @@ export interface CreateDuelInput {
   minutes: number;
   /** The goal in your own words (trimmed, up to 60 characters). Omit for the suggestion. */
   goal?: string | null;
+  /** Duel settings. All optional: omitted means daily, mutual, compete, no number (how duels worked before). */
+  frequency?: Frequency;
+  timesPerWeek?: number | null;
+  verification?: Verification;
+  mode?: DuelMode;
+  unit?: string | null;
+  target?: number | null;
   /** A person found with search. Omit for an open invite that a friend accepts with the code. */
   friendId?: string | null;
 }

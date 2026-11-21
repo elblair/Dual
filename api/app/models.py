@@ -39,6 +39,16 @@ class Duel(Base):
     # The goal in the players' own words ("Scales for 20 minutes"). None = the app's suggestion built from the hobby and minutes.
     goal: Mapped[str | None] = mapped_column(String(80), nullable=True)
     length_days: Mapped[int] = mapped_column(Integer, default=7)
+    # How often a check-in is due: daily | weekly (once a week) | perWeek (times_per_week times a week). Rules: logic.py.
+    frequency: Mapped[str] = mapped_column(String(12), default="daily", server_default="daily")
+    times_per_week: Mapped[int | None] = mapped_column(Integer, nullable=True)  # only for frequency perWeek
+    # How check-ins are verified: mutual (the friend confirms, as before) | photo | honor. Both players agree on it.
+    verification: Mapped[str] = mapped_column(String(12), default="mutual", server_default="mutual")
+    # compete (there is a winner) | together (shared progress, no winner)
+    mode: Mapped[str] = mapped_column(String(12), default="compete", server_default="compete")
+    # Optional numeric goal: what is counted ("miles") and the target per period. None = a plain yes/no check-in.
+    unit: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    target: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # pending | active | paused | finished
     status: Mapped[str] = mapped_column(String(16), index=True)
     creator_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
