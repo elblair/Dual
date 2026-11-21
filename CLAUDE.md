@@ -59,7 +59,7 @@ App env (`app/.env`, inlined at bundle time, restart with `npx expo start -c` af
 - Every color, font, font size, spacing value and radius comes from `app/src/theme/theme.ts`. No hardcoded hex or magic numbers in screens/components. Theme is a typed object with two palettes (light and Midnight dark, same keys), picked from the phone setting or from You > Appearance (Automatic / Light / Dark). Every new color goes into BOTH palettes. Use a `useTheme()` hook, not direct imports of a palette; use `card`/`cardRaised` for raised surfaces and `link` for link text (not `white`/`blue`).
 - Font: Inter (via `@expo-google-fonts/inter`). Icons: `lucide-react-native` (matches the design's icon style).
 - Brand: maroon `#6e1023`. Orange `#f28c38` means "do this now" (check-in actions). Never use orange for decoration elsewhere.
-- Progress is always 7 dots per person (`Dots` component): you = blue, opponent = maroon-bright, empty = light gray, today = orange ring.
+- Progress is 7 dots per person in a daily duel, and one dot per check-in slot (1 weekly, N for "N times a week", the API's `slots`) in the others (`Dots` component): you = blue, opponent = maroon-bright, empty = light gray, today = orange ring.
 - Four tabs only: Today, Groups, +, You. "+" starts a new duel (Hobby flow).
 - Screens have 22pt side padding, 60pt top. Respect safe areas.
 

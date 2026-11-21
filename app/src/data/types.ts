@@ -55,6 +55,8 @@ export interface Duel {
   /** The goal in the players' own words, or null when the suggestion (hobby + minutes) applies. Use `goalText(duel)`. */
   goal: string | null;
   lengthDays: number;
+  /** How many check-ins each player can make: one per day (7) when daily, 1 when weekly, N for "N times a week". These are the dots. */
+  slots: number;
   /** Duel settings the creator chose. Duels made before these existed are daily, mutual, compete, with no number. */
   frequency: Frequency;
   /** Only when frequency is 'perWeek'. */

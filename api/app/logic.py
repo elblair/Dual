@@ -156,6 +156,16 @@ def clean_settings(s: DuelSettings) -> DuelSettings:
     return DuelSettings(s.frequency, s.times_per_week, s.verification, s.mode, unit, s.target)
 
 
+def slots_of(duel: Duel) -> int:
+    """How many check-ins a player can make in the duel: one per day (daily), one in total (weekly) or N (perWeek).
+    These are the dots. A duel is one week long, so "per week" and "in the duel" are the same count."""
+    if duel.frequency == "weekly":
+        return 1
+    if duel.frequency == "perWeek" and duel.times_per_week:
+        return duel.times_per_week
+    return duel.length_days
+
+
 def settings_of(duel: Duel) -> DuelSettings:
     return DuelSettings(duel.frequency, duel.times_per_week, duel.verification, duel.mode, duel.unit, duel.target)
 
@@ -241,6 +251,7 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         minutes=duel.minutes,
         goal=duel.goal,
         length_days=duel.length_days,
+        slots=slots_of(duel),
         frequency=duel.frequency,
         times_per_week=duel.times_per_week,
         verification=duel.verification,
@@ -257,7 +268,9 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         my_days=my_days,
         their_days=their_days,
         my_rest_days=my_rest,
-        rest_left=max(0, (rest_days_for(xp_for(db, viewer)) if is_player else rest_days_for(0)) - len(my_rest)),
+        rest_left=0
+        if duel.frequency != "daily"
+        else max(0, (rest_days_for(xp_for(db, viewer)) if is_player else rest_days_for(0)) - len(my_rest)),
         their_pending=their_pending,
         activity=activity,
         paused_until=paused_until,
@@ -483,6 +496,8 @@ def check_in(db: Session, duel: Duel, user: User) -> Duel:
         raise DomainError("You already checked in today.")
     if any(r.user_id == user.id and r.day_index == duel.today for r in duel.rest_days):
         raise DomainError("You took a rest day today.")
+    if sum(1 for c in duel.checkins if c.user_id == user.id) >= slots_of(duel):
+        raise DomainError("You have done all your check-ins for this duel.")
     duel.checkins.append(
         Checkin(user_id=user.id, day_index=duel.today, confirmed=False, minutes=duel.minutes, note="", created_at=utcnow())
     )
@@ -517,6 +532,8 @@ def confirm_friend(db: Session, duel: Duel, user: User) -> Duel:
 def rest_day(db: Session, duel: Duel, user: User) -> Duel:
     if duel.status != "active":
         raise DomainError("This duel is not active.")
+    if duel.frequency != "daily":
+        raise DomainError("Rest days are only for daily duels. In this one you pick the days yourself.")
     mine = [r for r in duel.rest_days if r.user_id == user.id]
     if len(mine) >= rest_days_for(xp_for(db, user)):
         raise DomainError("No rest days left this week.")
@@ -570,6 +587,12 @@ def _streak(duel: Duel, user_id: str) -> int:
     if duel.status not in ("active", "paused"):
         return 0
     days = {c.day_index for c in duel.checkins if c.user_id == user_id}
+    if duel.frequency != "daily":
+        # Days off are part of the plan here, so a streak is the check-ins made, kept only while the rest can still be done:
+        # the days left (today included, if not checked in) must be enough for the check-ins still owed.
+        done = len(days)
+        days_left = duel.length_days - duel.today - (1 if duel.today in days else 0)
+        return done if slots_of(duel) - done <= days_left else 0
     cursor = duel.today if duel.today in days else duel.today - 1
     run = 0
     while cursor >= 0 and cursor in days:

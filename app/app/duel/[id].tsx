@@ -7,7 +7,7 @@ import { hobbyById } from '@/data/catalog';
 import { shortDate, whenLabel } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { friendName, goalText, lastDayName, leadLabel, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
+import { friendName, goalText, lastDayName, leadLabel, countsSlots, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -94,15 +94,17 @@ export default function DuelScreen() {
         <View style={{ alignItems: 'center', gap: t.spacing.sm }}>
           <Dots days={myDayStates(duel)} tone="you" size="lg" />
           <Dots days={theirDayStates(duel)} tone="opponent" size="lg" />
-          <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }}>
-            {letters.map((letter, i) => (
-              <View key={i} style={{ width: t.sizes.dot.lg, alignItems: 'center' }}>
-                <Text variant="tiny" color="muted">
-                  {letter}
-                </Text>
-              </View>
-            ))}
-          </View>
+          {countsSlots(duel) ? null : (
+            <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }}>
+              {letters.map((letter, i) => (
+                <View key={i} style={{ width: t.sizes.dot.lg, alignItems: 'center' }}>
+                  <Text variant="tiny" color="muted">
+                    {letter}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
         {duel.status !== 'pending' ? (
           <View
@@ -227,7 +229,9 @@ export default function DuelScreen() {
             {[
               { key: 'rest' as const, icon: Calendar, label: `Rest day · ${duel.restLeft} left` },
               { key: 'pause' as const, icon: Pause, label: 'Pause 1 week' },
-            ].map(({ key, icon: Icon, label }) => (
+            ]
+              .filter((o) => o.key !== 'rest' || !countsSlots(duel)) // days off are part of the plan in these duels
+              .map(({ key, icon: Icon, label }) => (
               <Pressable
                 key={key}
                 accessibilityRole="button"
