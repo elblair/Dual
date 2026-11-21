@@ -162,7 +162,7 @@ def test_the_column_is_added_to_an_older_database_and_old_rows_keep_working():
     with engine.begin() as conn:
         conn.execute(text("create table duels (id integer primary key, hobby_id varchar, minutes integer)"))
         conn.execute(text("insert into duels (id, hobby_id, minutes) values (1, 'guitar', 20)"))
-    assert add_missing_columns(engine) == ["duels.goal"]
+    assert "duels.goal" in add_missing_columns(engine)
     assert "goal" in {c["name"] for c in inspect(engine).get_columns("duels")}
     with engine.connect() as conn:
         assert conn.execute(text("select goal from duels where id = 1")).scalar() is None  # old duel: no custom goal

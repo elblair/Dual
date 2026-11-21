@@ -4,6 +4,7 @@ import re
 import secrets
 import threading
 from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, or_, select
@@ -37,6 +38,9 @@ from app.schemas import (
 
 LENGTH_DAYS = 7
 GOAL_MAX = 60  # characters, after trimming
+TIMES_PER_WEEK_RANGE = (2, 6)  # "N times a week"; once a week is frequency "weekly" and every day is "daily"
+UNIT_MAX = 24  # characters, after trimming ("miles", "pages")
+TARGET_MAX = 100_000
 ACTIVITY_LIMIT = 6  # check-ins shown in "Recent check-ins"
 CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"  # no 0/O/1/I/L
 
@@ -81,6 +85,44 @@ def clean_goal(goal: str | None) -> str | None:
     if len(text) > GOAL_MAX:
         raise DomainError(f"Keep your goal under {GOAL_MAX} characters.", status=422)
     return text
+
+
+@dataclass(frozen=True)
+class DuelSettings:
+    """What the creator chose for a duel besides hobby, minutes and goal. The defaults are how every duel worked before."""
+
+    frequency: str = "daily"  # daily | weekly | perWeek
+    times_per_week: int | None = None  # only with perWeek
+    verification: str = "mutual"  # mutual | photo | honor
+    mode: str = "compete"  # compete | together
+    unit: str | None = None  # what is counted, e.g. "miles"
+    target: int | None = None  # per period, only with a unit
+
+
+def clean_settings(s: DuelSettings) -> DuelSettings:
+    """Check the combination and tidy the unit. (The schema already limits frequency, verification and mode to known values.)"""
+    low, high = TIMES_PER_WEEK_RANGE
+    if s.frequency == "perWeek":
+        if s.times_per_week is None or not low <= s.times_per_week <= high:
+            raise DomainError(f"Pick between {low} and {high} check-ins a week.", status=422)
+    elif s.times_per_week is not None:
+        raise DomainError("Check-ins per week only applies when you pick “times a week”.", status=422)
+
+    unit = " ".join(s.unit.split()) if s.unit is not None else None
+    if unit is not None and not unit:
+        unit = None
+    if unit is not None and len(unit) > UNIT_MAX:
+        raise DomainError(f"Keep the unit under {UNIT_MAX} characters.", status=422)
+    if s.target is not None:
+        if unit is None:
+            raise DomainError("Add what you are counting (like miles) to set a target.", status=422)
+        if not 1 <= s.target <= TARGET_MAX:
+            raise DomainError(f"Pick a target between 1 and {TARGET_MAX}.", status=422)
+    return DuelSettings(s.frequency, s.times_per_week, s.verification, s.mode, unit, s.target)
+
+
+def settings_of(duel: Duel) -> DuelSettings:
+    return DuelSettings(duel.frequency, duel.times_per_week, duel.verification, duel.mode, duel.unit, duel.target)
 
 
 def easier_goal(goal: str | None, old_minutes: int, new_minutes: int) -> str | None:
@@ -164,6 +206,12 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         minutes=duel.minutes,
         goal=duel.goal,
         length_days=duel.length_days,
+        frequency=duel.frequency,
+        times_per_week=duel.times_per_week,
+        verification=duel.verification,
+        mode=duel.mode,
+        unit=duel.unit,
+        target=duel.target,
         status=duel.status,
         opponent=person_for(other, viewer_id) if other else None,
         creator=person_for(creator, viewer_id),
@@ -297,12 +345,26 @@ def finished_together(db: Session, user: User) -> Counter[str]:
 # ---------------------------------------------------------------- actions
 
 
-def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id: str | None, goal: str | None = None) -> Duel:
+def _same(column, value):
+    """SQL "column equals value", where None means IS NULL."""
+    return column.is_(None) if value is None else column == value
+
+
+def create_duel(
+    db: Session,
+    user: User,
+    hobby_id: str,
+    minutes: int,
+    friend_id: str | None,
+    goal: str | None = None,
+    settings: DuelSettings | None = None,
+) -> Duel:
     """Start a duel. It stays pending until the other person accepts: a person picked from search sees it under
     "Pending invites", anyone else enters the invite code. Creating the same pending challenge again returns the existing one."""
     if not 5 <= minutes <= 240:
         raise DomainError("Pick between 5 and 240 minutes a day.")
     goal = clean_goal(goal)
+    settings = clean_settings(settings or DuelSettings())
     friend = None
     if friend_id:
         friend = db.get(User, friend_id)
@@ -317,7 +379,10 @@ def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id:
     existing = db.scalar(
         select(Duel)
         .where(Duel.creator_id == user.id, Duel.status == "pending", Duel.hobby_id == hobby_id, Duel.minutes == minutes, same_friend,
-               Duel.goal.is_(None) if goal is None else Duel.goal == goal)
+               _same(Duel.goal, goal),
+               Duel.frequency == settings.frequency, _same(Duel.times_per_week, settings.times_per_week),
+               Duel.verification == settings.verification, Duel.mode == settings.mode,
+               _same(Duel.unit, settings.unit), _same(Duel.target, settings.target))
         .order_by(Duel.id.desc())
     )
     if existing is not None:
@@ -329,6 +394,12 @@ def create_duel(db: Session, user: User, hobby_id: str, minutes: int, friend_id:
         minutes=minutes,
         goal=goal,
         length_days=LENGTH_DAYS,
+        frequency=settings.frequency,
+        times_per_week=settings.times_per_week,
+        verification=settings.verification,
+        mode=settings.mode,
+        unit=settings.unit,
+        target=settings.target,
         status="pending",
         creator_id=user.id,
         opponent_id=friend.id if friend else None,
@@ -453,7 +524,7 @@ def rematch(db: Session, old: Duel, user: User, kind: str) -> Duel:
     other = old.opponent_id if old.creator_id == user.id else old.creator_id
     minutes = easier_minutes(old.minutes) if kind == "easier" else old.minutes
     goal = easier_goal(old.goal, old.minutes, minutes) if kind == "easier" else old.goal
-    return create_duel(db, user, old.hobby_id, minutes, other, goal)
+    return create_duel(db, user, old.hobby_id, minutes, other, goal, settings_of(old))
 
 
 # ---------------------------------------------------------------- stats and groups (all computed from the database)

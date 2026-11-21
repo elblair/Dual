@@ -10,6 +10,11 @@ class CamelModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
+Frequency = Literal["daily", "weekly", "perWeek"]
+Verification = Literal["mutual", "photo", "honor"]
+DuelMode = Literal["compete", "together"]
+
+
 class MeOut(CamelModel):
     id: str
     name: str
@@ -58,6 +63,15 @@ class DuelOut(CamelModel):
     # The goal text the players wrote, or None when the app's suggestion applies.
     goal: str | None
     length_days: int
+    # Duel settings the creator chose (old duels: daily, mutual, compete, no number).
+    frequency: Frequency
+    # Only when frequency is perWeek.
+    times_per_week: int | None
+    verification: Verification
+    mode: DuelMode
+    # What is counted ("miles") and the target per period; both None for a plain yes/no check-in.
+    unit: str | None
+    target: int | None
     status: Literal["pending", "active", "paused", "finished"]
     # None for an open invite nobody has accepted yet.
     opponent: PersonOut | None
@@ -99,6 +113,13 @@ class CreateDuelIn(CamelModel):
     minutes: int
     # Own words for the goal (up to 60 characters once trimmed). Omit or null for the suggestion built from hobby and minutes.
     goal: str | None = Field(default=None, max_length=300)
+    # Duel settings. All optional: omitted means daily, mutual confirm, compete, no number (how duels worked before).
+    frequency: Frequency = "daily"
+    times_per_week: int | None = None
+    verification: Verification = "mutual"
+    mode: DuelMode = "compete"
+    unit: str | None = Field(default=None, max_length=100)
+    target: int | None = None
     # A person found with /users/search. None = an open invite that a friend accepts with the code.
     friend_id: str | None = Field(default=None, max_length=32)
 
