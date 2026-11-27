@@ -3,7 +3,8 @@ import { Redirect, useRouter } from 'expo-router';
 import { Pencil, Settings } from 'lucide-react-native';
 import { Avatar, Card, Chip, ErrorBanner, ErrorView, HeaderButton, LoadingView, Pill, RankCard, Screen, Text } from '@/components';
 import { useDuels, useMe, useStats } from '@/data';
-import { HOBBIES, hobbyById } from '@/data/catalog';
+import { HOBBIES } from '@/data/catalog';
+import { hobbyLabel } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -36,7 +37,7 @@ export default function YouScreen() {
   }
   const loadError = duelsError ?? statsError ?? meError;
 
-  const hobbies = [...new Set(duels.filter((d) => d.status !== 'pending').map((d) => hobbyById(d.hobbyId).label))];
+  const hobbies = [...new Set(duels.filter((d) => d.status !== 'pending').map((d) => hobbyLabel(d)))];
   // Interests are hobby ids from the catalog; one the catalog does not know is skipped rather than shown as another hobby.
   const interests = me.interests.flatMap((id) => HOBBIES.filter((h) => h.id === id));
   const tiles = [

@@ -4,9 +4,8 @@ import { Redirect, useRouter } from 'expo-router';
 import { ChartColumn, Check, ChevronRight, Clock, Plus, Users } from 'lucide-react-native';
 import { Avatar, Button, Card, Chip, ConnectionBadge, ErrorBanner, ErrorView, LoadingView, Pill, PlayerRow, Screen, StreakCard, Text } from '@/components';
 import { useData, useDuels, useGroups, useMe, useStats, type Duel } from '@/data';
-import { hobbyById } from '@/data/catalog';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { daysLeftLabel, friendName, goalText, myDayStates, needsCheckIn, pendingInviteLabel, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
+import { daysLeftLabel, friendName, goalText, hobbyLabel, myDayStates, needsCheckIn, pendingInviteLabel, scoreColor, scoreText, theirDayStates } from '@/lib/duel';
 import { todayLabel } from '@/lib/dates';
 import { recapNumbers, signed, thisWeek } from '@/lib/week';
 import { doneHref, duelHref, resultHref, sentHref } from '@/lib/routes';
@@ -87,7 +86,7 @@ export default function TodayScreen() {
       <View style={{ flex: 1, gap: t.spacing.hairline }}>
         <Text variant="bodyStrong">{d.creator.name} invited you</Text>
         <Text variant="caption" color="muted">
-          {hobbyById(d.hobbyId).label} · {goalText(d)} · {d.lengthDays} days
+          {hobbyLabel(d)} · {goalText(d)} · {d.lengthDays} days
         </Text>
       </View>
       <Pill label="Accept" tone="maroon" onPress={() => run(() => data.acceptDuel(d.id))} />
@@ -95,8 +94,7 @@ export default function TodayScreen() {
   );
 
   const heroCard = (d: Duel) => {
-    const hobby = hobbyById(d.hobbyId);
-    const Icon = hobbyIcons[d.hobbyId];
+    const Icon = hobbyIcons[d.hobbyId] ?? hobbyIcons['custom'];
     const friendDone = d.theirDays.includes(d.today) || !!d.theirPending;
     return (
       <Card key={d.id} variant="maroon" style={{ borderRadius: t.radii.hero, padding: t.spacing.s18, gap: t.spacing.xl }}>
@@ -155,7 +153,7 @@ export default function TodayScreen() {
     <Pressable key={d.id} accessibilityRole="button" onPress={() => router.push(duelHref(d.id))}>
       <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.md }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text variant="cardTitle">{hobbyById(d.hobbyId).label}</Text>
+          <Text variant="cardTitle">{hobbyLabel(d)}</Text>
           {d.status === 'paused' ? (
             <Text variant="smallStrong" color="muted">
               Paused
@@ -182,7 +180,7 @@ export default function TodayScreen() {
     <Pressable key={d.id} accessibilityRole="button" onPress={() => router.push(sentHref(d.id))}>
     <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.sm }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text variant="cardTitle">{hobbyById(d.hobbyId).label}</Text>
+        <Text variant="cardTitle">{hobbyLabel(d)}</Text>
         <Text variant="smallStrong" color="muted">
           Invited
         </Text>
@@ -200,7 +198,7 @@ export default function TodayScreen() {
     <Pressable key={d.id} accessibilityRole="button" onPress={() => router.push(resultHref(d.id))}>
       <Card variant="outline" style={{ padding: t.spacing.xxl, gap: t.spacing.sm }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text variant="cardTitle">{hobbyById(d.hobbyId).label} · finished</Text>
+          <Text variant="cardTitle">{hobbyLabel(d)} · finished</Text>
           <Text variant="cardTitle" color={scoreColor(d)}>
             {scoreText(d)}
           </Text>

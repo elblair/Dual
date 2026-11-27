@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { CATEGORIES, categoryOf, searchCatalog, type Hobby } from '@/data/catalog';
 import { categoryIconRotation, categoryIcons } from '@/lib/hobbyIcons';
 import { useTheme } from '@/theme';
@@ -16,6 +16,12 @@ interface CategoryPickerProps {
   onChange: (next: string[]) => void;
   /** Pick several hobbies (for interests) instead of exactly one (for a duel). */
   multiple?: boolean;
+  /** When true, a "Something else" chip is shown. The parent sets value to ['custom'] when selected. */
+  showCustom?: boolean;
+  /** The typed name when value is ['custom']. */
+  customName?: string;
+  /** Called when the user types in the custom name input. */
+  onCustomName?: (name: string) => void;
 }
 
 function HobbyChips({ hobbies, value, onToggle, multiple }: { hobbies: Hobby[]; value: string[]; onToggle: (id: string) => void; multiple: boolean }) {
@@ -53,7 +59,7 @@ function HobbyChips({ hobbies, value, onToggle, multiple }: { hobbies: Hobby[]; 
  * Pick a hobby from the catalog: categories first (Music, Fitness, Languages...), tap one and its specific hobbies open
  * right below. The search box filters both levels at once. One pick for a duel, several with `multiple` (interests).
  */
-export function CategoryPicker({ value, onChange, multiple = false }: CategoryPickerProps) {
+export function CategoryPicker({ value, onChange, multiple = false, showCustom, customName, onCustomName }: CategoryPickerProps) {
   const t = useTheme();
   const [query, setQuery] = useState('');
   // Start with the category of the current pick open, so the choice is visible.
@@ -72,11 +78,11 @@ export function CategoryPicker({ value, onChange, multiple = false }: CategoryPi
 
   return (
     <View style={{ gap: t.spacing.md }}>
-      <TextField label="Find a hobby" placeholder="Try “piano” or “languages”" value={query} onChangeText={setQuery} />
+      <TextField label="Find a hobby" placeholder={'Try "piano" or "languages"'} value={query} onChangeText={setQuery} />
 
       {searching ? (
         results.length === 0 ? (
-          <Text variant="small" color="muted">{`No hobbies match “${query.trim()}”.`}</Text>
+          <Text variant="small" color="muted">{`No hobbies match "${query.trim()}".`}</Text>
         ) : (
           results.map(({ category, hobbies }) => (
             <View key={category.id} style={{ gap: t.spacing.sm }}>
@@ -110,6 +116,41 @@ export function CategoryPicker({ value, onChange, multiple = false }: CategoryPi
           </View>
         ))
       )}
+
+      {showCustom ? (
+        <View style={{ gap: t.spacing.sm }}>
+          <Pressable
+            onPress={() => toggle('custom')}
+            style={({ pressed }) => ({
+              alignSelf: 'flex-start',
+              paddingHorizontal: t.spacing.xxl,
+              paddingVertical: t.spacing.s9,
+              borderRadius: t.radii.pill,
+              backgroundColor: value.includes('custom') ? t.colors.maroon : t.colors.surface,
+              opacity: pressed ? 0.85 : 1,
+            })}
+          >
+            <Text variant="smallStrong" color={value.includes('custom') ? 'white' : 'ink'}>
+              {'✏️ Something else'}
+            </Text>
+          </Pressable>
+          {value.includes('custom') ? (
+            <View style={{ borderRadius: t.radii.md, borderWidth: t.borders.selected,
+              borderColor: t.colors.mutedSoft, backgroundColor: t.colors.surface,
+              paddingHorizontal: t.spacing.lg, paddingVertical: t.spacing.s9 }}>
+              <TextInput
+                value={customName ?? ''}
+                onChangeText={onCustomName}
+                placeholder="e.g. Powerlifting, Chess, Calligraphy"
+                placeholderTextColor={t.colors.muted}
+                maxLength={40}
+                style={[t.text.body, { color: t.colors.ink }]}
+                autoFocus
+              />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }

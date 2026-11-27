@@ -1,7 +1,7 @@
 import { buildDays, buildSlots, type DayState } from '@/components';
 import type { ColorName } from '@/theme';
 import type { Duel } from '@/data';
-import { defaultGoal, easierGoalText, easierMinutes } from '@/data/catalog';
+import { defaultGoal, easierGoalText, easierMinutes, hobbyById } from '@/data/catalog';
 
 export const myScore = (d: Duel) => d.myDays.length;
 export const theirScore = (d: Duel) => d.theirDays.length;
@@ -34,7 +34,10 @@ export function theirDayStates(d: Duel): DayState[] {
 }
 
 /** The goal as the players wrote it, or the suggestion built from the hobby and minutes. */
-export const goalText = (d: Duel) => d.goal ?? defaultGoal(d.hobbyId, d.minutes);
+export const goalText = (d: Duel) => d.goal ?? defaultGoal(d.hobbyId, d.minutes, d.customHobby ?? undefined);
+
+/** The display name for the hobby: the custom name the user typed, or the catalog label. */
+export const hobbyLabel = (d: Duel) => d.customHobby ?? hobbyById(d.hobbyId).label;
 
 /** The goal an "easier win" rematch starts with (the API computes the same). */
 export const easierGoalFor = (d: Duel) => easierGoalText(d.goal, d.minutes, easierMinutes(d.minutes)) ?? defaultGoal(d.hobbyId, easierMinutes(d.minutes));

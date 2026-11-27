@@ -25,7 +25,7 @@ async function copyText(text: string) {
 export function useChallenge() {
   const data = useData();
   const router = useRouter();
-  const { hobby, minutes, goal, lengthDays, reset } = useOnboarding();
+  const { hobby, minutes, goal, customHobby, frequency, timesPerWeek, unit, target, lengthDays, reset } = useOnboarding();
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   /** Set when the share sheet was cancelled (iOS reports it): the code exists but was not sent, so we stay on the screen. */
@@ -33,7 +33,8 @@ export function useChallenge() {
 
   /** The text a friend gets (the invite code is added when it is sent). */
   const lengthLabel = lengthDays === 7 ? 'this week' : `for ${lengthDays} days`;
-  const message = `I'm ${hobby.phrase} ${minutes} min a day ${lengthLabel}. Dual me so I don't quit? ${hobby.emoji}`;
+  const hobbyName = hobby.id === 'custom' ? (customHobby ?? 'my hobby') : hobby.phrase;
+  const message = `I'm ${hobby.id === 'custom' ? 'doing ' : ''}${hobbyName} ${minutes} min a day ${lengthLabel}. Dual me so I don't quit? ${hobby.emoji}`;
 
   async function send(friend: PickedFriend | null) {
     if (sending) return;
@@ -41,7 +42,18 @@ export function useChallenge() {
     setError('');
     setWaitingCode(null);
     try {
-      const duel = await data.createDuel({ hobbyId: hobby.id, minutes, goal, friendId: friend?.id ?? null, lengthDays });
+      const duel = await data.createDuel({
+        hobbyId: hobby.id,
+        customHobby: hobby.id === 'custom' ? customHobby : null,
+        minutes,
+        goal,
+        frequency,
+        timesPerWeek,
+        unit,
+        target,
+        friendId: friend?.id ?? null,
+        lengthDays,
+      });
       if (!friend) {
         const full = `${message}\nOpen Dual and enter the code ${duel.inviteCode}`;
         if (Platform.OS === 'web') {

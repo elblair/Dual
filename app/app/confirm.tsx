@@ -4,8 +4,7 @@ import { Redirect } from 'expo-router';
 import { Check, Info } from 'lucide-react-native';
 import { Avatar, BackButton, Button, Card, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuels, useMe, type Duel } from '@/data';
-import { hobbyById } from '@/data/catalog';
-import { friendName } from '@/lib/duel';
+import { friendName, hobbyLabel } from '@/lib/duel';
 import { whenLabel } from '@/lib/dates';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
@@ -84,7 +83,7 @@ export default function ConfirmScreen() {
                   {name} practiced {d.theirPending?.minutes} min
                 </Text>
                 <Text variant="caption" color="muted">
-                  {hobbyById(d.hobbyId).label} · Day {Math.min((entry?.dayIndex ?? d.today) + 1, d.lengthDays)}
+                  {hobbyLabel(d)} · Day {Math.min((entry?.dayIndex ?? d.today) + 1, d.lengthDays)}
                   {entry ? ` · ${whenLabel(entry.createdAt)}` : ''}
                 </Text>
               </View>

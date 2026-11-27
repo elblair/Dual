@@ -30,3 +30,5 @@ export { OptionCard } from './OptionCard';
 export { LoadingView, ErrorView, ErrorBanner } from './QueryState';
 export { ConnectionBadge } from './ConnectionBadge';
 export { DurationPicker } from './DurationPicker';
+export { FrequencyPicker } from './FrequencyPicker';
+export { MetricInput } from './MetricInput';

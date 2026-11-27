@@ -5,8 +5,8 @@ import * as Clipboard from 'expo-clipboard';
 import { Hourglass, Share2 } from 'lucide-react-native';
 import { Avatar, Button, Card, CancelInvite, ErrorView, LoadingView, Pill, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
-import { DUEL_DAYS, hobbyById } from '@/data/catalog';
-import { goalText, pendingInviteLabel } from '@/lib/duel';
+import { DUEL_DAYS } from '@/data/catalog';
+import { goalText, hobbyLabel, pendingInviteLabel } from '@/lib/duel';
 import { useTheme } from '@/theme';
 
 /**
@@ -40,9 +40,8 @@ export default function SentScreen() {
   }
 
   const friend = duel.opponent;
-  const hobby = hobbyById(duel.hobbyId);
   const rows: [string, string][] = [
-    ['Hobby', hobby.label],
+    ['Hobby', hobbyLabel(duel)],
     ['Goal', goalText(duel)],
     ['Length', `${duel.lengthDays || DUEL_DAYS} days`],
     ['Check-ins', 'Friend confirms'],

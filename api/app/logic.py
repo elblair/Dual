@@ -260,6 +260,7 @@ def build_view(db: Session, duel: Duel, viewer: User | None) -> DuelOut:
         mode=duel.mode,
         unit=duel.unit,
         target=duel.target,
+        custom_hobby=duel.custom_hobby,
         status=duel.status,
         opponent=person_for(other, viewer_id) if other else None,
         creator=person_for(creator, viewer_id),
@@ -408,12 +409,18 @@ def create_duel(
     friend_id: str | None,
     goal: str | None = None,
     settings: DuelSettings | None = None,
+    custom_hobby: str | None = None,
     length_days: int = DEFAULT_LENGTH_DAYS,
 ) -> Duel:
     """Start a duel. It stays pending until the other person accepts: a person picked from search sees it under
     "Pending invites", anyone else enters the invite code. Creating the same pending challenge again returns the existing one."""
     if not 5 <= minutes <= 240:
         raise DomainError("Pick between 5 and 240 minutes a day.")
+    custom_hobby = (custom_hobby or "").strip() or None
+    if hobby_id == "custom" and not custom_hobby:
+        raise DomainError("Type a name for your hobby.")
+    if hobby_id != "custom":
+        custom_hobby = None
     if not MIN_LENGTH_DAYS <= length_days <= MAX_LENGTH_DAYS:
         raise DomainError(f"Choose a length between {MIN_LENGTH_DAYS} and {MAX_LENGTH_DAYS} days.")
     goal = clean_goal(goal)
@@ -434,6 +441,7 @@ def create_duel(
         .where(Duel.creator_id == user.id, Duel.status == "pending", Duel.hobby_id == hobby_id, Duel.minutes == minutes,
                Duel.length_days == length_days, same_friend,
                _same(Duel.goal, goal),
+               _same(Duel.custom_hobby, custom_hobby),
                Duel.frequency == settings.frequency, _same(Duel.times_per_week, settings.times_per_week),
                Duel.verification == settings.verification, Duel.mode == settings.mode,
                _same(Duel.unit, settings.unit), _same(Duel.target, settings.target))
@@ -447,6 +455,7 @@ def create_duel(
         hobby_id=hobby_id,
         minutes=minutes,
         goal=goal,
+        custom_hobby=custom_hobby,
         length_days=length_days,
         frequency=settings.frequency,
         times_per_week=settings.times_per_week,
@@ -582,7 +591,7 @@ def rematch(db: Session, old: Duel, user: User, kind: str) -> Duel:
     other = old.opponent_id if old.creator_id == user.id else old.creator_id
     minutes = easier_minutes(old.minutes) if kind == "easier" else old.minutes
     goal = easier_goal(old.goal, old.minutes, minutes) if kind == "easier" else old.goal
-    return create_duel(db, user, old.hobby_id, minutes, other, goal, settings_of(old), old.length_days)
+    return create_duel(db, user, old.hobby_id, minutes, other, goal, settings_of(old), old.custom_hobby, old.length_days)
 
 
 # ---------------------------------------------------------------- stats and groups (all computed from the database)

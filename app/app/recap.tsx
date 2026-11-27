@@ -3,8 +3,7 @@ import { useRouter } from 'expo-router';
 import { Clock } from 'lucide-react-native';
 import { BackButton, Button, Card, Chip, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useDuels, useMe, useStats, type Duel } from '@/data';
-import { hobbyById } from '@/data/catalog';
-import { daysLeftLabel, friendName, leadLabel, scoreText } from '@/lib/duel';
+import { daysLeftLabel, friendName, hobbyLabel, leadLabel, scoreText } from '@/lib/duel';
 import { duelHref, resultHref } from '@/lib/routes';
 import { useRefresh } from '@/lib/useRefresh';
 import { recapNumbers, signed, weekBounds, weekRangeLabel } from '@/lib/week';
@@ -105,7 +104,7 @@ export default function RecapScreen() {
         <Card variant="surface" style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg, borderRadius: t.radii.lg }}>
           <View style={{ flex: 1, gap: t.spacing.hairline }}>
             <Text variant="label">
-              {hobbyById(d.hobbyId).label} vs {friendName(d)}
+              {hobbyLabel(d)} vs {friendName(d)}
             </Text>
             <Text variant="caption" color="muted">
               {resultLine(d)}
@@ -120,7 +119,7 @@ export default function RecapScreen() {
         <Card variant="surface" style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg, borderRadius: t.radii.lg }}>
           <View style={{ flex: 1, gap: t.spacing.hairline }}>
             <Text variant="label">
-              {hobbyById(d.hobbyId).label} vs {friendName(d)}
+              {hobbyLabel(d)} vs {friendName(d)}
             </Text>
             <Text variant="caption" color="muted">
               {d.status === 'paused' ? 'Paused' : `${leadLabel(d)} · ${daysLeftLabel(d)}`} · {scoreText(d)}
@@ -139,7 +138,7 @@ export default function RecapScreen() {
               <View key={d.id} style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.lg }}>
                 <Clock size={t.sizes.icon.lg} color={t.colors.orangeDark} strokeWidth={2} />
                 <Text variant="small">
-                  {hobbyById(d.hobbyId).label} vs {friendName(d)} ends {endLabel(d)}
+                  {hobbyLabel(d)} vs {friendName(d)} ends {endLabel(d)}
                 </Text>
               </View>
             ))}

@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Avatar, BackButton, Button, CategoryPicker, DurationPicker, GoalCard, Logo, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, CategoryPicker, DurationPicker, FrequencyPicker, GoalCard, Logo, MetricInput, Screen, Text } from '@/components';
 import { useMe } from '@/data';
-import { defaultGoal, minutesFromText } from '@/data/catalog';
+import { CUSTOM_HOBBY_ID, defaultGoal, minutesFromText } from '@/data/catalog';
 import { useChallenge } from '@/lib/useChallenge';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -16,19 +16,27 @@ import { useTheme } from '@/theme';
 export default function HobbyScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { hobby, setHobbyId, minutes, setMinutes, goal, setGoal, lengthDays, setLengthDays } = useOnboarding();
+  const {
+    hobby, setHobbyId, customHobby, setCustomHobby,
+    minutes, setMinutes, goal, setGoal,
+    frequency, setFrequency, timesPerWeek, setTimesPerWeek,
+    unit, setUnit, target, setTarget,
+    lengthDays, setLengthDays,
+  } = useOnboarding();
   const { data: me, loading } = useMe();
   const { friendId, friendName, via } = useLocalSearchParams<{ friendId?: string; friendName?: string; via?: string }>();
   const { send, sending, error, waitingCode } = useChallenge();
   const chosen = friendId && friendName ? { id: friendId, name: friendName } : null;
   const direct = !!chosen || via === 'text';
+  const isCustom = hobby.id === CUSTOM_HOBBY_ID;
 
-  // Nobody gets here without an account: the first screen is sign up / log in.
   if (!me) return loading ? null : <Redirect href="/welcome" />;
 
   function next() {
     router.push('/friend');
   }
+
+  const displayGoal = goal ?? defaultGoal(hobby.id, minutes, customHobby ?? undefined);
 
   return (
     <Screen scroll gap="loose">
@@ -44,29 +52,42 @@ export default function HobbyScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.spacing.md }}>
           {chosen ? <Avatar name={chosen.name} tone="opponent" size="xs" /> : null}
           <Text variant="bodyStrong" color="muted">
-            {chosen ? `vs ${chosen.name}` : 'vs a friend you’ll invite by text'}
+            {chosen ? `vs ${chosen.name}` : `vs a friend you'll invite by text`}
           </Text>
         </View>
       ) : null}
 
-      <CategoryPicker value={[hobby.id]} onChange={(ids) => setHobbyId(ids[0])} />
+      <CategoryPicker
+        value={[hobby.id]}
+        onChange={(ids) => setHobbyId(ids[0])}
+        showCustom
+        customName={customHobby ?? ''}
+        onCustomName={setCustomHobby}
+      />
 
       <GoalCard
-        goal={goal ?? defaultGoal(hobby.id, minutes)}
+        goal={displayGoal}
         custom={goal !== null}
         minutes={minutes}
         lengthDays={lengthDays}
         onMinutes={setMinutes}
         onSave={(text) => {
-          // A number of minutes written in the text becomes the minutes logged per check-in.
           const m = minutesFromText(text) ?? minutes;
           setMinutes(m);
-          setGoal(text === defaultGoal(hobby.id, m) ? null : text);
+          setGoal(text === defaultGoal(hobby.id, m, customHobby ?? undefined) ? null : text);
         }}
         onReset={() => setGoal(null)}
       />
 
+      <FrequencyPicker
+        frequency={frequency}
+        timesPerWeek={timesPerWeek}
+        onChange={(f, n) => { setFrequency(f); setTimesPerWeek(n); }}
+      />
+
       <DurationPicker value={lengthDays} onChange={setLengthDays} />
+
+      <MetricInput unit={unit} target={target} onUnit={setUnit} onTarget={setTarget} />
 
       <View style={{ flex: 1 }} />
 
@@ -77,10 +98,13 @@ export default function HobbyScreen() {
       ) : null}
       {waitingCode ? (
         <Text variant="caption" color="muted" align="center">
-          Not sent yet. Your invite code is {waitingCode}: tap Send by text to share it again.
+          {'Not sent yet. Your invite code is '}{waitingCode}{': tap Send by text to share it again.'}
         </Text>
       ) : null}
-      {direct ? (
+
+      {isCustom && !customHobby?.trim() ? (
+        <Button label={direct ? (chosen ? `Invite ${chosen.name}` : 'Send by text') : 'Next: pick a friend'} disabled />
+      ) : direct ? (
         <Button label={chosen ? `Invite ${chosen.name}` : 'Send by text'} disabled={sending} onPress={() => send(chosen)} />
       ) : (
         <Button label="Next: pick a friend" onPress={next} />
