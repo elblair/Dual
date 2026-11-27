@@ -28,7 +28,7 @@ def duel_by_code(code: str, user: User | None = Depends(optional_user), db: Sess
 @router.post("", response_model=DuelOut)
 def create_duel(body: CreateDuelIn, user: User = Depends(current_user), db: Session = Depends(get_db)) -> DuelOut:
     settings = logic.DuelSettings(body.frequency, body.times_per_week, body.verification, body.mode, body.unit, body.target)
-    duel = logic.create_duel(db, user, body.hobby_id, body.minutes, body.friend_id, body.goal, settings)
+    duel = logic.create_duel(db, user, body.hobby_id, body.minutes, body.friend_id, body.goal, settings, body.length_days)
     db.commit()
     return logic.build_view(db, duel, user)
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { PencilLine, Sparkle } from 'lucide-react-native';
-import { DUEL_DAYS, GOAL_MAX, MINUTE_OPTIONS, replaceFirstNumber, validateGoal } from '@/data/catalog';
+import { GOAL_MAX, MINUTE_OPTIONS, replaceFirstNumber, validateGoal } from '@/data/catalog';
 import { useTheme } from '@/theme';
 import { Button } from './Button';
 import { Card } from './Card';
@@ -15,6 +15,8 @@ interface GoalCardProps {
   custom: boolean;
   /** Minutes logged by default on each check-in. */
   minutes: number;
+  /** How many days the duel will run (shown in the card subtitle). */
+  lengthDays: number;
   /** A quick chip was tapped. */
   onMinutes: (minutes: number) => void;
   /** Save the text the player wrote (already trimmed and valid). */
@@ -27,7 +29,7 @@ interface GoalCardProps {
  * The goal on the Hobby step (Figma "Starter goal" card). Tap the card or the pencil to write your own goal: any text up to
  * GOAL_MAX characters, with the minute options as quick chips that update the numbers in the text.
  */
-export function GoalCard({ goal, custom, minutes, onMinutes, onSave, onReset }: GoalCardProps) {
+export function GoalCard({ goal, custom, minutes, lengthDays, onMinutes, onSave, onReset }: GoalCardProps) {
   const t = useTheme();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goal);
@@ -66,7 +68,7 @@ export function GoalCard({ goal, custom, minutes, onMinutes, onSave, onReset }: 
             </Text>
             <Text variant="cardTitle">{goal}</Text>
             <Text variant="caption" color="muted">
-              {DUEL_DAYS} days · tap to write your own
+              {lengthDays} {lengthDays === 1 ? 'day' : 'days'} · tap to write your own
             </Text>
           </View>
           <PencilLine size={t.sizes.icon.md} color={t.colors.muted} strokeWidth={2} />

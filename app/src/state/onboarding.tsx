@@ -19,6 +19,9 @@ interface OnboardingState {
   /** The goal the player wrote, or null to use the suggestion for the hobby and minutes. */
   goal: string | null;
   setGoal: (goal: string | null) => void;
+  /** How many days the duel runs (3, 7, 14, or 30). */
+  lengthDays: number;
+  setLengthDays: (days: number) => void;
   friend: PickedFriend | null;
   setFriend: (next: PickedFriend | null) => void;
   /** An invite code opened while signed out: kept until the person signs up or logs in, then Accept continues with it. */
@@ -32,6 +35,7 @@ const Ctx = createContext<OnboardingState | null>(null);
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [hobbyId, setHobbyId] = useState(DEFAULT_HOBBY_ID);
   const [minutes, setMinutes] = useState(MINUTE_OPTIONS[2]);
+  const [lengthDays, setLengthDays] = useState(7);
   const [friend, setFriend] = useState<PickedFriend | null>(null);
   const [goal, setGoal] = useState<string | null>(null);
   const [pendingCode, setPendingCode] = useState<string | null>(null);
@@ -45,6 +49,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     setHobbyId(DEFAULT_HOBBY_ID);
     setMinutes(MINUTE_OPTIONS[2]);
+    setLengthDays(7);
     setGoal(null);
     setFriend(null);
   }, []);
@@ -57,13 +62,15 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       setMinutes,
       goal,
       setGoal,
+      lengthDays,
+      setLengthDays,
       friend,
       setFriend,
       pendingCode,
       setPendingCode,
       reset,
     }),
-    [hobbyId, minutes, goal, friend, pendingCode, pickHobby, reset],
+    [hobbyId, minutes, goal, lengthDays, friend, pendingCode, pickHobby, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

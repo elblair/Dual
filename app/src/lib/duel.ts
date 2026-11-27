@@ -9,7 +9,7 @@ export const theirScore = (d: Duel) => d.theirDays.length;
 /** "4 – 4" (en dash, as in the design). */
 export const scoreText = (d: Duel) => `${myScore(d)} – ${theirScore(d)}`;
 
-export const isLive = (d: Duel) => d.status === 'active' && d.today <= 6;
+export const isLive = (d: Duel) => d.status === 'active' && d.today < d.lengthDays;
 export const checkedInToday = (d: Duel) => d.myDays.includes(d.today);
 export const restingToday = (d: Duel) => d.myRestDays.includes(d.today);
 /** A weekly or "N times a week" duel counts check-ins, not days: it has slots, and the days between are free. */
@@ -25,12 +25,12 @@ export function scoreColor(d: Duel): ColorName {
 /** My dots: one per day when daily (orange ring on today while the duel is live), otherwise one per check-in slot. */
 export function myDayStates(d: Duel): DayState[] {
   if (countsSlots(d)) return buildSlots(d.myDays.length, d.slots, needsCheckIn(d));
-  return buildDays(d.myDays, isLive(d) ? d.today : undefined, d.myRestDays);
+  return buildDays(d.myDays, isLive(d) ? d.today : undefined, d.myRestDays, d.lengthDays);
 }
 
 export function theirDayStates(d: Duel): DayState[] {
   if (countsSlots(d)) return buildSlots(d.theirDays.length, d.slots, false);
-  return buildDays(d.theirDays);
+  return buildDays(d.theirDays, undefined, [], d.lengthDays);
 }
 
 /** The goal as the players wrote it, or the suggestion built from the hobby and minutes. */

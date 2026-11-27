@@ -55,7 +55,7 @@ export function createMockSource(): DataSource {
       hobbyId: input.hobbyId,
       minutes: input.minutes,
       goal: input.goal ?? null,
-      lengthDays: 7,
+      lengthDays: input.lengthDays ?? 7,
       slots: input.frequency === 'weekly' ? 1 : input.frequency === 'perWeek' ? input.timesPerWeek ?? 7 : 7,
       frequency: input.frequency ?? 'daily',
       timesPerWeek: input.timesPerWeek ?? null,

@@ -115,6 +115,8 @@ export interface CreateDuelInput {
   target?: number | null;
   /** A person found with search. Omit for an open invite that a friend accepts with the code. */
   friendId?: string | null;
+  /** How many days the duel runs (3, 7, 14, or 30). Defaults to 7. */
+  lengthDays?: number;
 }
 
 export interface AuthInput {

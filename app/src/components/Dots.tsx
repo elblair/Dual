@@ -5,7 +5,7 @@ import { useTheme } from '@/theme';
 export type DayState = 'done' | 'today' | 'empty' | 'rest';
 
 interface DotsProps {
-  /** One entry per check-in slot: 7 (day 1 to day 7) in a daily duel, fewer when the duel is weekly or N times a week. */
+  /** One entry per check-in slot: 7 (day 1 to day N) in a daily duel, fewer when the duel is weekly or N times a week. */
   days: DayState[];
   /** you = blue, opponent = maroon (the one way to show who's winning). */
   tone: 'you' | 'opponent';
@@ -18,7 +18,7 @@ export function Dots({ days, tone, size = 'md' }: DotsProps) {
   const fill = tone === 'you' ? t.colors.blue : t.colors.maroonBright;
 
   return (
-    <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }} accessibilityLabel={`${days.filter((d) => d === 'done').length} of ${days.length} done`}>
+    <View style={{ flexDirection: 'row', gap: t.sizes.dotGap }} accessibilityLabel={`${days.filter((d) => d === 'done').length} of ${days.length} days done`}>
       {days.map((state, i) => (
         <View
           key={i}
@@ -42,9 +42,9 @@ export function buildSlots(done: number, slots: number, needsToday: boolean): Da
   return Array.from({ length: slots }, (_, i) => (i < done ? 'done' : i === done && needsToday ? 'today' : 'empty'));
 }
 
-/** Build the 7 dots from a list of checked-in day indexes (0 to 6) and the current day index. */
-export function buildDays(doneDays: number[], todayIndex?: number, restDays: number[] = []): DayState[] {
-  return Array.from({ length: 7 }, (_, i) =>
+/** Build dot states from a list of checked-in day indexes and the current day index. */
+export function buildDays(doneDays: number[], todayIndex?: number, restDays: number[] = [], length = 7): DayState[] {
+  return Array.from({ length }, (_, i) =>
     doneDays.includes(i) ? 'done' : restDays.includes(i) ? 'rest' : i === todayIndex ? 'today' : 'empty',
   );
 }

@@ -36,7 +36,9 @@ from app.schemas import (
     UserHitOut,
 )
 
-LENGTH_DAYS = 7
+DEFAULT_LENGTH_DAYS = 7
+MIN_LENGTH_DAYS = 1
+MAX_LENGTH_DAYS = 365
 GOAL_MAX = 60  # characters, after trimming
 TIMES_PER_WEEK_RANGE = (2, 6)  # "N times a week"; once a week is frequency "weekly" and every day is "daily"
 UNIT_MAX = 24  # characters, after trimming ("miles", "pages")
@@ -290,7 +292,7 @@ def finish(duel: Duel, forfeited_by: str | None = None) -> None:
     """End the duel. forfeited_by is 'creator' or 'opponent'."""
     _confirm_all(duel)
     duel.status = "finished"
-    duel.today = LENGTH_DAYS
+    duel.today = duel.length_days
     duel.paused_at = None
     duel.forfeited_by = forfeited_by
     if forfeited_by == "creator":
@@ -304,10 +306,10 @@ def finish(duel: Duel, forfeited_by: str | None = None) -> None:
 
 
 def step_day(duel: Duel) -> None:
-    """Move to the next day: everything pending is confirmed, and day 7 ends the duel."""
+    """Move to the next day: everything pending is confirmed, and the last day ends the duel."""
     _confirm_all(duel)
     duel.today += 1
-    if duel.today > LENGTH_DAYS - 1:
+    if duel.today > duel.length_days - 1:
         finish(duel)
 
 
@@ -316,7 +318,7 @@ def settle(db: Session, duel: Duel, now: datetime | None = None) -> None:
     if duel.status != "active":
         return
     now = now or utcnow()
-    target = min(LENGTH_DAYS, int((now - duel.started_at).total_seconds() // 86400))
+    target = min(duel.length_days, int((now - duel.started_at).total_seconds() // 86400))
     while duel.status == "active" and duel.today < target:
         step_day(duel)
 
@@ -406,11 +408,14 @@ def create_duel(
     friend_id: str | None,
     goal: str | None = None,
     settings: DuelSettings | None = None,
+    length_days: int = DEFAULT_LENGTH_DAYS,
 ) -> Duel:
     """Start a duel. It stays pending until the other person accepts: a person picked from search sees it under
     "Pending invites", anyone else enters the invite code. Creating the same pending challenge again returns the existing one."""
     if not 5 <= minutes <= 240:
         raise DomainError("Pick between 5 and 240 minutes a day.")
+    if not MIN_LENGTH_DAYS <= length_days <= MAX_LENGTH_DAYS:
+        raise DomainError(f"Choose a length between {MIN_LENGTH_DAYS} and {MAX_LENGTH_DAYS} days.")
     goal = clean_goal(goal)
     settings = clean_settings(settings or DuelSettings())
     friend = None
@@ -426,7 +431,8 @@ def create_duel(
     same_friend = Duel.opponent_id.is_(None) if friend is None else Duel.opponent_id == friend.id
     existing = db.scalar(
         select(Duel)
-        .where(Duel.creator_id == user.id, Duel.status == "pending", Duel.hobby_id == hobby_id, Duel.minutes == minutes, same_friend,
+        .where(Duel.creator_id == user.id, Duel.status == "pending", Duel.hobby_id == hobby_id, Duel.minutes == minutes,
+               Duel.length_days == length_days, same_friend,
                _same(Duel.goal, goal),
                Duel.frequency == settings.frequency, _same(Duel.times_per_week, settings.times_per_week),
                Duel.verification == settings.verification, Duel.mode == settings.mode,
@@ -441,7 +447,7 @@ def create_duel(
         hobby_id=hobby_id,
         minutes=minutes,
         goal=goal,
-        length_days=LENGTH_DAYS,
+        length_days=length_days,
         frequency=settings.frequency,
         times_per_week=settings.times_per_week,
         verification=settings.verification,
@@ -490,7 +496,7 @@ def accept_duel(db: Session, duel: Duel, user: User) -> Duel:
 def check_in(db: Session, duel: Duel, user: User) -> Duel:
     if duel.status != "active":
         raise DomainError("This duel is not active.")
-    if duel.today > LENGTH_DAYS - 1:
+    if duel.today > duel.length_days - 1:
         raise DomainError("This duel is over.")
     if any(c.user_id == user.id and c.day_index == duel.today for c in duel.checkins):
         raise DomainError("You already checked in today.")
@@ -576,7 +582,7 @@ def rematch(db: Session, old: Duel, user: User, kind: str) -> Duel:
     other = old.opponent_id if old.creator_id == user.id else old.creator_id
     minutes = easier_minutes(old.minutes) if kind == "easier" else old.minutes
     goal = easier_goal(old.goal, old.minutes, minutes) if kind == "easier" else old.goal
-    return create_duel(db, user, old.hobby_id, minutes, other, goal, settings_of(old))
+    return create_duel(db, user, old.hobby_id, minutes, other, goal, settings_of(old), old.length_days)
 
 
 # ---------------------------------------------------------------- stats and groups (all computed from the database)

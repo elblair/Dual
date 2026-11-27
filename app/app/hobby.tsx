@@ -1,6 +1,6 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Avatar, BackButton, Button, CategoryPicker, GoalCard, Logo, Screen, Text } from '@/components';
+import { Avatar, BackButton, Button, CategoryPicker, DurationPicker, GoalCard, Logo, Screen, Text } from '@/components';
 import { useMe } from '@/data';
 import { defaultGoal, minutesFromText } from '@/data/catalog';
 import { useChallenge } from '@/lib/useChallenge';
@@ -16,7 +16,7 @@ import { useTheme } from '@/theme';
 export default function HobbyScreen() {
   const t = useTheme();
   const router = useRouter();
-  const { hobby, setHobbyId, minutes, setMinutes, goal, setGoal } = useOnboarding();
+  const { hobby, setHobbyId, minutes, setMinutes, goal, setGoal, lengthDays, setLengthDays } = useOnboarding();
   const { data: me, loading } = useMe();
   const { friendId, friendName, via } = useLocalSearchParams<{ friendId?: string; friendName?: string; via?: string }>();
   const { send, sending, error, waitingCode } = useChallenge();
@@ -55,6 +55,7 @@ export default function HobbyScreen() {
         goal={goal ?? defaultGoal(hobby.id, minutes)}
         custom={goal !== null}
         minutes={minutes}
+        lengthDays={lengthDays}
         onMinutes={setMinutes}
         onSave={(text) => {
           // A number of minutes written in the text becomes the minutes logged per check-in.
@@ -64,6 +65,8 @@ export default function HobbyScreen() {
         }}
         onReset={() => setGoal(null)}
       />
+
+      <DurationPicker value={lengthDays} onChange={setLengthDays} />
 
       <View style={{ flex: 1 }} />
 

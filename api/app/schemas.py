@@ -137,6 +137,8 @@ class CreateDuelIn(CamelModel):
     target: int | None = None
     # A person found with /users/search. None = an open invite that a friend accepts with the code.
     friend_id: str | None = Field(default=None, max_length=32)
+    # How many days the duel runs (1–365). Defaults to 7.
+    length_days: int = Field(default=7, ge=1, le=365)
 
 
 class CheckinDetailsIn(CamelModel):
