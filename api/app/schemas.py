@@ -79,6 +79,8 @@ class DuelOut(CamelModel):
     # What is counted ("miles") and the target per period; both None for a plain yes/no check-in.
     unit: str | None
     target: int | None
+    # Custom hobby name when hobby_id is 'custom'. None for catalog hobbies.
+    custom_hobby: str | None
     status: Literal["pending", "active", "paused", "finished"]
     # None for an open invite nobody has accepted yet.
     opponent: PersonOut | None
@@ -135,8 +137,12 @@ class CreateDuelIn(CamelModel):
     mode: DuelMode = "compete"
     unit: str | None = Field(default=None, max_length=100)
     target: int | None = None
+    # Custom hobby name when hobby_id is 'custom'.
+    custom_hobby: str | None = Field(default=None, max_length=80)
     # A person found with /users/search. None = an open invite that a friend accepts with the code.
     friend_id: str | None = Field(default=None, max_length=32)
+    # How many days the duel runs (1–365). Defaults to 7.
+    length_days: int = Field(default=7, ge=1, le=365)
 
 
 class CheckinDetailsIn(CamelModel):

@@ -1,7 +1,7 @@
 import { buildDays, buildSlots, type DayState } from '@/components';
 import type { ColorName } from '@/theme';
 import type { Duel } from '@/data';
-import { defaultGoal, easierGoalText, easierMinutes } from '@/data/catalog';
+import { defaultGoal, easierGoalText, easierMinutes, hobbyById } from '@/data/catalog';
 
 export const myScore = (d: Duel) => d.myDays.length;
 export const theirScore = (d: Duel) => d.theirDays.length;
@@ -9,7 +9,7 @@ export const theirScore = (d: Duel) => d.theirDays.length;
 /** "4 – 4" (en dash, as in the design). */
 export const scoreText = (d: Duel) => `${myScore(d)} – ${theirScore(d)}`;
 
-export const isLive = (d: Duel) => d.status === 'active' && d.today <= 6;
+export const isLive = (d: Duel) => d.status === 'active' && d.today < d.lengthDays;
 export const checkedInToday = (d: Duel) => d.myDays.includes(d.today);
 export const restingToday = (d: Duel) => d.myRestDays.includes(d.today);
 /** A weekly or "N times a week" duel counts check-ins, not days: it has slots, and the days between are free. */
@@ -25,16 +25,19 @@ export function scoreColor(d: Duel): ColorName {
 /** My dots: one per day when daily (orange ring on today while the duel is live), otherwise one per check-in slot. */
 export function myDayStates(d: Duel): DayState[] {
   if (countsSlots(d)) return buildSlots(d.myDays.length, d.slots, needsCheckIn(d));
-  return buildDays(d.myDays, isLive(d) ? d.today : undefined, d.myRestDays);
+  return buildDays(d.myDays, isLive(d) ? d.today : undefined, d.myRestDays, d.lengthDays);
 }
 
 export function theirDayStates(d: Duel): DayState[] {
   if (countsSlots(d)) return buildSlots(d.theirDays.length, d.slots, false);
-  return buildDays(d.theirDays);
+  return buildDays(d.theirDays, undefined, [], d.lengthDays);
 }
 
 /** The goal as the players wrote it, or the suggestion built from the hobby and minutes. */
-export const goalText = (d: Duel) => d.goal ?? defaultGoal(d.hobbyId, d.minutes);
+export const goalText = (d: Duel) => d.goal ?? defaultGoal(d.hobbyId, d.minutes, d.customHobby ?? undefined);
+
+/** The display name for the hobby: the custom name the user typed, or the catalog label. */
+export const hobbyLabel = (d: Duel) => d.customHobby ?? hobbyById(d.hobbyId).label;
 
 /** The goal an "easier win" rematch starts with (the API computes the same). */
 export const easierGoalFor = (d: Duel) => easierGoalText(d.goal, d.minutes, easierMinutes(d.minutes)) ?? defaultGoal(d.hobbyId, easierMinutes(d.minutes));

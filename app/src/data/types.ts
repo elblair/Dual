@@ -54,6 +54,8 @@ export interface Duel {
   minutes: number;
   /** The goal in the players' own words, or null when the suggestion (hobby + minutes) applies. Use `goalText(duel)`. */
   goal: string | null;
+  /** The user-typed hobby name when hobbyId is 'custom'. Null for catalog hobbies. */
+  customHobby: string | null;
   lengthDays: number;
   /** How many check-ins each player can make: one per day (7) when daily, 1 when weekly, N for "N times a week". These are the dots. */
   slots: number;
@@ -106,6 +108,8 @@ export interface CreateDuelInput {
   minutes: number;
   /** The goal in your own words (trimmed, up to 60 characters). Omit for the suggestion. */
   goal?: string | null;
+  /** Custom hobby name when hobbyId is 'custom'. */
+  customHobby?: string | null;
   /** Duel settings. All optional: omitted means daily, mutual, compete, no number (how duels worked before). */
   frequency?: Frequency;
   timesPerWeek?: number | null;
@@ -115,6 +119,8 @@ export interface CreateDuelInput {
   target?: number | null;
   /** A person found with search. Omit for an open invite that a friend accepts with the code. */
   friendId?: string | null;
+  /** How many days the duel runs (3, 7, 14, or 30). Defaults to 7. */
+  lengthDays?: number;
 }
 
 export interface AuthInput {

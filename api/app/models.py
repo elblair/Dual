@@ -55,6 +55,8 @@ class Duel(Base):
     # Optional numeric goal: what is counted ("miles") and the target per period. None = a plain yes/no check-in.
     unit: Mapped[str | None] = mapped_column(String(24), nullable=True)
     target: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Custom hobby name when hobby_id is 'custom'. None for catalog hobbies.
+    custom_hobby: Mapped[str | None] = mapped_column(String(80), nullable=True)
     # pending | active | paused | finished
     status: Mapped[str] = mapped_column(String(16), index=True)
     creator_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)

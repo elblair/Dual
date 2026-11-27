@@ -16,6 +16,7 @@ import {
   Music,
   NotebookPen,
   Palette,
+  Pencil,
   PenLine,
   Piano,
   PersonStanding,
@@ -57,6 +58,7 @@ export const hobbyIcons: Record<string, LucideIcon> = {
   stretching: Flower2,
   cooking: Utensils,
   baking: Cake,
+  custom: Pencil,
 };
 
 /** One icon per category id (the tiles on the Hobby step). */

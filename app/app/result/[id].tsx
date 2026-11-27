@@ -4,8 +4,7 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronRight, RefreshCw, Trophy, Users, type LucideIcon } from 'lucide-react-native';
 import { Button, Card, ErrorView, LoadingView, PlayerRow, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
-import { hobbyById } from '@/data/catalog';
-import { easierGoalFor, friendName, goalText, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
+import { easierGoalFor, friendName, goalText, hobbyLabel, myDayStates, myScore, theirDayStates, theirScore } from '@/lib/duel';
 import { duelHref } from '@/lib/routes';
 import { useOnboarding } from '@/state/onboarding';
 import { useTheme } from '@/theme';
@@ -40,7 +39,6 @@ export default function ResultScreen() {
   }
   if (duel.status !== 'finished') return <Redirect href={duelHref(duel.id)} />;
 
-  const hobby = hobbyById(duel.hobbyId);
   const a = myScore(duel);
   const b = theirScore(duel);
   const opp = friendName(duel);
@@ -86,7 +84,7 @@ export default function ResultScreen() {
     <Screen scroll>
       <View style={{ alignItems: 'center', gap: t.spacing.s6, paddingVertical: t.spacing.md }}>
         <Text variant="eyebrow" color="orangeDark">
-          Dual over · {hobby.label}
+          Dual over · {hobbyLabel(duel)}
         </Text>
         <Text variant="titleLg" align="center">
           {title}

@@ -3,11 +3,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, Check, Clock, Flame, Hourglass, Pause, Users } from 'lucide-react-native';
 import { Avatar, BackButton, Button, Card, CancelInvite, Dots, ErrorBanner, ErrorView, LoadingView, Screen, Text } from '@/components';
 import { useData, useDuel, useMe } from '@/data';
-import { hobbyById } from '@/data/catalog';
 import { shortDate, whenLabel } from '@/lib/dates';
 import { resultHref } from '@/lib/routes';
 import { hobbyIcons } from '@/lib/hobbyIcons';
-import { friendName, goalText, lastDayName, leadLabel, countsSlots, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
+import { friendName, goalText, hobbyLabel, lastDayName, leadLabel, countsSlots, myDayStates, pendingInviteLabel, myScore, theirDayStates, theirScore, weekdayLetters } from '@/lib/duel';
 import { useRefresh } from '@/lib/useRefresh';
 import { useTheme } from '@/theme';
 
@@ -36,8 +35,7 @@ export default function DuelScreen() {
     );
   }
 
-  const hobby = hobbyById(duel.hobbyId);
-  const HobbyIcon = hobbyIcons[duel.hobbyId];
+  const HobbyIcon = hobbyIcons[duel.hobbyId] ?? hobbyIcons['custom'];
   const dayNumber = Math.min(duel.today + 1, duel.lengthDays);
   const openBreak = (pick: 'rest' | 'pause' | 'forfeit') => router.push({ pathname: '/break/[id]', params: { id: duel.id, pick } });
   const letters = weekdayLetters(duel.startedAt, duel.lengthDays);
@@ -55,7 +53,7 @@ export default function DuelScreen() {
     <Screen scroll gap="loose" refresh={{ refreshing, onRefresh }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <BackButton />
-        <Text variant="headerTitle">{hobby.label}</Text>
+        <Text variant="headerTitle">{hobbyLabel(duel)}</Text>
         <View style={{ width: t.sizes.backButton }} />
       </View>
 

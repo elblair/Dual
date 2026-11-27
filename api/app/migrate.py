@@ -19,6 +19,7 @@ NEW_COLUMNS = {
         "mode": "VARCHAR(12) NOT NULL DEFAULT 'compete'",
         "unit": "VARCHAR(24)",
         "target": "INTEGER",
+        "custom_hobby": "VARCHAR(80)",
     },
     "users": {"email_verified_at": "TIMESTAMP", "bio": "VARCHAR(160)", "interests": "VARCHAR(500)", "avatar": "VARCHAR(32)"},
 }

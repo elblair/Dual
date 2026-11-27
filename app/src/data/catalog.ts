@@ -94,7 +94,11 @@ export const CATEGORIES: Category[] = [
   },
 ];
 
-export const HOBBIES: Hobby[] = CATEGORIES.flatMap((c) => c.hobbies);
+export const CUSTOM_HOBBY_ID = 'custom';
+/** Stub for a user-typed hobby. The real name is stored as customHobby on the duel. */
+export const CUSTOM_HOBBY: Hobby = { id: CUSTOM_HOBBY_ID, label: 'Custom', action: 'Practice', phrase: 'doing this', emoji: '✏️' };
+
+export const HOBBIES: Hobby[] = [...CATEGORIES.flatMap((c) => c.hobbies), CUSTOM_HOBBY];
 
 /** What is selected before anyone picks (and what an unknown id falls back to). */
 export const DEFAULT_HOBBY_ID = 'guitar';
@@ -139,7 +143,8 @@ export const BIO_MAX = 160;
 export const INTERESTS_MAX = 12;
 
 /** The suggestion shown until the player writes their own: "Practice guitar 20 min a day". */
-export function defaultGoal(hobbyId: string, minutes: number): string {
+export function defaultGoal(hobbyId: string, minutes: number, customName?: string): string {
+  if (hobbyId === CUSTOM_HOBBY_ID && customName) return `${customName} ${minutes} min a day`;
   return `${hobbyById(hobbyId).action} ${minutes} min a day`;
 }
 

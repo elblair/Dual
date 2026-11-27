@@ -22,7 +22,7 @@ export default function FriendScreen() {
   const data = useData();
   const { data: me, loading: meLoading } = useMe();
   const { data: groups } = useGroups();
-  const { hobby, minutes, friend, setFriend } = useOnboarding();
+  const { hobby, customHobby, minutes, friend, setFriend } = useOnboarding();
   const { first } = useLocalSearchParams<{ first?: string }>();
   const friendFirst = first === '1';
   const { send, sending, error, message, waitingCode } = useChallenge();
@@ -136,7 +136,7 @@ export default function FriendScreen() {
           <Text variant="small" color="muted">
             {friendFirst
               ? `Next you pick a hobby. ${friend.name} will see your challenge under Pending invites on Today, and can accept it there.`
-              : `${friend.name} will see your ${hobby.label.toLowerCase()} challenge (${minutes} min a day) under Pending invites on Today, and can accept it there.`}
+              : `${friend.name} will see your ${(customHobby ?? hobby.label).toLowerCase()} challenge (${minutes} min a day) under Pending invites on Today, and can accept it there.`}
           </Text>
         </Card>
       ) : friendFirst ? (
